@@ -1,0 +1,10 @@
+# requirements.txt — Python libraries we need
+# Install all of these by running: pip install -r requirements.txt
+
+fastapi          # Python web framework (like Express but for Python)
+uvicorn          # The server that runs FastAPI (like nodemon for Python)
+google-genai         # Google Gemini AI SDK (new official package)
+gitpython        # Lets Python clone GitHub repos programmatically
+python-dotenv    # Reads our .env file in Python
+pydantic         # Data validation — makes sure inputs are correct format
+langgraph        # State machine framework for AI agents
