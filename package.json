@@ -6,8 +6,5 @@
     "dev": "npm --prefix \"Baby/Carbon Frontend\" run dev",
     "build": "npm --prefix \"Baby/Carbon Frontend\" install && npm --prefix \"Baby/Carbon Frontend\" run build",
     "preview": "npm --prefix \"Baby/Carbon Frontend\" run preview"
-  },
-  "devDependencies": {
-    "sharp": "^0.35.3"
   }
 }
