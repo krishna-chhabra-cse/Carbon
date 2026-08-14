@@ -124,30 +124,65 @@ router.post('/analyze', async (req, res) => {
 router.post('/chat', async (req, res) => {
   const { repoUrl, query } = req.body;
 
-  if (!repoUrl || !query) {
-    return res.status(400).json({ error: 'repoUrl and query are required' });
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required.' });
   }
 
-  console.log(`💬 Received chat query for: ${repoUrl}`);
+  console.log(`💬 Received chat query for: ${repoUrl || 'General Web Context'}`);
 
   try {
     const pythonResponse = await axios.post(
       `${PYTHON_SERVICE_URL}/chat`,
-      { repo_url: repoUrl, query: query },
-      { timeout: 60000 } // 60 seconds
+      { repo_url: repoUrl || '', query: query },
+      { timeout: 60000 }
     );
 
     res.json(pythonResponse.data);
   } catch (error) {
     console.error('❌ Error calling Python chat service:', error.message);
     
-    // Check if Python sent a 400 (like Cache Miss)
     if (error.response && error.response.status === 400) {
       return res.status(400).json(error.response.data);
     }
     
     res.status(500).json({ 
       error: 'Chat failed',
+      details: error.message 
+    });
+  }
+});
+
+// -------------------------------------------------------
+// POST /api/companion (Chrome Extension Web Learning Companion)
+// Extension sends: { "query": "...", "mode": "explain|simplify|teach|summarize|page_explain|lessons", "context": {...} }
+// We return:      { "success": true, "answer": "...", "mode": "..." }
+// -------------------------------------------------------
+router.post('/companion', async (req, res) => {
+  const { query, mode, context } = req.body;
+
+  if (!query) {
+    return res.status(400).json({ error: 'Query is required for Carbon Companion.' });
+  }
+
+  console.log(`🧠 [COMPANION] mode=${mode || 'explain'} query="${(query || '').slice(0, 60)}..."`);
+
+  try {
+    const pythonResponse = await axios.post(
+      `${PYTHON_SERVICE_URL}/companion`,
+      { 
+        query: query,
+        mode: mode || 'explain',
+        context: context || {}
+      },
+      { timeout: 60000 }
+    );
+
+    res.json(pythonResponse.data);
+  } catch (error) {
+    console.error('❌ Error calling Python companion service:', error.message);
+
+    res.status(500).json({ 
+      error: 'Learning Companion query failed',
       details: error.message 
     });
   }

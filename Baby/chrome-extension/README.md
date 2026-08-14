@@ -1,45 +1,43 @@
-# Carbon — Chrome Extension
+# ✦ Carbon — AI Web Learning Companion (Chrome Extension)
 
-Turn GitHub into an AI-powered architecture cockpit with **Carbon**. 
+Carbon is an AI-powered learning companion for the web. Whenever you encounter confusing code, complex documentation, or deep topics while browsing, Carbon explains, simplifies, teaches, and finds visual lessons right inside Chrome without taking you away from your workflow.
 
 ---
 
 ## ✨ Features
 
-1. **GitHub Injected Action Button**: Directly on any GitHub repo page, clicks the sleek **🧠 Explain with Carbon** button to immediately open the repository in Carbon's multi-agent visual studio.
-2. **Interactive Extension Popup**:
-   - Auto-detects the active repository from your current browser tab.
-   - 1-Click "Explain with Carbon AI" action.
-   - Quick search input to analyze any arbitrary GitHub URL.
-   - Configurable remote Backend & Web App URLs for cloud or local instances.
-3. **Deep Cosmic Design**: Dark-mode glassmorphic theme tailored with neon accents and high contrast typography.
+- **✦ Native Side Panel & Cockpit**: Clicking the Carbon icon opens a native Chrome Side Panel that stays open as you browse. No automatic website redirects.
+- **✦ Current Page Intelligence**: Automatically detects active webpage title, domain, and highlighted text.
+- **✦ Quick Learning Actions**:
+  - `✦ Explain Page`: Instant breakdown of what the page is about, key concepts (01, 02, 03), and next steps.
+  - `◈ Summarize`: High-signal executive summary with key takeaways.
+  - `◎ Teach Me`: Progressive learning module with mental models, core concepts, runnable code examples, and interactive self-check questions with revealable answers.
+  - `🔎 Find Lessons`: Discovers matching visual lessons, roadmaps, and Scrimba explainer walkthroughs.
+  - `⚡ Simplify (ELI5)`: Plain English explanations using intuitive real-world analogies.
+  - `💻 Code Example`: Practical code demonstrations and common pitfalls.
+- **✦ Right-Click "Ask Carbon" Context Menu**: Highlight text on any website $\to$ right-click $\to$ select *Explain*, *Simplify*, *Give an Example*, *Teach Me*, or *Find Related Lesson*.
+- **✦ GitHub Injected Button**: Adds a glowing **🧠 Explain with Carbon** button directly on GitHub repositories.
+- **✦ Conversational Q&A**: Ask follow-up questions with full Markdown and syntax-highlighted code formatting.
+- **✦ History & Settings**: Access recent explanations and configure custom backend/studio URLs.
 
 ---
 
-## 🚀 How to Install in Google Chrome (or Brave / Edge / Arc)
+## 📥 How to Install in Chrome / Brave / Edge (30 Seconds)
 
 1. Open your browser and navigate to:
    ```
    chrome://extensions/
    ```
-   *(or `brave://extensions/`, `edge://extensions/`)*
-
-2. In the top-right corner, toggle **Developer mode** to **ON**.
-3. Click the **"Load unpacked"** button in the top-left toolbar.
-4. Select the directory:
+2. Enable **Developer mode** (toggle in the top-right corner).
+3. Click **"Load unpacked"** (top-left button).
+4. Select this directory:
    ```
    Baby/chrome-extension
    ```
-   *(Full path: `c:\Users\krish\Desktop\Project carbon\Carbon\Baby\chrome-extension`)*
-5. The **Carbon — AI Codebase Explorer** extension icon will now appear in your browser toolbar!
+5. Pin **Carbon** to your browser toolbar!
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Keyboard Shortcut
 
-1. Click the Carbon extension icon in your toolbar.
-2. Click the **⚙️ Settings** icon in the header.
-3. If using a deployed cloud instance, set:
-   - **Carbon Backend URL**: `https://your-carbon-backend.onrender.com`
-   - **Carbon Web App URL**: `https://your-carbon-frontend.vercel.app`
-4. Click **Save Settings**.
+- `Ctrl + Shift + C` (or `Cmd + Shift + C` on Mac) instantly opens the Carbon Learning Companion Side Panel!

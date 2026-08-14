@@ -203,6 +203,11 @@ async def run_agents(request: AnalyzeRequest):
     return StreamingResponse(event_generator(), media_type="application/x-ndjson")
 
 
+class CompanionRequest(BaseModel):
+    query: str
+    mode: Optional[str] = "explain"
+    context: Optional[dict] = None
+
 # -------------------------------------------------------
 # The Chat endpoint
 # POST /chat
@@ -210,24 +215,51 @@ async def run_agents(request: AnalyzeRequest):
 # -------------------------------------------------------
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    if request.repo_url not in REPO_CACHE:
-        raise HTTPException(
-            status_code=400, 
-            detail="Repo not found in cache. Please analyze it first."
-        )
+    # If repo is cached, answer with codebase context
+    if request.repo_url in REPO_CACHE:
+        cached_data = REPO_CACHE[request.repo_url]
+        from agents.chat_agent import run as run_chat_agent
+        try:
+            answer = run_chat_agent(
+                folder_structure=cached_data["folder_structure"],
+                files_content=cached_data["files_content"],
+                query=request.query
+            )
+            return {"success": True, "answer": answer}
+        except Exception as e:
+            print(f"[ERROR] Codebase chat failed, falling back to companion: {e}")
 
-    cached_data = REPO_CACHE[request.repo_url]
-    
-    from agents.chat_agent import run as run_chat_agent
+    # Fallback to general AI companion
+    from agents.companion_agent import run as run_companion_agent
     try:
-        answer = run_chat_agent(
-            folder_structure=cached_data["folder_structure"],
-            files_content=cached_data["files_content"],
-            query=request.query
+        res = run_companion_agent(
+            query=request.query,
+            mode="explain",
+            context={"url": request.repo_url}
         )
-        return {"success": True, "answer": answer}
+        return {"success": True, "answer": res["answer"]}
     except Exception as e:
         print(f"[ERROR] Chat failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# -------------------------------------------------------
+# The Web Companion endpoint (Chrome Extension)
+# POST /companion
+# Body: { "query": "...", "mode": "explain|simplify|teach|summarize|page_explain|lessons", "context": {...} }
+# -------------------------------------------------------
+@app.post("/companion")
+async def companion(request: CompanionRequest):
+    from agents.companion_agent import run as run_companion_agent
+    try:
+        result = run_companion_agent(
+            query=request.query,
+            mode=request.mode or "explain",
+            context=request.context or {}
+        )
+        return result
+    except Exception as e:
+        print(f"[ERROR] Companion failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -248,4 +280,5 @@ async def generate_explainer_opml(request: ExplainerOPMLRequest):
     except Exception as e:
         print(f"[ERROR] OPML generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
