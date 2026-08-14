@@ -160,6 +160,7 @@ function buildResultsHtml(workspaceName, result) {
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; connect-src https://cdn.jsdelivr.net; font-src https:; img-src https: data:;" />
 <style>
   body { font-family: var(--vscode-font-family); padding: 1.5rem; line-height: 1.5; }
   h1 { font-size: 1.3rem; margin-bottom: 1.5rem; }
@@ -386,7 +387,7 @@ function buildResultsHtml(workspaceName, result) {
       mermaid.initialize({
         startOnLoad: true,
         theme: isDark ? 'dark' : 'default',
-        securityLevel: 'loose',
+        securityLevel: 'strict',
         fontFamily: 'var(--vscode-font-family)'
       });
     } catch (err) {

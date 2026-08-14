@@ -80,7 +80,12 @@ const SENSITIVE_PATTERNS = [
   /password/i,
   /\.npmrc$/i,                           // Often contains auth tokens
   /\.pypirc$/i,
-  /auth_token/i
+  /auth_token/i,
+  /\.git-credentials$/i,
+  /kubeconfig/i,
+  /\.bash_history/i,
+  /\.zsh_history/i,
+  /\.netrc$/i
 ];
 
 // Binary and non-code extensions to ignore

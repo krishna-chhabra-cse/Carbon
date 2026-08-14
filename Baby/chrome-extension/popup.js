@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Open full Carbon web app with repo
   function openCarbonStudio(repoUrl) {
     chrome.storage.local.get({ webUrl: DEFAULT_WEB_URL }, (res) => {
-      const baseUrl = res.webUrl.replace(/\/+$/, '');
+      const baseUrl = (res.webUrl || DEFAULT_WEB_URL).replace(/\/+$/, '');
       const targetUrl = repoUrl ? `${baseUrl}/?repo=${encodeURIComponent(repoUrl)}` : baseUrl;
       chrome.tabs.create({ url: targetUrl });
     });
