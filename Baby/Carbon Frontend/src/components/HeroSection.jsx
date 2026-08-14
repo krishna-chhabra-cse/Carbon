@@ -2,12 +2,13 @@
 //  src/components/HeroSection.jsx
 //
 //  Cinematic Space-Themed Hero for Carbon.
-//  Communicates the core concept: "Lost in the Universe while learning to build".
+//  Enhanced with 21st.dev & Motionsites.ai interactive cues:
+//  Luminous ambient spotlight, ⌘K command trigger, and magnetic hover chips.
 // ============================================================
 
-import { Sparkles, Orbit, Compass, ArrowRight, Play, Terminal, Cpu } from 'lucide-react';
+import { Sparkles, Orbit, Compass, ArrowRight, Play, Terminal, Cpu, Command } from 'lucide-react';
 
-export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSample }) {
+export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSample, onOpenPalette }) {
   const SAMPLE_REPOS = [
     { name: 'expressjs/express', url: 'https://github.com/expressjs/express', tag: 'Backend' },
     { name: 'fastapi/fastapi', url: 'https://github.com/fastapi/fastapi', tag: 'Python' },
@@ -20,10 +21,24 @@ export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSa
       {/* Subtle Orbital Halo Glow */}
       <div className="hero-halo-glow" />
 
-      {/* Concept Badge */}
-      <div className="hero-top-badge">
-        <Sparkles size={14} className="sparkle-spin" />
-        <span>Learn to build, one project at a time</span>
+      {/* Concept Badge & Quick Command Trigger */}
+      <div className="hero-badge-cluster">
+        <div className="hero-top-badge">
+          <Sparkles size={14} className="sparkle-spin" />
+          <span>Learn to build, one project at a time</span>
+        </div>
+
+        {onOpenPalette && (
+          <button 
+            type="button" 
+            className="hero-cmd-shortcut-btn"
+            onClick={onOpenPalette}
+            title="Open Command Menu (Ctrl+K or ⌘K)"
+          >
+            <Command size={12} />
+            <span>Press <kbd className="hero-kbd">⌘K</kbd> to search</span>
+          </button>
+        )}
       </div>
 
       {/* Main Cinematic Title */}
@@ -33,7 +48,7 @@ export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSa
 
       {/* Subtitle */}
       <p className="hero-subtitle">
-        Paste any GitHub repo and let our AI break it down into visual flowcharts, interactive explanations, and video walkthroughs — so you actually understand how it works.
+        Paste any GitHub repo and let our multi-agent AI break it down into visual flowcharts, interactive explanations, and video walkthroughs — so you actually understand how it works.
       </p>
 
       {/* Feature Badges */}
@@ -50,6 +65,7 @@ export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSa
           type="button" 
           onClick={onAnalyzeClick} 
           className="btn-primary-cosmic"
+          aria-label="Analyze a Codebase"
         >
           <span>Analyze a Codebase</span>
           <ArrowRight size={18} />
@@ -59,6 +75,7 @@ export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSa
           type="button" 
           onClick={onExploreClick} 
           className="btn-secondary-cosmic"
+          aria-label="Explore Video Lessons"
         >
           <Compass size={18} />
           <span>Explore Videos</span>
@@ -75,6 +92,7 @@ export default function HeroSection({ onAnalyzeClick, onExploreClick, onSelectSa
               type="button"
               className="sample-repo-chip"
               onClick={() => onSelectSample(sample.url)}
+              aria-label={`Analyze sample repository ${sample.name}`}
             >
               <span className="chip-tag">{sample.tag}</span>
               <span className="chip-name">{sample.name}</span>

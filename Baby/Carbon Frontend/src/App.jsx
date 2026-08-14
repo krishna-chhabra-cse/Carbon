@@ -33,6 +33,7 @@ import ArchitectureDiagram from './components/ArchitectureDiagram';
 import ApiEndpoints from './components/ApiEndpoints';
 import BusinessLogic from './components/BusinessLogic';
 import CodebaseStudio from './components/CodebaseStudio';
+import CommandPalette from './components/CommandPalette';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
@@ -40,6 +41,7 @@ import './index.css';
 export default function App() {
   const [activeTab, setActiveTab] = useState('analyzer'); // 'analyzer' | 'explore' | 'quiz' | 'dashboard'
   const [repoUrl, setRepoUrl] = useState('');
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
@@ -58,6 +60,18 @@ export default function App() {
   });
 
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
+  // Global Cmd+K / Ctrl+K keyboard shortcut listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Read ?repo= from URL query params (for Chrome Extension & direct links)
   useEffect(() => {
@@ -208,7 +222,11 @@ export default function App() {
       <CosmicCanvas />
 
       {/* ── NAVIGATION BAR ── */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onOpenPalette={() => setPaletteOpen(true)}
+      />
 
       {/* ── MAIN CONTENT CONTAINER ── */}
       <main className="app-container">
@@ -225,6 +243,7 @@ export default function App() {
             setRepoUrl(sampleUrl);
             setActiveTab('analyzer');
           }}
+          onOpenPalette={() => setPaletteOpen(true)}
         />
 
         {/* ── TAB 1: WORKSPACE & REPOSITORY ANALYZER ── */}
@@ -364,6 +383,20 @@ export default function App() {
           analysisData={result}
         />
       )}
+
+      {/* ── 21ST.DEV / MOTIONSITES COMMAND PALETTE (⌘K) ── */}
+      <CommandPalette 
+        isOpen={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onNavigate={(tab) => {
+          setActiveTab(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onAnalyzeRepo={(target) => {
+          setRepoUrl(target);
+          triggerAnalyzeWithRepo(target);
+        }}
+      />
 
       {/* ── VERCEL REAL-TIME WEB ANALYTICS & SPEED INSIGHTS ── */}
       <Analytics />

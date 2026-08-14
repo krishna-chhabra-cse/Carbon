@@ -20,7 +20,7 @@ import {
   Film
 } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab }) {
+export default function Navbar({ activeTab, setActiveTab, onOpenPalette }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -90,6 +90,21 @@ export default function Navbar({ activeTab, setActiveTab }) {
 
         {/* ── RIGHT ACTION GROUP ── */}
         <div className="nav-actions">
+          {/* ⌘K Spotlight Trigger Button */}
+          {onOpenPalette && (
+            <button
+              type="button"
+              className="nav-search-btn"
+              onClick={onOpenPalette}
+              title="Open Command Palette (Ctrl+K or ⌘K)"
+              aria-label="Open Command Menu"
+            >
+              <Search size={14} color="#94a3b8" />
+              <span className="nav-search-label">Quick search...</span>
+              <kbd className="nav-kbd">⌘K</kbd>
+            </button>
+          )}
+
           {/* Live AI Mesh Badge */}
           <div className="ai-mesh-pill">
             <span className="live-pulse-dot"></span>
