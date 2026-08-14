@@ -27,82 +27,82 @@ const SPACE_FACTS = [
 export const VIDEOS = [
   // ── SPACE ──
   {
-    id: 'libKVRa074Q',
+    id: 'e-P5IFTqB98',
     title: "The Largest Black Hole in the Universe",
     duration: "11 min",
     category: "Space",
     chapters: [
-      { title: "1. What is the Event Horizon?", time: 0, description: "Understanding the boundary where gravity prevents anything from escaping." },
-      { title: "2. Stellar vs Supermassive Black Holes", time: 180, description: "How collapsed stars compare to the colossal engines at galactic centers." },
-      { title: "3. TON 618: The Ultimate Behemoth", time: 390, description: "A black hole so massive it holds 66 billion times the mass of our Sun." },
-      { title: "4. The Fate of Black Holes", time: 540, description: "How Hawking radiation will slowly evaporate black holes over trillions of years." }
+      { title: "1. The Scale of Space", time: 0, description: "Comparing planetary sizes to stellar-mass black holes." },
+      { title: "2. Supermassive Monsters", time: 180, description: "How colossal gravitational engines grow at galactic cores." },
+      { title: "3. TON 618: The Cosmic Titan", time: 390, description: "A black hole 66 billion times the mass of our Sun." },
+      { title: "4. The Ultimate Horizon", time: 540, description: "What happens when light itself cannot escape the boundary." }
     ],
     notes: {
-      takeaways: "Black holes are the most extreme gravitational objects in the universe, curving spacetime to infinity.",
+      takeaways: "Black holes represent the most extreme densities in physics, curving spacetime into infinite singularities.",
       points: [
-        "Stellar black holes form when giant stars collapse at the end of their lifecycle",
-        "Supermassive black holes anchor almost every galaxy, including the Milky Way",
-        "TON 618 is one of the largest structures ever discovered in cosmology"
+        "TON 618 is wider than our entire solar system combined",
+        "Supermassive black holes formed early in the universe's history",
+        "They illuminate surrounding matter through blazing accretion discs"
       ]
     }
   },
   {
-    id: 'udFxKZRy9fU',
-    title: "What If We Nuke The Moon?",
+    id: '3pAnRKD4raY',
+    title: "The Black Hole That Ate The Universe",
+    duration: "10 min",
+    category: "Space",
+    chapters: [
+      { title: "1. Gravitational Traps", time: 0, description: "How runaway accretion events absorb entire star systems." },
+      { title: "2. Spaghettification & Tidal Forces", time: 160, description: "Extreme stretching effects near the event horizon." },
+      { title: "3. Quasars & Cosmic Jets", time: 340, description: "Beams of relativistic plasma shooting across intergalactic space." },
+      { title: "4. The Era of Eternal Silence", time: 500, description: "The final epoch when only black holes remain." }
+    ],
+    notes: {
+      takeaways: "Gravitational forces near a singularity stretch matter into microscopic strands before consumption.",
+      points: [
+        "Quasars can outshine entire galaxies containing hundreds of billions of stars",
+        "Magnetic fields channel particles into jets traveling near the speed of light",
+        "Hawking radiation slowly evaporates all black holes over 10^100 years"
+      ]
+    }
+  },
+  {
+    id: 'qEfPBt9dU60',
+    title: "What If We Nuke a City?",
     duration: "9 min",
     category: "Space",
     chapters: [
-      { title: "1. Physics of Lunar Explosions", time: 0, description: "Why nuclear detonations in vacuum lack shockwaves and firestorms." },
-      { title: "2. Crater Formation & Ejecta", time: 150, description: "High-speed debris hurled into orbit and towards Earth." },
-      { title: "3. Effect on Earth's Tides", time: 320, description: "Examining if a nuclear strike could perturb the lunar orbital velocity." },
-      { title: "4. The Final Verdict", time: 460, description: "Why the Moon would remain largely unharmed despite the dramatic explosion." }
+      { title: "1. The Initial Flash", time: 0, description: "Thermal radiation and instant ionization of matter." },
+      { title: "2. The Shockwave & Blast", time: 140, description: "Supersonic overpressure waves destroying infrastructure." },
+      { title: "3. Firestorms & Fallout", time: 310, description: "Convection storms drawing oxygen and distributing radioactive debris." },
+      { title: "4. Planetary Consequences", time: 480, description: "Atmospheric particulate blocking sunlight and cooling the planet." }
     ],
     notes: {
-      takeaways: "Without an atmosphere, nuclear explosions produce bright radiation flash and cratering, but no shockwaves.",
+      takeaways: "Nuclear physics demonstrates the enormous energy bound within atomic nuclei.",
       points: [
-        "No air means no acoustic shockwave or mushroom cloud",
-        "The Moon's mass is far too huge to be shifted by human weapons",
-        "Debris could create a temporary meteor storm in Earth's atmosphere"
+        "Thermal pulses travel at the speed of light, igniting fires instantly",
+        "Blast waves cause the majority of direct mechanical destruction",
+        "International treaties aim to prevent atmospheric detonations"
       ]
     }
   },
   {
     id: 'sNhhvQGsMEc',
-    title: "The Last Human on Mars",
-    duration: "10 min",
+    title: "The Fermi Paradox — Where Are All The Aliens?",
+    duration: "11 min",
     category: "Space",
     chapters: [
-      { title: "1. The Red Horizon", time: 0, description: "The silent and desolate landscape of human settlement on Mars." },
-      { title: "2. Life Inside the Biodome", time: 160, description: "Recycling oxygen, harvesting subsurface ice, and growing crops." },
-      { title: "3. Facing Martian Dust Storms", time: 340, description: "Planet-wide dust storms blocking solar power for months." },
-      { title: "4. The Long Journey Forward", time: 510, description: "What the future holds for interplanetary civilization." }
+      { title: "1. The Cosmic Scale", time: 0, description: "Billions of star systems older than our Sun — so where is everybody?" },
+      { title: "2. The Great Filter Hypothesis", time: 200, description: "A barrier so insurmountable that almost no intelligence survives." },
+      { title: "3. Are We Early or Alone?", time: 410, description: "Evaluating whether humanity has already crossed the filter." },
+      { title: "4. Galactic Civilizations", time: 580, description: "Kardashev Scale Type I, II, and III energy civilizations." }
     ],
     notes: {
-      takeaways: "Colonizing Mars requires closed-loop ecological life support and protection from high cosmic radiation.",
+      takeaways: "The Fermi Paradox highlights the surprising lack of observable extraterrestrial civilizations in an ancient universe.",
       points: [
-        "Atmospheric pressure on Mars is less than 1% of Earth's",
-        "Subsurface regolith provides natural radiation shielding",
-        "Terraforming requires centuries of artificial atmosphere thickening"
-      ]
-    }
-  },
-  {
-    id: 'h3GZ05G5kQY',
-    title: "Hubble Space Telescope Tour",
-    duration: "13 min",
-    category: "Space",
-    chapters: [
-      { title: "1. Launch of the Great Observatory", time: 0, description: "Deploying Hubble above the turbulent distortions of Earth's atmosphere." },
-      { title: "2. The Pillars of Creation", time: 210, description: "Peer into stellar nurseries where new solar systems are born." },
-      { title: "3. Deep Field Galaxies", time: 420, description: "Looking back 13 billion years into the infancy of the cosmic web." },
-      { title: "4. Legacy & The Next Generation", time: 630, description: "How Hubble paved the way for the James Webb Space Telescope." }
-    ],
-    notes: {
-      takeaways: "Hubble revolutionized human understanding of the universe with over 1.5 million observations.",
-      points: [
-        "Pinpointed the age of the universe to ~13.8 billion years",
-        "Confirmed that supermassive black holes exist at galactic cores",
-        "Operates in low Earth orbit at ~540 kilometers altitude"
+        "The Great Filter could either be in our evolutionary past or our near future",
+        "Megastructures like Dyson Spheres would leave distinct infrared waste heat",
+        "Radio silence may suggest intelligent species exist only fleetingly"
       ]
     }
   },
@@ -114,241 +114,241 @@ export const VIDEOS = [
     duration: "29 min",
     category: "Universe",
     chapters: [
-      { title: "1. The Stelliferous Era", time: 0, description: "The golden age of stars, galaxies, and burgeoning life across the universe." },
-      { title: "2. The Degenerate Era", time: 480, description: "Dead stars, white dwarfs, and black holes dominate the cooling cosmos." },
-      { title: "3. The Black Hole Era", time: 1020, description: "Black holes become the only remaining celestial structures in deep space." },
-      { title: "4. Heat Death & The Dark Era", time: 1440, description: "Entropy reaches maximum and the universe enters eternal quietness." }
+      { title: "1. The Stelliferous Era", time: 0, description: "The golden age of stars, galaxies, and biological life." },
+      { title: "2. The Degenerate Era", time: 480, description: "Dead stars, white dwarfs, and cold iron spheres dominate the cosmos." },
+      { title: "3. The Black Hole Era", time: 1020, description: "Black holes become the only remaining celestial bodies in the dark." },
+      { title: "4. Heat Death & The Final Silence", time: 1440, description: "Maximum entropy is achieved as the physical universe rests forever." }
     ],
     notes: {
-      takeaways: "A sweeping cosmological journey across billions of years to the ultimate end of all matter.",
+      takeaways: "A sweeping journey across trillions of years tracking the complete evolution and final fate of matter.",
       points: [
-        "Stars will cease forming within approximately 100 trillion years",
+        "Star formation will cease in approximately 100 trillion years",
         "Supermassive black holes slowly evaporate via quantum Hawking radiation",
-        "Heat death represents the maximum entropy state of the physical universe"
+        "Heat death represents the maximum entropy state of the physical cosmos"
       ]
     }
   },
   {
-    id: 'ZL4yYHdDSWs',
-    title: "Where Are All The Aliens? (Fermi Paradox)",
-    duration: "11 min",
-    category: "Universe",
-    chapters: [
-      { title: "1. The Scale of the Cosmos", time: 0, description: "Billions of star systems older than our Sun — so where is everyone?" },
-      { title: "2. The Great Filter Concept", time: 200, description: "A barrier so difficult that almost no species survives it." },
-      { title: "3. Are We First or Alone?", time: 410, description: "Evaluating whether humanity has already passed the Great Filter." },
-      { title: "4. Kardashev Scale Civilizations", time: 580, description: "Type I, II, and III civilizations harnessing planetary and galactic energy." }
-    ],
-    notes: {
-      takeaways: "The Fermi Paradox asks why we haven't seen signs of alien civilizations despite the universe's vastness.",
-      points: [
-        "The Great Filter could either be behind us (origin of life) or ahead of us (self-destruction)",
-        "Dyson spheres would leave unmistakable infrared thermal signatures",
-        "Radio silence may indicate intelligent life is exceedingly rare or brief"
-      ]
-    }
-  },
-  {
-    id: 'P5_Msrdg3Hk',
-    title: "All Nuclear Bombs Detonated At Once",
-    duration: "11 min",
-    category: "Universe",
-    chapters: [
-      { title: "1. Global Arsenal Assessment", time: 0, description: "Calculating the total yield of ~15,000 nuclear warheads on Earth." },
-      { title: "2. Ground Zero & The Firestorm", time: 190, description: "A fireball 50 kilometers wide destroying the surrounding region." },
-      { title: "3. Atmospheric Fallout & Winter", time: 420, description: "Soot injected into the stratosphere blocking sunlight for years." },
-      { title: "4. Biosphere Rebound", time: 560, description: "How life slowly recovers across geological timescales." }
-    ],
-    notes: {
-      takeaways: "Simultaneous nuclear explosion would catastrophically impact Earth's climate and ecosystems.",
-      points: [
-        "Thermal radiation causes widespread wildfires and particulate clouds",
-        "Stratospheric soot produces global cooling and agricultural failure",
-        "Planetary recovery takes thousands to millions of years"
-      ]
-    }
-  },
-  {
-    id: 'Iy7NzjCmUf0',
-    title: "The Egg — A Cosmic Perspective",
+    id: 'h6fcK_fRYaI',
+    title: "The Egg — A Short Story",
     duration: "8 min",
     category: "Universe",
     chapters: [
       { title: "1. The Crossing", time: 0, description: "Awakening in the realm between lifetimes." },
-      { title: "2. Meeting the Cosmic Guide", time: 130, description: "A dialogue on the purpose of mortal existence." },
-      { title: "3. One Consciousness Across Time", time: 280, description: "Discovering that every human who ever lived is the same soul." },
-      { title: "4. Hatching the Cosmic Egg", time: 410, description: "Growing through every possible experience to become a universal being." }
+      { title: "2. Meeting the Cosmic Guide", time: 130, description: "A dialogue on the purpose and nature of mortal consciousness." },
+      { title: "3. One Soul Across Time", time: 280, description: "Discovering that every human who ever lived is the same observer." },
+      { title: "4. Hatching the Cosmic Egg", time: 410, description: "Maturing through all human experiences into a universal entity." }
     ],
     notes: {
-      takeaways: "A philosophical animation exploring empathy, interconnectedness, and universal consciousness.",
+      takeaways: "An iconic philosophical allegory exploring universal empathy, shared consciousness, and the cosmic continuum.",
       points: [
-        "Every act of kindness or cruelty is fundamentally done unto oneself",
+        "Every act of kindness or cruelty is fundamentally experienced by all",
         "Non-linear time allows infinite simultaneous perspectives",
-        "Universal empathy is the ultimate maturation of awareness"
+        "Universal empathy is the ultimate maturation of human consciousness"
+      ]
+    }
+  },
+  {
+    id: 'GoW8Tf7hTGA',
+    title: "The True Scale of the Universe",
+    duration: "11 min",
+    category: "Universe",
+    chapters: [
+      { title: "1. From Planck Length to Human Scale", time: 0, description: "Starting at the smallest theoretical length in quantum physics." },
+      { title: "2. Planets & Star Systems", time: 190, description: "Comparing the solar system to neighboring star clusters." },
+      { title: "3. The Milky Way & Local Group", time: 380, description: "Our galaxy spanning 100,000 light years across." },
+      { title: "4. The Observable Cosmic Web", time: 540, description: "Billions of galaxies interconnected in colossal cosmic filaments." }
+    ],
+    notes: {
+      takeaways: "The scale of the universe spans over 60 orders of magnitude from quantum strings to the cosmic horizon.",
+      points: [
+        "The observable universe is roughly 93 billion light-years in diameter",
+        "Galaxies organize into filaments surrounding colossal voids of empty space",
+        "Humanity exists precisely in the middle logarithmic range of scale"
+      ]
+    }
+  },
+  {
+    id: 'dFCbJmgeHmA',
+    title: "What is Something? (The Fabric of Reality)",
+    duration: "10 min",
+    category: "Universe",
+    chapters: [
+      { title: "1. The Illusion of Solidity", time: 0, description: "Why atoms are 99.999999999% empty space." },
+      { title: "2. Quantum Fields", time: 170, description: "Particles as localized vibrations in universal underlying fields." },
+      { title: "3. Virtual Particles & Vacuum Energy", time: 360, description: "How empty space constantly bubbles with quantum fluctuations." },
+      { title: "4. The Nature of Existence", time: 510, description: "How information and energy form the foundation of reality." }
+    ],
+    notes: {
+      takeaways: "At fundamental quantum levels, physical matter dissolves into vibrating fields and informational states.",
+      points: [
+        "Solid objects never truly touch — electromagnetic repulsion prevents contact",
+        "Quantum electrodynamics describes particles as excitations of underlying fields",
+        "The vacuum of space is filled with non-zero baseline energy"
       ]
     }
   },
 
   // ── WILDLIFE ──
   {
-    id: 'V3pdpzEae4k',
-    title: "Seven Worlds, One Planet",
-    duration: "8 min",
-    category: "Wildlife",
-    chapters: [
-      { title: "1. Antarctica & The Polar Seas", time: 0, description: "Surviving the coldest, windiest continent on Earth." },
-      { title: "2. Asia — The Land of Extremes", time: 140, description: "From frozen Siberian forests to tropical Indonesian jungles." },
-      { title: "3. South America — Canopy Wonders", time: 290, description: "The richest biodiversity hotspot on the globe." },
-      { title: "4. Africa — Great Migrations", time: 410, description: "Dramatic predator-prey dynamics across the open savannas." }
-    ],
-    notes: {
-      takeaways: "Millions of years of continental drift shaped the unique wildlife ecosystems across all seven continents.",
-      points: [
-        "Geographic isolation drives unique evolutionary adaptations",
-        "Predators and prey maintain delicate environmental equilibrium",
-        "Protecting global wildlife corridors preserves biodiversity"
-      ]
-    }
-  },
-  {
-    id: 'f7jVk2F5u0M',
-    title: "Planet Earth II — Wildlife Spectacles",
+    id: 'B3OjfK0t1XM',
+    title: "Planet Earth II: Racer Snakes vs Marine Iguana",
     duration: "5 min",
     category: "Wildlife",
     chapters: [
-      { title: "1. Island Survival", time: 0, description: "Marine iguanas and racer snakes in a legendary chase." },
-      { title: "2. Mountain Predators", time: 80, description: "Snow leopards navigating treacherous Himalayan cliffs." },
-      { title: "3. Jungle Ecosystems", time: 160, description: "Courtship dances and canopy competition in dense rainforests." },
-      { title: "4. Urban Adapters", time: 240, description: "Leopards and monkeys thriving inside modern cities." }
+      { title: "1. The Volcanic Nursery", time: 0, description: "Hatchling marine iguanas emerging on Fernandina Island." },
+      { title: "2. The Ambush in the Rocks", time: 75, description: "Dozens of Galápagos racer snakes reacting to movement." },
+      { title: "3. The Legendary Escape", time: 150, description: "A heart-stopping chase across razor-sharp volcanic lava." },
+      { title: "4. Sanctuary on the Cliffs", time: 230, description: "Reaching safety with the adult colony by the ocean." }
     ],
     notes: {
-      takeaways: "High-definition cinematography capturing rare and breathtaking animal behaviors worldwide.",
+      takeaways: "One of the most famous natural history sequences ever filmed, showcasing evolutionary agility.",
       points: [
-        "Animals show remarkable ingenuity adapting to extreme terrains",
-        "Urban environments create new ecological niches",
-        "Preserving habitats is vital for endangered predator populations"
+        "Marine iguanas are the only lizard species that forage in the ocean",
+        "Racer snakes hunt cooperatively in high numbers during hatching season",
+        "High-frame-rate cameras captured the split-second maneuvers in detail"
       ]
     }
   },
   {
-    id: 'r9PeYPHdpNo',
-    title: "Deep Sea Wonders & Marine Life",
+    id: '6v2L2UGZJAM',
+    title: "Deep Sea Bioluminescence in 4K",
     duration: "10 min",
     category: "Wildlife",
     chapters: [
-      { title: "1. The Twilight Zone", time: 0, description: "Faint sunlight filtering through the ocean depths." },
-      { title: "2. Living Lights (Bioluminescence)", time: 170, description: "Glowing creatures using light to hunt, hide, and communicate." },
-      { title: "3. Hydrothermal Vent Oases", time: 360, description: "Chemosynthetic ecosystems thriving in superheated, sunless water." },
-      { title: "4. The Abyssal Plains", time: 510, description: "Strange and magnificent deep-sea predators surviving extreme pressure." }
+      { title: "1. The Midnight Zone", time: 0, description: "Descending 1,000 meters beneath the surface into perpetual darkness." },
+      { title: "2. Living Cold Light", time: 160, description: "Luciferin reactions producing zero-heat chemical illumination." },
+      { title: "3. Siphonophores & Comb Jellies", time: 340, description: "Colonial organisms pulsing rainbow diffraction patterns." },
+      { title: "4. Camouflage & Counter-Illumination", time: 490, description: "Using light to blend in with the faint surface water above." }
     ],
     notes: {
-      takeaways: "Over 80% of the ocean remains unmapped and unexplored, home to bizarre and resilient life forms.",
+      takeaways: "Over 75% of deep-sea creatures produce their own light for hunting, mating, and camouflage.",
       points: [
-        "Creatures survive crushing pressures exceeding 1,000 atmospheres",
-        "Chemosynthesis sustains life independent of solar energy",
-        "Bioluminescence provides camouflage against predators from below"
+        "Bioluminescence is the most common form of communication on Earth",
+        "Creatures produce specialized lenses and reflectors to focus light beams",
+        "Deep-sea ecosystems thrive under thousands of pounds of hydrostatic pressure"
       ]
     }
   },
   {
-    id: 'p1mGImE4b98',
-    title: "Dynasties: Greatest Wildlife Stories",
-    duration: "6 min",
+    id: 'JkaxUblCGz0',
+    title: "Ants: The Ultimate Superorganisms",
+    duration: "11 min",
     category: "Wildlife",
     chapters: [
-      { title: "1. Primate Leadership", time: 0, description: "Chimpanzee troop politics and territorial defense." },
-      { title: "2. Polar Endurance", time: 100, description: "Emperor penguins huddling together through Antarctic winters." },
-      { title: "3. Lion Pride Sovereignty", time: 200, description: "A lioness defending her cubs against rival prides." },
-      { title: "4. Painted Wolf Packs", time: 300, description: "Cooperative hunting tactics across the African floodplains." }
+      { title: "1. The Colony Mind", time: 0, description: "How decentralized chemical trails produce emergent intelligence." },
+      { title: "2. Specialized Castes", time: 180, description: "Soldiers, foragers, and nursery workers operating in harmony." },
+      { title: "3. Global Argentine Ant Mega-Colonies", time: 370, description: "A single supercolony spanning thousands of miles across continents." },
+      { title: "4. Agriculture & Architecture", time: 530, description: "Leafcutters cultivating fungal gardens with climate-controlled ventilation." }
     ],
     notes: {
-      takeaways: "Follows families of animals fighting for the survival of their bloodlines against all odds.",
+      takeaways: "Ant colonies function as unified superorganisms, accomplishing architectural feats through collective action.",
       points: [
-        "Social bonding and family cooperation are crucial for apex survival",
-        "Maternal investment ensures the continuation of fragile species",
-        "Landscape fragmentation challenges traditional migration routes"
+        "Ants comprise roughly 20% of all terrestrial animal biomass on Earth",
+        "Argentine ants form global supercolonies where members never fight each other",
+        "Leafcutter ants practiced agriculture 50 million years before humans"
+      ]
+    }
+  },
+  {
+    id: '7W33HRc1A6c',
+    title: "The Immune System & Cellular Warfare",
+    duration: "11 min",
+    category: "Wildlife",
+    chapters: [
+      { title: "1. The Microscopic Battlefield", time: 0, description: "Viruses and bacteria invading cellular boundaries." },
+      { title: "2. Macrophages & Neutrophils", time: 170, description: "The frontline devourers hunting and dissolving intruders." },
+      { title: "3. Dendritic Cells & The Alarm", time: 350, description: "Carrying antigen blueprints to the lymph node command centers." },
+      { title: "4. T-Cells & Targeted Weaponry", time: 520, description: "Deploying custom molecular keys to neutralize pathogens." }
+    ],
+    notes: {
+      takeaways: "The biological immune system is a complex decentralized army defending living organisms 24/7.",
+      points: [
+        "Trillions of immune cells coordinate without any centralized brain",
+        "Memory B-cells retain defenses for decades against repeat infections",
+        "Complement proteins puncture bacterial walls within milliseconds"
       ]
     }
   },
 
   // ── EARTH ──
   {
-    id: '3w58Z-E_K0s',
-    title: "Earth from Space — 4K Ultra HD Views",
-    duration: "15 min",
-    category: "Earth",
-    chapters: [
-      { title: "1. Day & Night Terminators", time: 0, description: "The graceful boundary between sunrise and sunset viewed from orbit." },
-      { title: "2. Auroras from Above", time: 250, description: "Curtains of green and purple light dancing over polar icecaps." },
-      { title: "3. Oceanic Storms & Cyclones", time: 500, description: "Gigantic atmospheric spirals forming over warm ocean currents." },
-      { title: "4. City Lights Across Continents", time: 750, description: "Human civilization glowing like constellations across the night side." }
-    ],
-    notes: {
-      takeaways: "Viewing Earth from orbit reveals a fragile, boundary-less oasis floating in cosmic stillness.",
-      points: [
-        "The ISS travels at 28,000 km/h, completing an orbit every 90 minutes",
-        "Earth's atmosphere is a razor-thin protective veil against the void",
-        "The Overview Effect fundamentally shifts astronauts' perspective on unity"
-      ]
-    }
-  },
-  {
-    id: 'f4s9p-ZkZ6U',
-    title: "Volcanoes 101",
+    id: 'VNGUdObDoLk',
+    title: "Volcanoes 101 | National Geographic",
     duration: "5 min",
     category: "Earth",
     chapters: [
-      { title: "1. Plate Tectonic Engines", time: 0, description: "How subduction zones and hot spots generate magma beneath Earth's crust." },
+      { title: "1. Plate Tectonic Engines", time: 0, description: "How subduction zones and mantle plumes generate magma." },
       { title: "2. Shield vs Stratovolcanoes", time: 80, description: "Effusive basalt flows versus explosive pyroclastic eruptions." },
-      { title: "3. The Ring of Fire", time: 160, description: "The Pacific rim horse-shoe containing 75% of Earth's active volcanoes." },
-      { title: "4. Planetary Renewal", time: 240, description: "How volcanic ash creates some of the most fertile soils on the planet." }
+      { title: "3. The Pacific Ring of Fire", time: 160, description: "The horse-shoe rim containing 75% of Earth's active volcanoes." },
+      { title: "4. Planetary Renewal", time: 240, description: "How volcanic minerals create fertile soils across continents." }
     ],
     notes: {
-      takeaways: "Volcanoes are the cooling valves of Earth, cycling mineral nutrients and renewing the planetary surface.",
+      takeaways: "Volcanoes act as planetary thermal pressure valves, recycling deep crustal minerals into the biosphere.",
       points: [
         "Over 1,500 active volcanoes exist across terrestrial Earth",
-        "Pyroclastic flows can exceed speeds of 700 km/h with 1,000°C heat",
-        "Volcanic degassing helped build Earth's early atmosphere and oceans"
+        "Pyroclastic flows can reach speeds of 700 km/h with 1,000°C temperatures",
+        "Volcanic degassing was essential in creating Earth's original atmosphere"
       ]
     }
   },
   {
-    id: '7Mv6iJ6XjOQ',
-    title: "Aurora Borealis in Real Time",
-    duration: "5 min",
+    id: '7GElP4YdrBE',
+    title: "The Deep Ocean Mariana Trench",
+    duration: "11 min",
     category: "Earth",
     chapters: [
-      { title: "1. Solar Wind Collisions", time: 0, description: "Charged solar particles streaming across 150 million kilometers to Earth." },
-      { title: "2. The Magnetic Shield", time: 80, description: "Earth's magnetosphere funneling ions towards the polar regions." },
-      { title: "3. Chemistry of Celestial Colors", time: 160, description: "Excited oxygen producing green and red; nitrogen glowing purple." },
-      { title: "4. The Northern Lights Spectacle", time: 240, description: "Real-time 4K footage of dancing ribbon auroras in Norway." }
+      { title: "1. Subduction at the Trench", time: 0, description: "The Pacific tectonic plate sinking beneath the Mariana Plate." },
+      { title: "2. Challenger Deep: 11,000m Down", time: 190, description: "Reaching the lowest point on the surface of planet Earth." },
+      { title: "3. Life Under Extreme Hydrostatic Pressure", time: 380, description: "Snailfish and amphipods thriving in total darkness." },
+      { title: "4. The Abyssal Frontier", time: 540, description: "Why we know more about the surface of Mars than our deep oceans." }
     ],
     notes: {
-      takeaways: "Auroras are visual proof of Earth's magnetic field protecting our atmosphere from the solar wind.",
+      takeaways: "The Mariana Trench reaches depths of nearly 11 kilometers, with water pressures exceeding 1,000 atmospheres.",
       points: [
-        "Green auroras occur around 100 km altitude when oxygen is excited",
-        "Red auroras occur at higher altitudes above 200 km",
-        "Solar maximums generate intense geomagnetic storm events"
+        "Challenger Deep is deeper than Mount Everest is tall",
+        "Creatures produce piezolyte proteins that prevent cell membranes from freezing under pressure",
+        "Hydrothermal vents support chemosynthetic ecosystems independent of sunlight"
       ]
     }
   },
   {
-    id: '1laU9W36KzI',
-    title: "Blue Planet II: Ocean Secrets",
-    duration: "6 min",
+    id: 'R7p-nPg8t_g',
+    title: "Why Earth is So Special (Goldilocks Zone)",
+    duration: "10 min",
     category: "Earth",
     chapters: [
-      { title: "1. Coral Metropolis", time: 0, description: "Microscopic polyps building structures visible from space." },
-      { title: "2. The Kelp Underwater Forest", time: 90, description: "Rapidly growing kelp providing sanctuary and capturing carbon." },
-      { title: "3. Open Ocean Migrators", time: 190, description: "Whales and sea turtles journeying across vast ocean basins." },
-      { title: "4. The Blue Heart of Earth", time: 280, description: "Why healthy oceans are essential for regulating global climate." }
+      { title: "1. The Habitable Zone", time: 0, description: "The precise distance from the Sun allowing liquid water to pool." },
+      { title: "2. The Molten Dynamo Core", time: 160, description: "Liquid iron generating the magnetosphere that protects our air." },
+      { title: "3. The Stabilizing Moon", time: 330, description: "How our large satellite locks Earth's axial tilt and seasonal stability." },
+      { title: "4. The Carbon Cycle & Biosphere", time: 500, description: "Living systems actively regulating atmospheric temperatures." }
     ],
     notes: {
-      takeaways: "The global ocean covers 71% of Earth's surface and produces over half the oxygen we breathe.",
+      takeaways: "Earth's unique confluence of magnetic shield, liquid water, large moon, and active tectonics created an enduring oasis.",
       points: [
-        "Coral reefs support 25% of all marine species despite covering <1% of the ocean floor",
-        "Oceans absorb over 90% of excess heat trapped by greenhouse gases",
-        "Phytoplankton in the ocean generate more oxygen than all rainforests combined"
+        "The magnetosphere deflects high-energy solar storms into beautiful auroras",
+        "Plate tectonics acts as a natural carbon recycling mechanism",
+        "The Moon prevents chaotic wobbles in Earth's axial tilt"
+      ]
+    }
+  },
+  {
+    id: 'yWO-cvGETRQ',
+    title: "What If We Detonated a Nuclear Bomb Under the Ocean?",
+    duration: "9 min",
+    category: "Earth",
+    chapters: [
+      { title: "1. Hydrodynamic Blast", time: 0, description: "Water resistance containing the expanding vapor bubble." },
+      { title: "2. The Superheated Gas Cavity", time: 140, description: "The bubble oscillating and collapsing under extreme hydrostatic pressure." },
+      { title: "3. Underwater Shockwaves", time: 310, description: "Sound and pressure waves traveling for thousands of kilometers through water." },
+      { title: "4. Oceanic Aftermath", time: 470, description: "Examining why the ocean easily absorbs the energy with localized effects." }
+    ],
+    notes: {
+      takeaways: "The immense density and pressure of the deep ocean dampens surface effects of high-energy detonations.",
+      points: [
+        "Water is nearly incompressible, reflecting shockwaves with high kinetic transfer",
+        "Deep-water cavitation creates rapid compression-expansion oscillations",
+        "Marine ecosystems absorb and dilute dissolved radiation across massive volumes"
       ]
     }
   }
@@ -413,10 +413,15 @@ export default function VideoGallery({ onPlayVideo }) {
           >
             <div className="video-thumbnail">
               <img 
-                src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} 
+                src={`https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`} 
                 alt={video.title} 
                 className="video-thumb-img" 
                 loading="lazy"
+                onError={(e) => {
+                  if (!e.target.src.includes('mqdefault')) {
+                    e.target.src = `https://i.ytimg.com/vi/${video.id}/mqdefault.jpg`;
+                  }
+                }}
               />
               <div className="video-play-overlay">
                 <div className="play-circle">
