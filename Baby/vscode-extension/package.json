@@ -2,7 +2,7 @@
   "name": "carbon-ai",
   "displayName": "Carbon — AI Architecture & Codebase Intelligence",
   "description": "Instant codebase intelligence in VS Code: interactive architecture flowcharts, component breakdown, and AI video explanations.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "krishcarbon",
   "pricing": "Free",
   "icon": "media/icon.png",
@@ -50,8 +50,8 @@
       "properties": {
         "carbon.backendUrl": {
           "type": "string",
-          "default": "http://localhost:3002",
-          "description": "HTTPS URL of your deployed Carbon Backend server (or http://localhost:3002 for local development)."
+          "default": "https://carbons.codes",
+          "description": "HTTPS URL of the Carbon AI Cloud Server (defaults to https://carbons.codes, or set to http://localhost:3002 for local development)."
         }
       }
     }
