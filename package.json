@@ -1,0 +1,10 @@
+{
+  "name": "carbon",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm --prefix \"Baby/Carbon Frontend\" run dev",
+    "build": "npm --prefix \"Baby/Carbon Frontend\" install && npm --prefix \"Baby/Carbon Frontend\" run build",
+    "preview": "npm --prefix \"Baby/Carbon Frontend\" run preview"
+  }
+}
