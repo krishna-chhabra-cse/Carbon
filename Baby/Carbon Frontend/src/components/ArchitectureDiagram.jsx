@@ -1,37 +1,32 @@
 import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import { Copy, Check, Code, ExternalLink, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
-// Initialize mermaid settings with Nord (arctic blues and grays)
+// Initialize mermaid settings with Nord / Deep Space theme
 mermaid.initialize({
   startOnLoad: false,
   theme: 'base',
   securityLevel: 'loose',
-  fontFamily: 'Inter, sans-serif',
+  fontFamily: 'Inter, system-ui, sans-serif',
   themeVariables: {
-    primaryColor: '#3b4252',
-    primaryTextColor: '#eceff4',
-    primaryBorderColor: '#88c0d0',
-    lineColor: '#81a1c1',
-    textColor: '#eceff4',
-    mainBkg: '#3b4252',
-    nodeBorder: '#88c0d0',
-    clusterBkg: 'rgba(67, 76, 94, 0.4)',
-    clusterBorder: '#81a1c1'
+    primaryColor: '#0f172a',
+    primaryTextColor: '#f8fafc',
+    primaryBorderColor: '#38bdf8',
+    lineColor: '#38bdf8',
+    textColor: '#f8fafc',
+    mainBkg: '#090d16',
+    nodeBorder: '#38bdf8',
+    clusterBkg: 'rgba(15, 23, 42, 0.75)',
+    clusterBorder: '#818cf8',
+    edgeLabelBackground: '#0b1120',
+    tertiaryColor: '#1e293b'
   }
 });
 
-/**
- * Split a string containing multiple --> connections into individual lines.
- * 
- * Uses [\w.-]+ for node IDs (not \S+ which breaks at spaces inside brackets)
- * and \[[^\]]*\] for optional bracket labels (correctly handles spaces inside).
- */
 function splitConnections(str) {
   if (!str.trim()) return [];
 
-  // A node is: word-chars (plus dots/hyphens), optionally followed by [any text until ]
   const nodePattern = '[\\w.-]+(?:\\[[^\\]]*\\])?';
-  // An arrow is: --> optionally followed by |label text|
   const arrowPattern = '-->(?:\\|[^|]*\\|)?';
 
   const fullPattern = new RegExp(
@@ -44,12 +39,10 @@ function splitConnections(str) {
     matches.push(`    ${m[1]} ${m[2]} ${m[3]}`);
   }
 
-  // If no connections found, return the original line (might be a standalone node)
   if (matches.length === 0) {
     const standaloneNode = str.trim().match(/^[\w.-]+(?:\[[^\]]*\])?$/);
     if (standaloneNode) return [`    ${str.trim()}`];
 
-    // Handle multiple standalone nodes on the same line like "E[Routes] F[Middleware]"
     if (!str.includes('-->')) {
       const multipleNodesPattern = new RegExp(`(${nodePattern})`, 'g');
       const nodes = str.match(multipleNodesPattern);
@@ -64,28 +57,18 @@ function splitConnections(str) {
   return matches;
 }
 
-/**
- * Sanitize Mermaid diagram string from Gemini.
- */
 function sanitizeMermaid(raw) {
   let chart = raw.trim();
 
-  // 1. Strip markdown code fences
   chart = chart.replace(/^```mermaid\s*/i, '');
   chart = chart.replace(/^```\s*/i, '');
   chart = chart.replace(/```\s*$/i, '');
-
-  // 2. Convert literal \n to real newlines
   chart = chart.replace(/\\n/g, '\n');
 
-  // 3. Flatten into one string for re-parsing
   let flat = chart.split('\n').map(l => l.trim()).filter(l => l.length > 0).join(' ');
-
-  // 4. Insert newlines before/after Mermaid keywords
   flat = flat.replace(/\s+(subgraph\s)/gi, '\n$1');
   flat = flat.replace(/\s+(end)\b/gi, '\n$1');
 
-  // 5. Process line by line
   let lines = flat.split('\n');
   const result = [];
   let openSubgraphs = 0;
@@ -94,20 +77,17 @@ function sanitizeMermaid(raw) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    // "graph TD" — keep as is
     if (/^graph\s/i.test(trimmed)) {
       result.push(trimmed);
       continue;
     }
 
-    // "end" — close subgraph
     if (/^end$/i.test(trimmed)) {
       if (openSubgraphs > 0) openSubgraphs--;
       result.push('end');
       continue;
     }
 
-    // "subgraph Name ..." — extract name, process remaining content
     const subMatch = trimmed.match(/^(subgraph\s+[\w.-]+)\s*(.*)/i);
     if (subMatch) {
       openSubgraphs++;
@@ -118,17 +98,14 @@ function sanitizeMermaid(raw) {
       continue;
     }
 
-    // Regular line — split connections
     result.push(...splitConnections(trimmed));
   }
 
-  // 6. Close any unclosed subgraphs
   while (openSubgraphs > 0) {
     result.push('end');
     openSubgraphs--;
   }
 
-  // 7. Remove parentheses/curly braces from inside bracket labels
   const cleaned = result.map(line => {
     return line.replace(/\[([^\]]*)\]/g, (_match, label) => {
       const safe = label.replace(/[(){}]/g, '');
@@ -136,12 +113,8 @@ function sanitizeMermaid(raw) {
     });
   });
 
-  const final = cleaned.join('\n');
-  console.log("Sanitized Mermaid:\n", final);
-  return final;
+  return cleaned.join('\n');
 }
-
-import { Copy, Check, Code, ExternalLink } from 'lucide-react';
 
 export default function ArchitectureDiagram({ chart }) {
   const containerRef = useRef(null);
@@ -149,6 +122,7 @@ export default function ArchitectureDiagram({ chart }) {
   const [rawChart, setRawChart] = useState(null);
   const [showRaw, setShowRaw] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     if (chart && containerRef.current) {
@@ -186,72 +160,95 @@ export default function ArchitectureDiagram({ chart }) {
   if (!chart) return null;
 
   return (
-    <div className="mermaid-container animate-fade-in" style={{ marginTop: '16px' }}>
-      {/* Diagram Toolbar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '16px',
-        paddingBottom: '12px',
-        borderBottom: '1px solid var(--panel-border)',
-        flexWrap: 'wrap',
-        gap: '8px'
-      }}>
-        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-          Interactive Flowchart Visualization
+    <div className="mermaid-studio-wrapper animate-fade-in">
+      {/* Diagram Action Bar */}
+      <div className="diagram-action-bar">
+        <div className="diagram-badge">
+          <span className="live-dot" /> Interactive System Topology
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        
+        <div className="diagram-btn-group">
+          {/* Zoom controls */}
+          <button
+            type="button"
+            onClick={() => setZoomLevel(prev => Math.min(prev + 0.15, 1.8))}
+            className="btn-diagram-tool"
+            title="Zoom in"
+          >
+            <ZoomIn size={13} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomLevel(prev => Math.max(prev - 0.15, 0.6))}
+            className="btn-diagram-tool"
+            title="Zoom out"
+          >
+            <ZoomOut size={13} />
+          </button>
+          {zoomLevel !== 1 && (
+            <button
+              type="button"
+              onClick={() => setZoomLevel(1)}
+              className="btn-diagram-tool"
+              title="Reset zoom"
+            >
+              <RotateCcw size={13} />
+            </button>
+          )}
+
+          <div className="tool-divider" />
+
           <button
             type="button"
             onClick={handleCopy}
-            className="btn-outline"
-            style={{ padding: '6px 12px', fontSize: '12px', height: 'auto' }}
+            className="btn-diagram-tool"
           >
-            {copied ? <Check size={14} color="#22c55e" /> : <Copy size={14} />}
-            {copied ? 'Copied!' : 'Copy Code'}
+            {copied ? <Check size={13} color="#10b981" /> : <Copy size={13} />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
+
           <button
             type="button"
             onClick={() => setShowRaw(!showRaw)}
-            className="btn-outline"
-            style={{ padding: '6px 12px', fontSize: '12px', height: 'auto' }}
+            className="btn-diagram-tool"
           >
-            <Code size={14} />
-            {showRaw ? 'Hide Source' : 'View Source'}
+            <Code size={13} />
+            <span>{showRaw ? 'Hide' : 'Source'}</span>
           </button>
+
           <a
             href={`https://mermaid.live/edit#pako:${btoa(unescape(encodeURIComponent(JSON.stringify({ code: sanitizeMermaid(chart), mermaid: { theme: 'dark' } }))))}`}
             target="_blank"
             rel="noreferrer"
-            className="btn-outline"
-            style={{ padding: '6px 12px', fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}
+            className="btn-diagram-tool"
+            title="Open in Mermaid Live Editor"
           >
-            <ExternalLink size={14} />
-            Mermaid Live
+            <ExternalLink size={13} />
+            <span>Live Editor</span>
           </a>
         </div>
       </div>
 
       {/* Rendered SVG or Error */}
       {error ? (
-        <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', borderRadius: '8px', overflowX: 'auto', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-          <h4 style={{ margin: '0 0 10px 0' }}>⚠️ Could not render diagram</h4>
-          <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#94a3b8' }}>
-            The diagram syntax could not be rendered as SVG. Raw source code:
-          </p>
-          <pre style={{ fontSize: '13px', margin: 0, whiteSpace: 'pre-wrap', color: '#e2e8f0' }}>{rawChart || chart}</pre>
+        <div className="diagram-error-box">
+          <h4>⚠️ Could not render SVG diagram</h4>
+          <pre>{rawChart || chart}</pre>
         </div>
       ) : (
-        <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', padding: '16px 0' }} />
+        <div className="diagram-canvas-viewport">
+          <div 
+            ref={containerRef} 
+            className="diagram-rendered-content"
+            style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
+          />
+        </div>
       )}
 
       {/* Raw Source Toggle */}
       {showRaw && (
-        <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--panel-border)' }}>
-          <pre style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '8px', fontSize: '13px', color: '#818cf8', whiteSpace: 'pre-wrap' }}>
-            {sanitizeMermaid(chart)}
-          </pre>
+        <div className="diagram-raw-source">
+          <pre>{sanitizeMermaid(chart)}</pre>
         </div>
       )}
     </div>

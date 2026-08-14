@@ -1,14 +1,35 @@
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
-import { Send, Loader2, Bot, User, MessageSquare } from 'lucide-react';
+import { 
+  Send, 
+  Loader2, 
+  Bot, 
+  User, 
+  MessageSquare, 
+  Sparkles, 
+  Zap, 
+  ShieldCheck, 
+  GitFork, 
+  Compass,
+  Copy,
+  Check
+} from 'lucide-react';
+
+const SUGGESTED_PROMPTS = [
+  { icon: Zap, label: "Request Lifecycle", query: "How does a request flow from frontend to backend in this codebase?" },
+  { icon: ShieldCheck, label: "Security & Guards", query: "What security, authentication, or rate-limiting guards are in place?" },
+  { icon: GitFork, label: "Agent Orchestration", query: "How do the AI agents collaborate and pass state between nodes?" },
+  { icon: Compass, label: "Key Entry Points", query: "What are the primary entry-point files and how do I run this project?" }
+];
 
 export default function Chatbox({ repoUrl }) {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hello! I've read the codebase. What would you like to know?" }
+    { role: 'assistant', content: "Hello! I've fully parsed this codebase. Click one of the suggested prompts below or ask anything about its architecture, endpoints, or logic." }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copiedMsgIdx, setCopiedMsgIdx] = useState(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const hasInteracted = useRef(false);
@@ -23,18 +44,17 @@ export default function Chatbox({ repoUrl }) {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || !repoUrl) return;
+  const sendQuery = async (queryText) => {
+    if (!queryText.trim() || !repoUrl) return;
 
-    const userQuery = input.trim();
+    const userQuery = queryText.trim();
     setInput('');
     hasInteracted.current = true;
     setMessages(prev => [...prev, { role: 'user', content: userQuery }]);
     setLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await axios.post(`${apiUrl}/api/chat`, {
         repoUrl: repoUrl,
         query: userQuery
@@ -51,97 +71,141 @@ export default function Chatbox({ repoUrl }) {
     }
   };
 
+  const handleSend = (e) => {
+    e.preventDefault();
+    sendQuery(input);
+  };
+
+  const copyMessageText = (text, idx) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMsgIdx(idx);
+    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  };
+
   return (
-    <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
-      <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0, marginBottom: '16px' }}>
-        <MessageSquare className="text-gradient" /> Ask about the Codebase
-      </h2>
+    <div className="glass-panel chatbox-studio-panel animate-fade-in">
       
-      {/* Messages Area */}
-      <div ref={chatContainerRef} style={{ 
-        flex: 1, 
-        overflowY: 'auto', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '16px',
-        paddingRight: '8px',
-        marginBottom: '16px'
-      }}>
+      {/* Header */}
+      <div className="chatbox-header-row">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="chat-avatar-pulse">
+            <Bot size={18} color="#38bdf8" />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '16px', color: '#f8fafc', fontWeight: 600 }}>
+              AI Codebase Intelligence Co-Pilot
+            </h3>
+            <span style={{ fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className="live-dot" /> Repository graph indexed & ready
+            </span>
+          </div>
+        </div>
+
+        <div className="chat-badge-tag">
+          <Sparkles size={13} /> Gemini 2.5 Flash
+        </div>
+      </div>
+      
+      {/* Messages Scroll Area */}
+      <div ref={chatContainerRef} className="chat-messages-container">
         {messages.map((msg, idx) => (
-          <div key={idx} style={{
-            display: 'flex',
-            gap: '12px',
-            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth: '85%'
-          }}>
+          <div 
+            key={idx} 
+            className={`chat-bubble-row ${msg.role === 'user' ? 'user-align' : 'assistant-align'}`}
+          >
             {msg.role === 'assistant' && (
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '8px',
-                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-              }}>
-                <Bot size={18} color="white" />
+              <div className="chat-bot-icon">
+                <Bot size={16} color="#38bdf8" />
               </div>
             )}
 
-            <div style={{
-              background: msg.role === 'user' ? '#6366f1' : 'rgba(0,0,0,0.3)',
-              color: msg.role === 'user' ? '#fff' : '#e2e8f0',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              border: msg.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.05)',
-              fontSize: '14px',
-              lineHeight: '1.6'
-            }}>
+            <div className={`chat-message-bubble ${msg.role === 'user' ? 'user-bubble' : 'assistant-bubble'}`}>
               {msg.role === 'user' ? (
-                msg.content
+                <span>{msg.content}</span>
               ) : (
                 <div className="markdown-body">
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               )}
+
+              {msg.role === 'assistant' && idx > 0 && (
+                <button
+                  type="button"
+                  onClick={() => copyMessageText(msg.content, idx)}
+                  className="chat-copy-btn"
+                  title="Copy response"
+                >
+                  {copiedMsgIdx === idx ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
+                </button>
+              )}
             </div>
 
             {msg.role === 'user' && (
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '8px',
-                background: '#475569',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-              }}>
-                <User size={18} color="white" />
+              <div className="chat-user-icon">
+                <User size={16} color="#fff" />
               </div>
             )}
           </div>
         ))}
-        {loading && (
-          <div style={{ display: 'flex', gap: '12px', alignSelf: 'flex-start' }}>
-            <div style={{
-              width: '32px', height: '32px', borderRadius: '8px',
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-            }}>
-              <Bot size={18} color="white" />
-            </div>
-            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center' }}>
-              <Loader2 className="animate-spin" size={20} color="#94a3b8" />
+
+        {/* Suggested Prompt Chips (Shown when only greeting message exists) */}
+        {messages.length === 1 && (
+          <div className="suggested-prompts-section">
+            <span className="suggested-label">
+              <Sparkles size={12} color="#38bdf8" /> Suggested Questions:
+            </span>
+            <div className="suggested-chips-grid">
+              {SUGGESTED_PROMPTS.map((sp, sIdx) => {
+                const Icon = sp.icon;
+                return (
+                  <button
+                    key={sIdx}
+                    type="button"
+                    className="suggested-chip-btn"
+                    onClick={() => sendQuery(sp.query)}
+                    disabled={loading}
+                  >
+                    <Icon size={14} color="#38bdf8" />
+                    <span>{sp.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
+
+        {loading && (
+          <div className="chat-bubble-row assistant-align">
+            <div className="chat-bot-icon">
+              <Bot size={16} color="#38bdf8" />
+            </div>
+            <div className="chat-loading-bubble">
+              <Loader2 className="animate-spin" size={16} color="#38bdf8" />
+              <span>Analyzing codebase graph...</span>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <form onSubmit={handleSend} style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
+      {/* Input Form */}
+      <form onSubmit={handleSend} className="chat-input-form">
         <input 
           type="text" 
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="e.g. How does user authentication work?"
+          placeholder="Ask anything about functions, APIs, architecture, or data flow..."
           disabled={loading}
-          style={{ flex: 1, padding: '12px 16px', borderRadius: '8px' }}
+          className="chat-text-input"
         />
-        <button type="submit" disabled={loading || !input.trim()} style={{ padding: '0 20px', borderRadius: '8px' }}>
-          {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+        <button 
+          type="submit" 
+          disabled={loading || !input.trim()} 
+          className="chat-send-btn"
+          aria-label="Send message"
+        >
+          {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
         </button>
       </form>
     </div>

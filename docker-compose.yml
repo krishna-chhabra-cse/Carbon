@@ -19,7 +19,7 @@ services:
       retries: 3
       start_period: 10s
 
-  # ── 2. Node.js Backend Proxy (Express + Scrimba MCP Adapter) ─
+  # ── 2. Node.js Backend Proxy (Express + Video Explainer Engine)
   backend:
     build:
       context: ./"Baby/Carbon Backend"
@@ -34,3 +34,18 @@ services:
       agent-service:
         condition: service_healthy
     restart: unless-stopped
+
+  # ── 3. React Frontend Studio (SPA + NGINX) ────────────────────
+  frontend:
+    build:
+      context: ./"Baby/Carbon Frontend"
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3002
+    container_name: carbon-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+

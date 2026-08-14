@@ -26,11 +26,12 @@ export default function BusinessLogic({ businessLogic }) {
               marginBottom: '16px'
             }}>
               <div style={{
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                background: 'var(--gradient-btn-primary)',
                 color: '#fff', width: '32px', height: '32px',
                 borderRadius: '8px', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', fontWeight: 'bold', fontSize: '14px',
-                flexShrink: 0
+                flexShrink: 0,
+                boxShadow: '0 0 12px rgba(56, 189, 248, 0.3)'
               }}>
                 {idx + 1}
               </div>
@@ -40,7 +41,7 @@ export default function BusinessLogic({ businessLogic }) {
             </div>
 
             {/* Steps Timeline */}
-            <div style={{ paddingLeft: '16px', borderLeft: '2px solid rgba(99, 102, 241, 0.3)' }}>
+            <div style={{ paddingLeft: '16px', borderLeft: '2px solid rgba(56, 189, 248, 0.3)' }}>
               {flow.steps.map((step, stepIdx) => (
                 <div key={stepIdx} style={{
                   display: 'flex', alignItems: 'flex-start', gap: '12px',
@@ -52,9 +53,10 @@ export default function BusinessLogic({ businessLogic }) {
                     position: 'absolute', left: '-7px', top: '6px',
                     width: '12px', height: '12px', borderRadius: '50%',
                     background: stepIdx === flow.steps.length - 1
-                      ? '#22c55e'
-                      : '#6366f1',
-                    border: '2px solid rgba(0,0,0,0.3)',
+                      ? '#10b981'
+                      : '#38bdf8',
+                    boxShadow: stepIdx === flow.steps.length - 1 ? '0 0 8px #10b981' : '0 0 8px #38bdf8',
+                    border: '2px solid rgba(5, 7, 15, 0.8)',
                     flexShrink: 0
                   }} />
                   {/* Step text */}

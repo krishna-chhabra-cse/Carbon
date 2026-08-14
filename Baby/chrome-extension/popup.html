@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carbon — AI Codebase Explorer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="carbon-popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="logo-group">
+        <div class="logo-orb"></div>
+        <div class="logo-text">
+          <h1>CARBON</h1>
+          <span>AI CODE INTELLIGENCE</span>
+        </div>
+      </div>
+      <button id="settings-toggle" class="btn-icon" title="Settings">⚙️</button>
+    </header>
+
+    <!-- Settings Drawer (Hidden by default) -->
+    <div id="settings-panel" class="settings-panel hidden">
+      <label for="backend-url-input">Carbon Backend URL:</label>
+      <input type="text" id="backend-url-input" placeholder="http://localhost:3002 or https://api.yourcarbon.com" />
+      <label for="web-url-input">Carbon Web App URL:</label>
+      <input type="text" id="web-url-input" placeholder="http://localhost:5173 or https://carbon.yourdomain.com" />
+      <button id="save-settings-btn" class="btn-primary">Save Settings</button>
+    </div>
+
+    <!-- Active Repo Context Card -->
+    <div class="repo-card glass-card">
+      <div class="card-tag">DETECTED REPOSITORY</div>
+      <div id="repo-name" class="repo-title">Not on GitHub</div>
+      <div id="repo-url-display" class="repo-url-sub">Open any GitHub repository to analyze with 1-click.</div>
+    </div>
+
+    <!-- Actions Panel -->
+    <div class="actions-group">
+      <button id="analyze-current-btn" class="btn-gradient" disabled>
+        <span class="btn-icon-sparkle">✨</span>
+        <span class="btn-label">Explain with Carbon AI</span>
+      </button>
+
+      <button id="open-studio-btn" class="btn-secondary">
+        <span>Open Carbon Studio</span>
+        <span class="arrow-icon">↗</span>
+      </button>
+    </div>
+
+    <!-- Quick Manual Analyze Input -->
+    <div class="manual-input-section">
+      <div class="divider"><span>OR ANALYZE ANY GITHUB REPO</span></div>
+      <div class="input-row">
+        <input type="text" id="manual-repo-input" placeholder="https://github.com/owner/repo" />
+        <button id="manual-analyze-btn" class="btn-small">Go</button>
+      </div>
+    </div>
+
+    <!-- Stream Status / Quick Results Preview -->
+    <div id="status-box" class="status-box hidden">
+      <div class="status-header">
+        <div id="status-spinner" class="spinner"></div>
+        <span id="status-text">Connecting to AI graph...</span>
+      </div>
+      <div id="status-progress-bar" class="progress-track">
+        <div id="status-progress-fill" class="progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- Footer Links -->
+    <footer class="popup-footer">
+      <span class="status-pill"><span class="dot-online"></span> AI Online</span>
+      <a href="#" id="docs-link" class="footer-link">Docs & Deploy</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

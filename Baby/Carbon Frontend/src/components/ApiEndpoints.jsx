@@ -54,7 +54,7 @@ export default function ApiEndpoints({ apiDocs }) {
               </div>
 
               {/* File Location */}
-              <div style={{ fontSize: '12px', color: '#6366f1', fontFamily: 'monospace', background: 'rgba(99, 102, 241, 0.1)', padding: '4px 8px', borderRadius: '4px' }}>
+              <div style={{ fontSize: '12px', color: '#38bdf8', fontFamily: 'var(--font-mono)', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 8px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                 {ep.file}
               </div>
             </div>
