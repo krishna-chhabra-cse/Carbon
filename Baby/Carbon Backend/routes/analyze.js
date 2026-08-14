@@ -19,22 +19,24 @@ const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8
 
 // -------------------------------------------------------
 // POST /api/analyze
-// Frontend sends: { "repoUrl": "https://github.com/..." }
-// We return:      { "architecture": {...}, "diagram": "..." }
+// Frontend sends:        { "repoUrl": "https://github.com/..." }
+// VS Code extension sends: { "localPath": "C:\\Users\\..." }
+// We return:             { "architecture": {...}, "diagram": "..." }
 // -------------------------------------------------------
 router.post('/analyze', async (req, res) => {
 
-  // Step 1: Get the repo URL from the request body
-  const { repoUrl } = req.body;
+  // Step 1: Get the repo URL OR local workspace path from the request body
+  const { repoUrl, localPath } = req.body;
 
-  // Step 2: Basic validation — did the user actually send a URL?
-  if (!repoUrl) {
-    return res.status(400).json({ 
-      error: 'repoUrl is required' 
+  // Step 2: Basic validation — did the user actually send a source?
+  if (!repoUrl && !localPath) {
+    return res.status(400).json({
+      error: 'Either repoUrl or localPath is required'
     });
   }
 
-  console.log(`📥 Received analyze request for: ${repoUrl}`);
+  const sourceLabel = repoUrl || localPath;
+  console.log(`📥 Received analyze request for: ${sourceLabel}`);
 
   // Step 3: Wake up the Python service (Render free tier sleeps after 15 min)
   // Send a quick health check ping to trigger the cold start BEFORE the real request
@@ -61,7 +63,7 @@ router.post('/analyze', async (req, res) => {
 
       const pythonResponse = await axios.post(
         `${PYTHON_SERVICE_URL}/run-agents`,
-        { repo_url: repoUrl },
+        repoUrl ? { repo_url: repoUrl } : { local_path: localPath },
         { 
           timeout: 300000,
           responseType: 'stream'

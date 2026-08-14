@@ -14,15 +14,18 @@
 # ============================================================
 
 import json
+import os
+from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from dotenv import load_dotenv
 
 # Import our tools
 from tools.git_cloner import clone_repo, cleanup_repo
 from tools.file_reader import get_folder_structure, read_files_for_analysis
+from tools.workspace_reader import validate_workspace_path
 
 from agents.architecture_agent import run as run_architecture_agent
 from agents.api_agent import run as run_api_agent
@@ -54,17 +57,48 @@ app.add_middleware(
 # is missing, it returns a clear error before we even run
 # -------------------------------------------------------
 class AnalyzeRequest(BaseModel):
-    repo_url: str   # e.g. "https://github.com/facebook/react"
+    repo_url: Optional[str] = None    # e.g. "https://github.com/facebook/react"
+    local_path: Optional[str] = None  # e.g. "C:\\Users\\username\\project"
+
+    # NOTE: written for Pydantic v2 (model_validator). If this project pins
+    # Pydantic v1, swap this for `@root_validator` with the same body.
+    @model_validator(mode="after")
+    def _require_a_source(self):
+        if not self.repo_url and not self.local_path:
+            raise ValueError("Either 'repo_url' or 'local_path' must be provided")
+        return self
 
 class ChatRequest(BaseModel):
     repo_url: str
     query: str
 
+class ExplainerOPMLRequest(BaseModel):
+    architecture: Optional[dict] = None
+    api_docs: Optional[dict] = None
+    business_logic: Optional[dict] = None
+
+
 # -------------------------------------------------------
-# Cache to hold codebase state for chat queries
-# Keys are repo_urls, values are dicts with folder_structure and files_content
+# Cache to hold codebase state for chat queries.
+#
+# Keys are a stable identifier for the analyzed source:
+#   - the repo_url as-is, for GitHub repositories
+#   - the normalized absolute path, for local workspaces
+# Values are dicts with folder_structure and files_content.
 # -------------------------------------------------------
 REPO_CACHE = {}
+
+
+def get_cache_key(repo_url: Optional[str], local_path: Optional[str]) -> str:
+    """
+    Builds a stable cache key for either a GitHub repo or a local workspace.
+    GitHub repos are keyed by URL (unchanged from before). Local workspaces
+    are keyed by their normalized absolute path so the same folder always
+    maps to the same cache entry.
+    """
+    if local_path:
+        return os.path.normpath(os.path.abspath(local_path))
+    return repo_url
 
 
 # -------------------------------------------------------
@@ -79,27 +113,44 @@ def health_check():
 # The main endpoint — Node.js calls this
 # POST /run-agents
 # Body: { "repo_url": "https://github.com/..." }
+#   OR: { "local_path": "C:\\Users\\username\\project" }
 # -------------------------------------------------------
 @app.post("/run-agents")
 async def run_agents(request: AnalyzeRequest):
     async def event_generator():
         repo_path = None
+        is_local_workspace = bool(request.local_path)
+        source_label = request.local_path if is_local_workspace else request.repo_url
+
         try:
             print(f"\n{'='*50}")
-            print(f"[START] Starting streaming analysis for: {request.repo_url}")
+            print(f"[START] Starting streaming analysis for: {source_label}")
             print(f"{'='*50}")
 
-            yield json.dumps({"status": "cloning"}) + "\n"
+            if is_local_workspace:
+                # STEP 1 (local workspace): validate the path instead of cloning
+                yield json.dumps({"status": "reading_workspace"}) + "\n"
 
-            # STEP 1: Clone the repository
-            print("\n[STEP 1] Cloning repository...")
-            clone_result = clone_repo(request.repo_url)
+                print("\n[STEP 1] Validating local workspace path...")
+                validation_result = validate_workspace_path(request.local_path)
 
-            if not clone_result["success"]:
-                yield json.dumps({"status": "error", "message": f"Failed to clone repo: {clone_result['error']}"}) + "\n"
-                return
+                if not validation_result["success"]:
+                    yield json.dumps({"status": "error", "message": f"Invalid workspace path: {validation_result['error']}"}) + "\n"
+                    return
 
-            repo_path = clone_result["repo_path"]
+                repo_path = validation_result["path"]
+            else:
+                # STEP 1 (GitHub repo): clone the repository — unchanged
+                yield json.dumps({"status": "cloning"}) + "\n"
+
+                print("\n[STEP 1] Cloning repository...")
+                clone_result = clone_repo(request.repo_url)
+
+                if not clone_result["success"]:
+                    yield json.dumps({"status": "error", "message": f"Failed to clone repo: {clone_result['error']}"}) + "\n"
+                    return
+
+                repo_path = clone_result["repo_path"]
 
             yield json.dumps({"status": "reading_files"}) + "\n"
 
@@ -114,7 +165,7 @@ async def run_agents(request: AnalyzeRequest):
             from agents.graph import agent_graph
             
             initial_state = {
-                "repo_url": request.repo_url,
+                "repo_url": source_label,
                 "folder_structure": folder_structure,
                 "files_content": files_content
             }
@@ -131,18 +182,21 @@ async def run_agents(request: AnalyzeRequest):
                     final_state.update(partial_state)
             
             # CACHE THE REPO DATA FOR CHAT
-            REPO_CACHE[request.repo_url] = {
+            cache_key = get_cache_key(request.repo_url, request.local_path)
+            REPO_CACHE[cache_key] = {
                 "folder_structure": folder_structure,
                 "files_content": files_content
             }
 
             print("\n[DONE] All agents finished! Returning final results.")
 
-            # Yield the final payload
+            # Yield the final payload (repo_url / local_path preserved as sent,
+            # so existing GitHub-flow consumers see the exact same shape as before)
             yield json.dumps({
                 "status": "complete",
                 "success": True,
                 "repo_url": request.repo_url,
+                "local_path": request.local_path,
                 "architecture": final_state.get("architecture_result"),
                 "api_docs": final_state.get("api_result"),
                 "business_logic": final_state.get("business_logic_result"),
@@ -153,7 +207,9 @@ async def run_agents(request: AnalyzeRequest):
             yield json.dumps({"status": "error", "message": str(e)}) + "\n"
 
         finally:
-            if repo_path:
+            # IMPORTANT: only delete cloned temp repos. A local workspace
+            # is the user's own project folder and must never be removed.
+            if repo_path and not is_local_workspace:
                 print("\n[CLEANUP] Cleaning up cloned repo...")
                 cleanup_repo(repo_path)
 
@@ -186,3 +242,23 @@ async def chat(request: ChatRequest):
     except Exception as e:
         print(f"[ERROR] Chat failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# -------------------------------------------------------
+# The Explainer OPML generation endpoint
+# POST /generate-explainer-opml
+# -------------------------------------------------------
+@app.post("/generate-explainer-opml")
+async def generate_explainer_opml(request: ExplainerOPMLRequest):
+    try:
+        from agents.explainer_agent import run as run_explainer_agent
+        opml_content = run_explainer_agent(
+            architecture=request.architecture or {},
+            api_docs=request.api_docs or {},
+            business_logic=request.business_logic or {}
+        )
+        return {"success": True, "opml": opml_content}
+    except Exception as e:
+        print(f"[ERROR] OPML generation failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
