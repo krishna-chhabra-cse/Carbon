@@ -1,7 +1,7 @@
 {
   "name": "carbon",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "dev": "npm --prefix \"Baby/Carbon Frontend\" run dev",
     "build": "npm --prefix \"Baby/Carbon Frontend\" install && npm --prefix \"Baby/Carbon Frontend\" run build",
