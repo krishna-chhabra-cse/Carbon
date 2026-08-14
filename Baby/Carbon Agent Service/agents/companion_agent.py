@@ -29,7 +29,7 @@ def run(query: str, mode: str = "explain", context: dict = None) -> dict:
         raise ValueError("GEMINI_API_KEY not found in environment!")
 
     client = genai.Client(api_key=api_key)
-    MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
     context = context or {}
     page_title = context.get("title", "Unknown Page")
@@ -140,22 +140,35 @@ USER QUERY / TOPIC:
 Generate your complete, beautifully formatted response:
 """
 
-    try:
-        response = client.models.generate_content(
-            model=MODEL,
-            contents=prompt
-        )
-        answer_text = response.text.strip()
-    except Exception as e:
-        # Fallback to lite model if primary hits quota or error
+    # Candidate models in priority order to guarantee high availability
+    CANDIDATE_MODELS = [
+        "gemini-2.5-flash",
+        "gemini-3.1-flash-lite",
+        "gemini-2.5-flash-lite",
+        "gemini-1.5-flash"
+    ]
+
+    answer_text = None
+    last_err = None
+
+    for candidate_model in CANDIDATE_MODELS:
         try:
+            print(f"[COMPANION] Calling Gemini model: {candidate_model}...")
             response = client.models.generate_content(
-                model="gemini-3.1-flash-lite",
+                model=candidate_model,
                 contents=prompt
             )
-            answer_text = response.text.strip()
-        except Exception as e2:
-            raise RuntimeError(f"AI Generation failed: {str(e2)}")
+            if response and response.text:
+                answer_text = response.text.strip()
+                print(f"[COMPANION] Generated successfully with: {candidate_model}")
+                break
+        except Exception as err:
+            print(f"[COMPANION WARNING] Model {candidate_model} failed ({err}). Trying next model...")
+            last_err = err
+            continue
+
+    if not answer_text:
+        raise RuntimeError(f"All Gemini models were temporarily busy: {str(last_err)}")
 
     return {
         "success": True,
