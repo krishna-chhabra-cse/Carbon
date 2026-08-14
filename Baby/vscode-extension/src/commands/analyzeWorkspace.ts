@@ -50,12 +50,15 @@ export async function analyzeWorkspaceCommand(): Promise<void> {
 
     showResultsPanel(workspaceFolder.name, result);
   } catch (err) {
-    if (err instanceof CarbonApiError) {
-      vscode.window.showErrorMessage(`Carbon: ${err.message}`);
-    } else {
-      const message = err instanceof Error ? err.message : String(err);
-      vscode.window.showErrorMessage(`Carbon: Unexpected error during analysis — ${message}`);
-    }
+    const message = err instanceof Error ? err.message : String(err);
+    vscode.window.showErrorMessage(
+      `Carbon: ${message}`,
+      'Open Settings'
+    ).then((selection) => {
+      if (selection === 'Open Settings') {
+        vscode.commands.executeCommand('workbench.action.openSettings', 'carbon.backendUrl');
+      }
+    });
   }
 }
 

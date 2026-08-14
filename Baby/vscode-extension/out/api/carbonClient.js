@@ -146,7 +146,18 @@ function analyzeWorkspacePayload(payload, onProgress) {
                 if (leftover)
                     handleLine(leftover);
                 if (res.statusCode && res.statusCode >= 400 && !errorMessage && !finalResult) {
-                    errorMessage = `Carbon backend returned HTTP ${res.statusCode}.`;
+                    if (res.statusCode === 405) {
+                        errorMessage = `HTTP 405 (Method Not Allowed) at ${endpoint}. This usually happens when 'carbon.backendUrl' points to a static website rather than the Carbon API server. Please configure 'carbon.backendUrl' in Settings to your backend URL (e.g. Render/Railway URL or http://localhost:3002).`;
+                    }
+                    else if (res.statusCode === 404) {
+                        errorMessage = `HTTP 404 (Not Found) at ${endpoint}. The /api/analyze route was not found. Please check your 'carbon.backendUrl' setting.`;
+                    }
+                    else if (res.statusCode === 502 || res.statusCode === 503) {
+                        errorMessage = `HTTP ${res.statusCode} (Service Unavailable) at ${endpoint}. The Carbon backend is currently booting up or unavailable. If using Render free tier, please wait 30 seconds for it to wake up and try again.`;
+                    }
+                    else {
+                        errorMessage = `Carbon backend returned HTTP ${res.statusCode}.`;
+                    }
                 }
                 if (errorMessage) {
                     reject(new CarbonApiError(errorMessage));
@@ -161,10 +172,10 @@ function analyzeWorkspacePayload(payload, onProgress) {
         });
         req.on('error', (err) => {
             if (err.code === 'ECONNREFUSED') {
-                reject(new CarbonApiError(`Could not reach the Carbon backend at ${baseUrl}. Is it running? (npm start in "Carbon Backend" or docker-compose up)`));
+                reject(new CarbonApiError(`Could not connect to Carbon backend at ${baseUrl}. Please check that your server is running or update 'carbon.backendUrl' in Settings.`));
             }
             else {
-                reject(new CarbonApiError(`Request to Carbon backend failed: ${err.message}`));
+                reject(new CarbonApiError(`Request to Carbon backend at ${baseUrl} failed: ${err.message}`));
             }
         });
         req.write(bodyData);
