@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd \"Baby/Carbon Frontend\" && npm install && npm run build",
+  "outputDirectory": "Baby/Carbon Frontend/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
