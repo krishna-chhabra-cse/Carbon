@@ -2,5 +2,10 @@
 src/**
 tsconfig.json
 .vscodeignore
+.git/**
+.gitignore
 **/*.map
 node_modules/**
+generate_icon.py
+*.vsix
+.env*

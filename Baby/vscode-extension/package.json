@@ -1,31 +1,37 @@
 {
   "name": "carbon-vscode",
-  "displayName": "Carbon — AI Codebase Explainer & Video Synthesizer",
+  "displayName": "Carbon — AI Architecture & Codebase Intelligence",
   "description": "Instant codebase intelligence in VS Code: interactive architecture flowcharts, component breakdown, and AI video explanations.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "publisher": "carbon-dev",
+  "pricing": "Free",
+  "icon": "media/icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/carbon-dev/carbon"
   },
+  "bugs": {
+    "url": "https://github.com/carbon-dev/carbon/issues"
+  },
+  "homepage": "https://carbons.codes",
   "keywords": [
     "ai",
     "architecture",
-    "mermaid",
     "codebase",
+    "flowchart",
+    "mermaid",
+    "intelligence",
     "explainer",
-    "scrimba",
-    "gemini",
-    "langgraph"
+    "carbon"
   ],
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": [
+    "AI",
     "Education",
     "Programming Languages",
-    "Visualization",
-    "Other"
+    "Visualization"
   ],
   "activationEvents": [
     "onCommand:carbon.explainWorkspace"
@@ -61,5 +67,6 @@
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.9.2",
     "typescript": "^5.4.0"
-  }
+  },
+  "license": "MIT"
 }
