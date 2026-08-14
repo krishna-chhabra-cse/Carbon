@@ -125,6 +125,23 @@ export default function App() {
               setStatusMessage('Analysis complete!');
               setCurrentStep(4);
               setResult(data);
+
+              // Persist real telemetry for Dashboard
+              try {
+                const existing = JSON.parse(localStorage.getItem('carbon_recent_analyses') || '[]');
+                const repoIdentifier = targetRepo.replace(/^https?:\/\/github\.com\//i, '');
+                const entry = {
+                  repo: repoIdentifier,
+                  url: targetRepo,
+                  timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  techStack: (data.architecture?.tech_stack || []).slice(0, 3).join(', ') || 'Codebase',
+                  summary: data.architecture?.summary || ''
+                };
+                const updated = [entry, ...existing.filter(item => item.repo !== repoIdentifier)].slice(0, 15);
+                localStorage.setItem('carbon_recent_analyses', JSON.stringify(updated));
+              } catch (telemetryErr) {
+                console.warn('Telemetry persistence error:', telemetryErr);
+              }
             }
           }
         }
@@ -320,9 +337,14 @@ export default function App() {
           <CommandCenter 
             onLaunchLesson={launchCustomLesson}
             onSelectSample={(sampleUrl) => {
-              setRepoUrl(sampleUrl);
+              if (sampleUrl) {
+                setRepoUrl(sampleUrl);
+              }
               setActiveTab('analyzer');
             }}
+            onOpenAnalyzer={() => setActiveTab('analyzer')}
+            onOpenExplore={() => setActiveTab('explore')}
+            onOpenQuiz={() => setActiveTab('quiz')}
           />
         )}
 

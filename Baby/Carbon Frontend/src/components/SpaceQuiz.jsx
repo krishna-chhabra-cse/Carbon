@@ -62,6 +62,19 @@ export default function SpaceQuiz() {
         setSelectedOption(null);
         setIsChecking(false);
       } else {
+        const finalScore = score + (index === questions[currentIndex].correct ? 1 : 0);
+        const percentage = Math.round((finalScore / questions.length) * 100);
+        try {
+          const prev = JSON.parse(localStorage.getItem('carbon_space_quiz_score') || '{"completed":0,"highestScore":0,"lastScore":0}');
+          const updated = {
+            completed: (prev.completed || 0) + 1,
+            highestScore: Math.max(prev.highestScore || 0, percentage),
+            lastScore: percentage
+          };
+          localStorage.setItem('carbon_space_quiz_score', JSON.stringify(updated));
+        } catch (e) {
+          console.warn('Quiz score persistence:', e);
+        }
         setQuizState('result');
       }
     }, 1500);

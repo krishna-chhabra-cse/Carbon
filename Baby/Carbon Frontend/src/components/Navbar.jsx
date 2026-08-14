@@ -33,10 +33,10 @@ export default function Navbar({ activeTab, setActiveTab }) {
   }, []);
 
   const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Cpu },
     { id: 'analyzer', label: 'Analyzer', icon: Terminal },
     { id: 'explore', label: 'Explore', icon: Film },
     { id: 'quiz', label: 'Space Quiz', icon: Sparkles },
-    { id: 'dashboard', label: 'Dashboard', icon: Cpu },
   ];
 
   const handleNavClick = (id) => {

@@ -1,3 +1,11 @@
+// ============================================================
+//  src/components/Chatbox.jsx
+//
+//  AI Carbon Interactive Codebase Intelligence Chat.
+//  Features: Markdown rendering, code copy, contextual follow-ups,
+//  suggested prompt pills, and classified error diagnostics.
+// ============================================================
+
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
@@ -13,13 +21,18 @@ import {
   GitFork, 
   Compass,
   Copy,
-  Check
+  Check,
+  Code2,
+  HelpCircle,
+  Bug,
+  BookOpen,
+  RotateCcw
 } from 'lucide-react';
 
 const SUGGESTED_PROMPTS = [
   { icon: Zap, label: "Request Lifecycle", query: "How does a request flow from frontend to backend in this codebase?" },
   { icon: ShieldCheck, label: "Security & Guards", query: "What security, authentication, or rate-limiting guards are in place?" },
-  { icon: GitFork, label: "Agent Orchestration", query: "How do the AI agents collaborate and pass state between nodes?" },
+  { icon: GitFork, label: "Architecture Overview", query: "What are the core architectural layers and components in this project?" },
   { icon: Compass, label: "Key Entry Points", query: "What are the primary entry-point files and how do I run this project?" }
 ];
 
@@ -27,7 +40,7 @@ export default function Chatbox({ repoUrl }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "Hello! I'm **AI Carbon**. I've fully parsed this codebase. Click one of the suggested prompts below or ask anything about its architecture, endpoints, or logic."
+      content: "Hello! I'm **AI Carbon**. I've indexed this codebase graph. Click one of the suggested prompts below or ask any question about architecture, endpoints, or logic."
     }
   ]);
   const [input, setInput] = useState('');
@@ -57,17 +70,36 @@ export default function Chatbox({ repoUrl }) {
     setLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
       const response = await axios.post(`${apiUrl}/api/chat`, {
         repoUrl: repoUrl,
         query: userQuery
       });
 
-      setMessages(prev => [...prev, { role: 'assistant', content: response.data.answer }]);
+      if (response.data && response.data.answer) {
+        setMessages(prev => [...prev, { role: 'assistant', content: response.data.answer }]);
+      } else {
+        throw new Error('Received empty response from Carbon AI.');
+      }
     } catch (error) {
+      let friendlyError = 'Failed to get answer.';
+      if (error.response) {
+        if (error.response.status === 429) {
+          friendlyError = 'Rate limit reached. Please wait a moment before sending another query.';
+        } else if (error.response.status === 503) {
+          friendlyError = 'AI model is experiencing high demand. Automatic failover was triggered, please retry in a second.';
+        } else {
+          friendlyError = error.response.data?.error || error.response.data?.message || `Server error (${error.response.status}).`;
+        }
+      } else if (error.request) {
+        friendlyError = 'Could not reach Carbon AI backend. Please verify your connection or that the server is active.';
+      } else {
+        friendlyError = error.message;
+      }
+
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: `❌ Error: ${error.response?.data?.error || error.message || 'Failed to get answer.'}` 
+        content: `⚠️ **Error**: ${friendlyError}` 
       }]);
     } finally {
       setLoading(false);
@@ -99,8 +131,8 @@ export default function Chatbox({ repoUrl }) {
             <Bot size={18} color="#38bdf8" />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', color: '#f8fafc', fontWeight: 600 }}>
-              AI Carbon
+            <h3 style={{ margin: 0, fontSize: '15px', color: '#f8fafc', fontWeight: 600 }}>
+              AI Carbon Chat
             </h3>
             <span style={{ fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span className="live-dot" /> Repository graph indexed & ready
@@ -109,7 +141,7 @@ export default function Chatbox({ repoUrl }) {
         </div>
 
         <div className="chat-badge-tag">
-          <Sparkles size={13} /> AI Carbon
+          <Sparkles size={13} /> Gemini 3.5 AI
         </div>
       </div>
       
@@ -136,14 +168,35 @@ export default function Chatbox({ repoUrl }) {
               )}
 
               {msg.role === 'assistant' && idx > 0 && (
-                <button
-                  type="button"
-                  onClick={() => copyMessageText(msg.content, idx)}
-                  className="chat-copy-btn"
-                  title="Copy response"
-                >
-                  {copiedMsgIdx === idx ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
-                </button>
+                <div className="chat-bubble-actions">
+                  <button
+                    type="button"
+                    onClick={() => copyMessageText(msg.content, idx)}
+                    className="chat-action-btn"
+                    title="Copy response"
+                  >
+                    {copiedMsgIdx === idx ? <Check size={12} color="#10b981" /> : <Copy size={12} />}
+                    <span>{copiedMsgIdx === idx ? 'Copied' : 'Copy'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => sendQuery(`Simplify this explanation for a beginner: "${msg.content.slice(0, 100)}..."`)}
+                    className="chat-action-btn"
+                    title="Simplify explanation"
+                  >
+                    <Zap size={12} color="#38bdf8" />
+                    <span>Simplify</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => sendQuery(`Show practical code examples for: "${msg.content.slice(0, 100)}..."`)}
+                    className="chat-action-btn"
+                    title="Show code examples"
+                  >
+                    <Code2 size={12} color="#10b981" />
+                    <span>Examples</span>
+                  </button>
+                </div>
               )}
             </div>
 
@@ -205,6 +258,7 @@ export default function Chatbox({ repoUrl }) {
           placeholder="Ask anything about functions, APIs, architecture, or data flow..."
           disabled={loading}
           className="chat-text-input"
+          aria-label="Ask Carbon AI a question"
         />
         <button 
           type="submit" 
