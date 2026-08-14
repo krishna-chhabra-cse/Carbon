@@ -19,34 +19,46 @@ const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8
 
 // -------------------------------------------------------
 // POST /api/analyze
-// Frontend sends:        { "repoUrl": "https://github.com/..." }
-// VS Code extension sends: { "localPath": "C:\\Users\\..." }
-// We return:             { "architecture": {...}, "diagram": "..." }
+// Frontend sends:         { "repoUrl": "https://github.com/..." }
+// VS Code extension sends: { "workspaceName": "...", "files": [...], "folderStructure": "..." }
+// We return:              Streaming NDJSON with architectural analysis
 // -------------------------------------------------------
 router.post('/analyze', async (req, res) => {
+  const { repoUrl, files, folderStructure, workspaceName } = req.body;
 
-  // Step 1: Get the repo URL OR local workspace path from the request body
-  const { repoUrl, localPath } = req.body;
-
-  // Step 2: Basic validation — did the user actually send a source?
-  if (!repoUrl && !localPath) {
+  // Step 1: Input Validation
+  if (!repoUrl && (!files || !Array.isArray(files) || files.length === 0)) {
     return res.status(400).json({
-      error: 'Either repoUrl or localPath is required'
+      error: 'Either repoUrl or a non-empty files array is required.'
     });
   }
 
-  const sourceLabel = repoUrl || localPath;
+  // Safety caps on payload
+  if (files && files.length > 100) {
+    return res.status(400).json({
+      error: 'Payload exceeds maximum limit of 100 files.'
+    });
+  }
+
+  const sourceLabel = workspaceName ? `Workspace: ${workspaceName} (${files.length} files)` : repoUrl;
   console.log(`📥 Received analyze request for: ${sourceLabel}`);
 
+  // Step 2: Build payload for Python agent service
+  const agentPayload = repoUrl
+    ? { repo_url: repoUrl }
+    : {
+        workspace_name: workspaceName || 'Workspace',
+        files: files,
+        folder_structure: folderStructure || ''
+      };
+
   // Step 3: Wake up the Python service (Render free tier sleeps after 15 min)
-  // Send a quick health check ping to trigger the cold start BEFORE the real request
   const MAX_RETRIES = 3;
   const RETRY_DELAY_MS = 5000; // 5 seconds between retries
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       if (attempt === 1) {
-        // First attempt: ping the health check to wake up the service
         console.log(`🏓 Pinging Python service to wake it up...`);
         try {
           await axios.get(`${PYTHON_SERVICE_URL}/`, { timeout: 60000 });
@@ -54,7 +66,7 @@ router.post('/analyze', async (req, res) => {
         } catch (pingErr) {
           console.log(`⏳ Python service is waking up (attempt ${attempt})...`);
           await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
-          continue; // retry the whole loop
+          continue;
         }
       }
 
@@ -63,34 +75,32 @@ router.post('/analyze', async (req, res) => {
 
       const pythonResponse = await axios.post(
         `${PYTHON_SERVICE_URL}/run-agents`,
-        repoUrl ? { repo_url: repoUrl } : { local_path: localPath },
+        agentPayload,
         { 
           timeout: 300000,
           responseType: 'stream'
         }                  
       );
 
-      // Step 5: Forward Python's stream back to the frontend
-      console.log(`✅ Piping stream to frontend.`);
+      // Step 5: Forward Python's stream back to the client
+      console.log(`✅ Piping stream to client.`);
       
       res.setHeader('Content-Type', 'application/x-ndjson');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
       
       pythonResponse.data.pipe(res);
-      return; // success — exit the retry loop
+      return; // success — exit retry loop
 
     } catch (error) {
       console.error(`❌ Attempt ${attempt}/${MAX_RETRIES} failed:`, error.message);
 
-      // If it's a 502 (cold start) and we have retries left, wait and retry
       if (error.response && error.response.status === 502 && attempt < MAX_RETRIES) {
         console.log(`⏳ Python service is cold-starting. Retrying in ${RETRY_DELAY_MS / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
         continue;
       }
 
-      // Final failure — send error to frontend
       if (error.code === 'ECONNREFUSED') {
         return res.status(503).json({ 
           error: 'Python agent service is not running.',

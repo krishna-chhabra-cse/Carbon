@@ -5,7 +5,8 @@
 // ============================================================
 
 import * as vscode from 'vscode';
-import { analyzeLocalPath, AnalyzeFinalResult, CarbonApiError, explainWithVideo } from '../api/carbonClient';
+import { analyzeWorkspacePayload, AnalyzeFinalResult, CarbonApiError, explainWithVideo } from '../api/carbonClient';
+import { collectWorkspaceFiles } from '../utils/workspaceCollector';
 
 let activePanel: vscode.WebviewPanel | undefined;
 
@@ -20,25 +21,28 @@ export async function analyzeWorkspaceCommand(): Promise<void> {
     return;
   }
 
-  // MVP: analyze the first workspace folder. Multi-root workspaces can be
-  // supported later by letting the user pick one.
+  // Support single-root or first folder in multi-root workspaces
   const workspaceFolder = workspaceFolders[0];
-  const localPath = workspaceFolder.uri.fsPath;
-
-  if (!localPath) {
-    vscode.window.showErrorMessage('Carbon: Could not resolve a filesystem path for the open workspace.');
-    return;
-  }
 
   try {
     const result = await vscode.window.withProgress<AnalyzeFinalResult>(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Carbon: Analyzing workspace…',
+        title: `Carbon: Analyzing ${workspaceFolder.name}…`,
         cancellable: false,
       },
       async (progress) => {
-        return analyzeLocalPath(localPath, (event) => {
+        // Step 1: Collect safe files locally
+        const payload = await collectWorkspaceFiles(workspaceFolder, (msg) => {
+          progress.report({ message: msg });
+        });
+
+        if (payload.files.length === 0) {
+          throw new Error('No eligible code files were found in this workspace.');
+        }
+
+        // Step 2: Send safe payload to backend and stream analysis events
+        return analyzeWorkspacePayload(payload, (event) => {
           progress.report({ message: describeProgress(event.status) });
         });
       }
@@ -57,12 +61,12 @@ export async function analyzeWorkspaceCommand(): Promise<void> {
 
 function describeProgress(status: string): string {
   switch (status) {
-    case 'reading_workspace':
-      return 'Reading workspace files…';
+    case 'uploading':
+      return 'Uploading workspace payload…';
     case 'reading_files':
-      return 'Reading files…';
+      return 'Processing codebase AST…';
     case 'analyzing':
-      return 'Running analysis agents…';
+      return 'Running collaborative AI agents…';
     case 'node_finished':
       return 'Agent step finished…';
     default:
@@ -89,6 +93,13 @@ function showResultsPanel(workspaceName: string, result: AnalyzeFinalResult): vo
   activePanel.webview.onDidReceiveMessage(async (message) => {
     if (message.command === 'explainWithVideo') {
       await generateVideoExplainer(result);
+    } else if (message.command === 'openInSimpleBrowser') {
+      // #4: Open URL inside VS Code's built-in Simple Browser panel
+      const uri = vscode.Uri.parse(message.url);
+      await vscode.commands.executeCommand('simpleBrowser.show', uri);
+    } else if (message.command === 'openExternal') {
+      // Open in the system's default browser
+      await vscode.env.openExternal(vscode.Uri.parse(message.url));
     }
   });
 
@@ -113,8 +124,15 @@ async function generateVideoExplainer(result: AnalyzeFinalResult): Promise<void>
       activePanel.webview.postMessage({ command: 'videoUrlReady', url: videoResult.url });
     }
 
-    vscode.env.openExternal(vscode.Uri.parse(videoResult.url));
-    vscode.window.showInformationMessage('Carbon: Video explanation generated on Scrimba!');
+    // Notify with the URL so the user can also copy it from the notification
+    vscode.window.showInformationMessage(
+      `Carbon: Video ready! ${videoResult.url}`,
+      'Open in Browser'
+    ).then(choice => {
+      if (choice === 'Open in Browser') {
+        vscode.env.openExternal(vscode.Uri.parse(videoResult.url));
+      }
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     vscode.window.showErrorMessage(`Carbon: Failed to generate video explanation — ${msg}`);
@@ -157,12 +175,74 @@ function buildResultsHtml(workspaceName: string, result: AnalyzeFinalResult): st
     align-items: center;
     gap: 8px;
   }
-  .btn:hover {
-    background-color: var(--vscode-button-hoverBackground);
+  .btn:hover { background-color: var(--vscode-button-hoverBackground); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary {
+    background-color: var(--vscode-button-secondaryBackground, #3c3c3c);
+    color: var(--vscode-button-secondaryForeground, #cccccc);
   }
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .btn-secondary:hover {
+    background-color: var(--vscode-button-secondaryHoverBackground, #4c4c4c);
+  }
+  /* ── Video preview card (#3) ──────────────────────────────── */
+  .video-card {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 6px;
+    background: var(--vscode-editor-inactiveSelectionBackground, rgba(255,255,255,0.04));
+  }
+  .video-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+  .video-card-icon { font-size: 1.5rem; }
+  .video-card-title {
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--vscode-editor-foreground);
+  }
+  .video-card-subtitle {
+    font-size: 0.82rem;
+    color: var(--vscode-descriptionForeground);
+    margin-bottom: 0.75rem;
+  }
+  .video-card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .video-card-error {
+    display: none;
+    margin-top: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--vscode-testing-iconFailedColor, #F48771);
+  }
+  /* ── Interactive Architecture Diagram ──────────────────────── */
+  .diagram-wrapper {
+    margin-top: 0.5rem;
+    border: 1px solid var(--vscode-panel-border);
+    border-radius: 6px;
+    background: var(--vscode-editor-inactiveSelectionBackground, rgba(255, 255, 255, 0.02));
+    padding: 1rem;
+  }
+  .diagram-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--vscode-panel-border);
+  }
+  .mermaid-box {
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+    min-height: 100px;
+  }
+  .mermaid-box svg {
+    max-width: 100%;
+    height: auto;
   }
 </style>
 </head>
@@ -171,7 +251,21 @@ function buildResultsHtml(workspaceName: string, result: AnalyzeFinalResult): st
 
   <div style="margin-bottom: 2rem;">
     <button id="video-btn" class="btn">🎥 Explain with Video</button>
-    <div id="video-status" style="margin-top: 0.5rem; font-size: 0.9rem; display: none;"></div>
+    <div id="video-status" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--vscode-descriptionForeground); display: none;"></div>
+
+    <!-- #3 Video preview card: hidden until a URL arrives -->
+    <div class="video-card" id="video-card">
+      <div class="video-card-header">
+        <span class="video-card-icon">🎬</span>
+        <span class="video-card-title">Scrimba Video Explanation</span>
+      </div>
+      <div class="video-card-subtitle" id="video-card-url">Generating…</div>
+      <div class="video-card-actions">
+        <button id="open-browser-btn" class="btn">🌐 Open in Browser</button>
+        <button id="open-vscode-btn" class="btn btn-secondary">⌨️ Open in VS Code</button>
+      </div>
+      <div class="video-card-error" id="video-card-error"></div>
+    </div>
   </div>
 
   <h2>Summary</h2>
@@ -184,9 +278,19 @@ function buildResultsHtml(workspaceName: string, result: AnalyzeFinalResult): st
   <pre><code>${escapeHtml(keyComponents)}</code></pre>
 
   ${diagram ? `
-  <h2>Architecture Diagram (Mermaid source)</h2>
-  <p><em>Rendered diagrams aren't wired up yet in this MVP — showing the raw Mermaid definition below. Paste it into the web app or the <a href="https://mermaid.live">Mermaid Live Editor</a> to view it visually.</em></p>
-  <pre><code>${escapeHtml(diagram)}</code></pre>
+  <h2>Architecture Diagram</h2>
+  <div class="diagram-wrapper">
+    <div class="diagram-toolbar">
+      <span style="font-size: 0.85rem; color: var(--vscode-descriptionForeground);">Interactive visual flowchart</span>
+      <button id="toggle-raw-diagram-btn" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">Show Mermaid Source</button>
+    </div>
+    <div id="mermaid-rendered" class="mermaid-box">
+      <pre class="mermaid" style="background: transparent; border: none; display: flex; justify-content: center;">${escapeHtml(diagram)}</pre>
+    </div>
+    <div id="mermaid-raw" style="display: none; margin-top: 0.75rem;">
+      <pre><code>${escapeHtml(diagram)}</code></pre>
+    </div>
+  </div>
   ` : ''}
 
   <h2>API Endpoints</h2>
@@ -197,30 +301,93 @@ function buildResultsHtml(workspaceName: string, result: AnalyzeFinalResult): st
 
   <script>
     const vscode = acquireVsCodeApi();
-    const videoBtn = document.getElementById('video-btn');
-    const videoStatus = document.getElementById('video-status');
+    const videoBtn       = document.getElementById('video-btn');
+    const videoStatus    = document.getElementById('video-status');
+    const videoCard      = document.getElementById('video-card');
+    const videoCardUrl   = document.getElementById('video-card-url');
+    const videoCardError = document.getElementById('video-card-error');
+    const openBrowserBtn = document.getElementById('open-browser-btn');
+    const openVscodeBtn  = document.getElementById('open-vscode-btn');
 
+    let currentVideoUrl = null;
+
+    // ── Trigger video generation ──────────────────────────────
     videoBtn.addEventListener('click', () => {
       videoBtn.disabled = true;
+      videoCard.style.display = 'none';
+      videoCardError.style.display = 'none';
       videoStatus.style.display = 'block';
-      videoStatus.style.color = 'var(--vscode-descriptionForeground)';
-      videoStatus.innerHTML = '⚡ Initiating video generation. Please check VS Code notifications for progress...';
-      
+      videoStatus.textContent = '⚡ Initiating video generation — check VS Code notifications for progress...';
       vscode.postMessage({ command: 'explainWithVideo' });
     });
 
-    window.addEventListener('message', (event) => {
-      const message = event.data;
-      if (message.command === 'videoUrlReady') {
-        videoBtn.disabled = false;
-        videoStatus.style.color = 'var(--vscode-testing-iconPassedColor, #89D185)';
-        videoStatus.innerHTML = '🎉 Video explanation is ready! <a href="' + message.url + '" style="color: var(--vscode-textLink-foreground); font-weight: bold;">Click here to watch on Scrimba</a>';
-      } else if (message.command === 'videoError') {
-        videoBtn.disabled = false;
-        videoStatus.style.color = 'var(--vscode-testing-iconFailedColor, #F48771)';
-        videoStatus.innerHTML = '❌ Generation failed: ' + message.message;
+    // ── #4: Open in browser (external) ───────────────────────
+    openBrowserBtn.addEventListener('click', () => {
+      if (currentVideoUrl) {
+        vscode.postMessage({ command: 'openExternal', url: currentVideoUrl });
       }
     });
+
+    // ── #4: Open in VS Code Simple Browser ───────────────────
+    openVscodeBtn.addEventListener('click', () => {
+      if (currentVideoUrl) {
+        vscode.postMessage({ command: 'openInSimpleBrowser', url: currentVideoUrl });
+      }
+    });
+
+    // ── Receive messages from extension host ──────────────────
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+
+      if (msg.command === 'videoUrlReady') {
+        // #3: Show the video preview card
+        currentVideoUrl = msg.url;
+        videoBtn.disabled = false;
+        videoStatus.style.display = 'none';
+        videoCard.style.display = 'block';
+        videoCardUrl.textContent = msg.url;
+        videoCardError.style.display = 'none';
+
+      } else if (msg.command === 'videoError') {
+        // Show error inline in the card (or status area if card not yet shown)
+        videoBtn.disabled = false;
+        videoStatus.style.display = 'none';
+        if (videoCard.style.display === 'block') {
+          videoCardError.style.display = 'block';
+          videoCardError.textContent = '\u274c ' + msg.message;
+        } else {
+          videoStatus.style.display = 'block';
+          videoStatus.style.color = 'var(--vscode-testing-iconFailedColor, #F48771)';
+          videoStatus.textContent = '\u274c Generation failed: ' + msg.message;
+        }
+      }
+    });
+
+    // ── Toggle Raw Mermaid Source ─────────────────────────────
+    const toggleDiagramBtn = document.getElementById('toggle-raw-diagram-btn');
+    const rawDiagramDiv = document.getElementById('mermaid-raw');
+
+    if (toggleDiagramBtn && rawDiagramDiv) {
+      toggleDiagramBtn.addEventListener('click', () => {
+        const isHidden = rawDiagramDiv.style.display === 'none';
+        rawDiagramDiv.style.display = isHidden ? 'block' : 'none';
+        toggleDiagramBtn.textContent = isHidden ? 'Hide Mermaid Source' : 'Show Mermaid Source';
+      });
+    }
+  </script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    try {
+      const isDark = !document.body.classList.contains('vscode-light');
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: isDark ? 'dark' : 'default',
+        securityLevel: 'loose',
+        fontFamily: 'var(--vscode-font-family)'
+      });
+    } catch (err) {
+      console.error('Mermaid render initialization error:', err);
+    }
   </script>
 </body>
 </html>`;

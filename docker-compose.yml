@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # ── 1. Python Agent Service (FastAPI + LangGraph + Gemini) ────
+  agent-service:
+    build:
+      context: ./"Baby/Carbon Agent Service"
+      dockerfile: Dockerfile
+    container_name: carbon-agent-service
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ── 2. Node.js Backend Proxy (Express + Scrimba MCP Adapter) ─
+  backend:
+    build:
+      context: ./"Baby/Carbon Backend"
+      dockerfile: Dockerfile
+    container_name: carbon-backend
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - PYTHON_SERVICE_URL=http://agent-service:8000
+    depends_on:
+      agent-service:
+        condition: service_healthy
+    restart: unless-stopped

@@ -1,65 +1,65 @@
-# Carbon — VS Code Extension (MVP)
+# Carbon — AI Codebase Explainer & Video Synthesizer
 
-Explains the codebase currently open in VS Code using Carbon's existing
-analysis pipeline (Node backend → Python agent service → LangGraph → Gemini).
+**Carbon** is an autonomous AI developer tool for VS Code that analyzes any open codebase, generates interactive architecture flowcharts, uncovers API endpoints, and synthesizes interactive audio-visual video explanations on Scrimba.
 
-This extension does **not** talk to Gemini or the Python service directly.
-It only calls the Carbon Backend (`http://localhost:3001`), which forwards
-the request to the Python agent service. The Gemini API key stays
-server-side and is never bundled into or used by the extension.
+---
 
-## Requirements
+## ✨ Features
 
-Before using the extension, the rest of Carbon must be running locally:
+- **⚡ Client-Side Safe File Collection**: Scans your local workspace, automatically ignores binaries, `.git`, `node_modules`, and strictly excludes secrets/`.env` files.
+- **🤖 Collaborative AI Agents**: Powered by LangGraph and Gemini for multi-agent reasoning.
+- **🗺️ Interactive Flowcharts**: Renders visual SVG architecture diagrams inside VS Code.
+- **🎥 Scrimba Video Explainer**: 1-click generation of interactive video walkthroughs with synchronized code highlights and diagrams.
+- **🔒 Enterprise-Grade Security**: Your `GEMINI_API_KEY` stays exclusively on your backend server.
 
-1. **Carbon Agent Service** (Python, port 8000)
-2. **Carbon Backend** (Node/Express, port 3001)
+---
 
-(The React frontend is not required for the extension to work, since the
-extension talks to the backend directly.)
+## 🚀 Quick Start
 
-## Running the extension (Extension Development Host)
-
-1. Open the `vscode-extension/` folder in VS Code.
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Compile:
-   ```
-   npm run compile
-   ```
-4. Press `F5` (or Run → Start Debugging). This opens a new **Extension
-   Development Host** window with the extension loaded.
-5. In that new window, open any folder/workspace you want Carbon to explain.
-6. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and run:
+1. Open any project folder in VS Code.
+2. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+3. Run:
    ```
    Carbon: Explain Current Workspace
    ```
+4. Explore your project architecture, tech stack, API documentation, and click **"🎥 Explain with Video"** to generate a Scrimba video explainer.
 
-## What it does
+---
 
-1. Reads the path of the currently open workspace folder
-   (`vscode.workspace.workspaceFolders[0].uri.fsPath`).
-2. Sends it to the Carbon Backend:
-   ```
-   POST http://localhost:3001/api/analyze
-   { "localPath": "<workspace path>" }
-   ```
-3. Streams progress notifications while the backend/agent service work.
-4. On completion, opens a Webview panel showing:
-   - Summary
-   - Tech stack
-   - Key components
-   - Architecture diagram — shown as raw Mermaid source for this MVP
-     (paste it into https://mermaid.live to view it visually)
-   - API endpoints (if returned)
-   - Business logic (if returned)
+## ⚙️ Configuration
 
-## Known limitations (MVP)
+In your VS Code Settings (`Ctrl+,` or `Cmd+,`), search for **Carbon**:
 
-- Only the first folder of a multi-root workspace is analyzed.
-- The Mermaid diagram is shown as text, not rendered inline, to avoid
-  pulling in a rendering library for this first pass.
-- No VS Code chat yet — that's a separate follow-up task.
-- No caching/re-use awareness in the UI (each run re-analyzes from scratch).
+| Setting | Default | Description |
+|---|---|---|
+| `carbon.backendUrl` | `http://localhost:3002` | HTTPS URL of your deployed Carbon Backend on Render/Railway, or `http://localhost:3002` for local development. |
+
+---
+
+## 🛠️ Local Development & Self-Hosting
+
+To run the backend services locally:
+
+```bash
+# 1. Clone repo
+git clone https://github.com/carbon-dev/carbon.git
+cd Carbon
+
+# 2. Set your Gemini API key in .env
+cp .env.example .env
+
+# 3. Start services via Docker Compose
+docker-compose up
+```
+
+---
+
+## 📦 Building from Source
+
+```bash
+cd Baby/vscode-extension
+npm install
+npm run compile
+npm run package
+```
+This produces `carbon-vscode-0.1.0.vsix` ready to install in any VS Code instance.

@@ -34,8 +34,8 @@ export default function Chatbox({ repoUrl }) {
     setLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response =  await axios.post(`${apiUrl}/api/chat`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+      const response = await axios.post(`${apiUrl}/api/chat`, {
         repoUrl: repoUrl,
         query: userQuery
       });

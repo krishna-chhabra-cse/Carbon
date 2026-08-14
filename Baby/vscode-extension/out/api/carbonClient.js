@@ -45,34 +45,47 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarbonApiError = void 0;
-exports.analyzeLocalPath = analyzeLocalPath;
+exports.getBackendBaseUrl = getBackendBaseUrl;
+exports.analyzeWorkspacePayload = analyzeWorkspacePayload;
 exports.explainWithVideo = explainWithVideo;
 const http = __importStar(require("http"));
 const https = __importStar(require("https"));
 const url_1 = require("url");
+const vscode = __importStar(require("vscode"));
 class CarbonApiError extends Error {
 }
 exports.CarbonApiError = CarbonApiError;
-const BACKEND_ANALYZE_URL = 'http://localhost:3002/api/analyze';
+function getBackendBaseUrl() {
+    const config = vscode.workspace.getConfiguration('carbon');
+    const url = config.get('backendUrl');
+    return (url && url.trim()) ? url.trim().replace(/\/+$/, '') : 'http://localhost:3002';
+}
 /**
- * Sends a local workspace path to the Carbon backend and streams back
- * progress events, resolving with the final "complete" payload.
+ * Sends a collected workspace payload (safe files + structure) to the
+ * Carbon backend over HTTPS/HTTP and streams back progress events.
  *
- * @param localPath   Absolute filesystem path of the open workspace.
- * @param onProgress  Called for every NDJSON event as it arrives
- *                     (e.g. {status:"reading_workspace"}, {status:"analyzing"}).
+ * @param payload     WorkspacePayload containing collected files and tree structure.
+ * @param onProgress  Called for every NDJSON event as it arrives.
  */
-function analyzeLocalPath(localPath, onProgress) {
+function analyzeWorkspacePayload(payload, onProgress) {
     return new Promise((resolve, reject) => {
+        const baseUrl = getBackendBaseUrl();
+        const endpoint = `${baseUrl}/api/analyze`;
         let target;
         try {
-            target = new url_1.URL(BACKEND_ANALYZE_URL);
+            target = new url_1.URL(endpoint);
         }
         catch (err) {
-            reject(new CarbonApiError(`Invalid backend URL: ${BACKEND_ANALYZE_URL}`));
+            reject(new CarbonApiError(`Invalid backend URL: ${endpoint}`));
             return;
         }
-        const payload = JSON.stringify({ localPath });
+        const bodyData = JSON.stringify({
+            workspaceName: payload.workspaceName,
+            files: payload.files,
+            folderStructure: payload.folderStructure,
+            totalFiles: payload.totalFiles,
+            totalBytes: payload.totalBytes
+        });
         const transport = target.protocol === 'https:' ? https : http;
         const req = transport.request({
             hostname: target.hostname,
@@ -81,7 +94,7 @@ function analyzeLocalPath(localPath, onProgress) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(payload),
+                'Content-Length': Buffer.byteLength(bodyData),
             },
         }, (res) => {
             let buffer = '';
@@ -148,25 +161,26 @@ function analyzeLocalPath(localPath, onProgress) {
         });
         req.on('error', (err) => {
             if (err.code === 'ECONNREFUSED') {
-                reject(new CarbonApiError('Could not reach the Carbon backend at http://localhost:3001. Is it running? (npm start in "Carbon Backend")'));
+                reject(new CarbonApiError(`Could not reach the Carbon backend at ${baseUrl}. Is it running? (npm start in "Carbon Backend" or docker-compose up)`));
             }
             else {
                 reject(new CarbonApiError(`Request to Carbon backend failed: ${err.message}`));
             }
         });
-        req.write(payload);
+        req.write(bodyData);
         req.end();
     });
 }
-const BACKEND_EXPLAIN_VIDEO_URL = 'http://localhost:3002/api/explain-video';
 function explainWithVideo(analysisResult) {
     return new Promise((resolve, reject) => {
+        const baseUrl = getBackendBaseUrl();
+        const endpoint = `${baseUrl}/api/explain-video`;
         let target;
         try {
-            target = new url_1.URL(BACKEND_EXPLAIN_VIDEO_URL);
+            target = new url_1.URL(endpoint);
         }
         catch (err) {
-            reject(new CarbonApiError(`Invalid backend URL: ${BACKEND_EXPLAIN_VIDEO_URL}`));
+            reject(new CarbonApiError(`Invalid backend URL: ${endpoint}`));
             return;
         }
         const payload = JSON.stringify({

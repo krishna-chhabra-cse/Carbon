@@ -141,10 +141,14 @@ function sanitizeMermaid(raw) {
   return final;
 }
 
+import { Copy, Check, Code, ExternalLink } from 'lucide-react';
+
 export default function ArchitectureDiagram({ chart }) {
   const containerRef = useRef(null);
   const [error, setError] = useState(null);
   const [rawChart, setRawChart] = useState(null);
+  const [showRaw, setShowRaw] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (chart && containerRef.current) {
@@ -161,7 +165,6 @@ export default function ArchitectureDiagram({ chart }) {
           }
         }).catch((err) => {
           console.error("Mermaid render error:", err);
-          console.error("Sanitized chart:\n", cleanChart);
           setError(err.message || "Invalid Mermaid syntax");
           setRawChart(cleanChart);
         });
@@ -173,20 +176,83 @@ export default function ArchitectureDiagram({ chart }) {
     }
   }, [chart]);
 
+  const handleCopy = () => {
+    if (!chart) return;
+    navigator.clipboard.writeText(sanitizeMermaid(chart));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (!chart) return null;
 
   return (
-    <div className="mermaid-container animate-fade-in" style={{ marginTop: '20px' }}>
+    <div className="mermaid-container animate-fade-in" style={{ marginTop: '16px' }}>
+      {/* Diagram Toolbar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '16px',
+        paddingBottom: '12px',
+        borderBottom: '1px solid var(--panel-border)',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+          Interactive Flowchart Visualization
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="btn-outline"
+            style={{ padding: '6px 12px', fontSize: '12px', height: 'auto' }}
+          >
+            {copied ? <Check size={14} color="#22c55e" /> : <Copy size={14} />}
+            {copied ? 'Copied!' : 'Copy Code'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowRaw(!showRaw)}
+            className="btn-outline"
+            style={{ padding: '6px 12px', fontSize: '12px', height: 'auto' }}
+          >
+            <Code size={14} />
+            {showRaw ? 'Hide Source' : 'View Source'}
+          </button>
+          <a
+            href={`https://mermaid.live/edit#pako:${btoa(unescape(encodeURIComponent(JSON.stringify({ code: sanitizeMermaid(chart), mermaid: { theme: 'dark' } }))))}`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-outline"
+            style={{ padding: '6px 12px', fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)' }}
+          >
+            <ExternalLink size={14} />
+            Mermaid Live
+          </a>
+        </div>
+      </div>
+
+      {/* Rendered SVG or Error */}
       {error ? (
         <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.1)', color: '#fca5a5', borderRadius: '8px', overflowX: 'auto', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
           <h4 style={{ margin: '0 0 10px 0' }}>⚠️ Could not render diagram</h4>
           <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#94a3b8' }}>
-            The AI generated diagram syntax the renderer could not parse. Raw output:
+            The diagram syntax could not be rendered as SVG. Raw source code:
           </p>
           <pre style={{ fontSize: '13px', margin: 0, whiteSpace: 'pre-wrap', color: '#e2e8f0' }}>{rawChart || chart}</pre>
         </div>
       ) : (
-        <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center' }} />
+        <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center', overflowX: 'auto', padding: '16px 0' }} />
+      )}
+
+      {/* Raw Source Toggle */}
+      {showRaw && (
+        <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--panel-border)' }}>
+          <pre style={{ background: 'rgba(0,0,0,0.3)', padding: '16px', borderRadius: '8px', fontSize: '13px', color: '#818cf8', whiteSpace: 'pre-wrap' }}>
+            {sanitizeMermaid(chart)}
+          </pre>
+        </div>
       )}
     </div>
   );

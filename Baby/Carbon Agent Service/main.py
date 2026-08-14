@@ -15,7 +15,7 @@
 
 import json
 import os
-from typing import Optional
+from typing import Optional, List
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +25,6 @@ from dotenv import load_dotenv
 # Import our tools
 from tools.git_cloner import clone_repo, cleanup_repo
 from tools.file_reader import get_folder_structure, read_files_for_analysis
-from tools.workspace_reader import validate_workspace_path
 
 from agents.architecture_agent import run as run_architecture_agent
 from agents.api_agent import run as run_api_agent
@@ -56,16 +55,23 @@ app.add_middleware(
 # Pydantic validates this automatically — if "repo_url"
 # is missing, it returns a clear error before we even run
 # -------------------------------------------------------
-class AnalyzeRequest(BaseModel):
-    repo_url: Optional[str] = None    # e.g. "https://github.com/facebook/react"
-    local_path: Optional[str] = None  # e.g. "C:\\Users\\username\\project"
+class FilePayload(BaseModel):
+    path: str
+    content: str
+    size: Optional[int] = None
 
-    # NOTE: written for Pydantic v2 (model_validator). If this project pins
-    # Pydantic v1, swap this for `@root_validator` with the same body.
+class AnalyzeRequest(BaseModel):
+    repo_url: Optional[str] = None         # e.g. "https://github.com/facebook/react"
+    workspace_name: Optional[str] = None   # e.g. "MyProject"
+    files: Optional[List[FilePayload]] = None  # Uploaded file contents from VS Code extension
+    folder_structure: Optional[str] = None # Folder structure tree text
+
     @model_validator(mode="after")
     def _require_a_source(self):
-        if not self.repo_url and not self.local_path:
-            raise ValueError("Either 'repo_url' or 'local_path' must be provided")
+        has_repo = bool(self.repo_url and self.repo_url.strip())
+        has_files = bool(self.files and len(self.files) > 0)
+        if not has_repo and not has_files:
+            raise ValueError("Either 'repo_url' or a non-empty 'files' list must be provided")
         return self
 
 class ChatRequest(BaseModel):
@@ -80,25 +86,19 @@ class ExplainerOPMLRequest(BaseModel):
 
 # -------------------------------------------------------
 # Cache to hold codebase state for chat queries.
-#
-# Keys are a stable identifier for the analyzed source:
-#   - the repo_url as-is, for GitHub repositories
-#   - the normalized absolute path, for local workspaces
-# Values are dicts with folder_structure and files_content.
 # -------------------------------------------------------
 REPO_CACHE = {}
 
 
-def get_cache_key(repo_url: Optional[str], local_path: Optional[str]) -> str:
+def get_cache_key(repo_url: Optional[str], workspace_name: Optional[str]) -> str:
     """
-    Builds a stable cache key for either a GitHub repo or a local workspace.
-    GitHub repos are keyed by URL (unchanged from before). Local workspaces
-    are keyed by their normalized absolute path so the same folder always
-    maps to the same cache entry.
+    Builds a stable cache key for either a GitHub repo or a workspace payload.
     """
-    if local_path:
-        return os.path.normpath(os.path.abspath(local_path))
-    return repo_url
+    if repo_url:
+        return repo_url.strip()
+    if workspace_name:
+        return workspace_name.strip()
+    return "workspace_default"
 
 
 # -------------------------------------------------------
@@ -113,37 +113,30 @@ def health_check():
 # The main endpoint — Node.js calls this
 # POST /run-agents
 # Body: { "repo_url": "https://github.com/..." }
-#   OR: { "local_path": "C:\\Users\\username\\project" }
+#   OR: { "workspace_name": "...", "files": [...], "folder_structure": "..." }
 # -------------------------------------------------------
 @app.post("/run-agents")
 async def run_agents(request: AnalyzeRequest):
     async def event_generator():
         repo_path = None
-        is_local_workspace = bool(request.local_path)
-        source_label = request.local_path if is_local_workspace else request.repo_url
+        is_uploaded_workspace = bool(request.files and len(request.files) > 0)
+        source_label = request.workspace_name if is_uploaded_workspace else request.repo_url
 
         try:
             print(f"\n{'='*50}")
             print(f"[START] Starting streaming analysis for: {source_label}")
             print(f"{'='*50}")
 
-            if is_local_workspace:
-                # STEP 1 (local workspace): validate the path instead of cloning
-                yield json.dumps({"status": "reading_workspace"}) + "\n"
+            if is_uploaded_workspace:
+                yield json.dumps({"status": "reading_files"}) + "\n"
 
-                print("\n[STEP 1] Validating local workspace path...")
-                validation_result = validate_workspace_path(request.local_path)
-
-                if not validation_result["success"]:
-                    yield json.dumps({"status": "error", "message": f"Invalid workspace path: {validation_result['error']}"}) + "\n"
-                    return
-
-                repo_path = validation_result["path"]
+                print(f"\n[STEP 1] Processing {len(request.files)} uploaded workspace files...")
+                files_content = { item.path: item.content for item in request.files }
+                folder_structure = request.folder_structure or "\n".join(f"[FILE] {f.path}" for f in request.files)
             else:
-                # STEP 1 (GitHub repo): clone the repository — unchanged
                 yield json.dumps({"status": "cloning"}) + "\n"
 
-                print("\n[STEP 1] Cloning repository...")
+                print("\n[STEP 1] Cloning remote repository...")
                 clone_result = clone_repo(request.repo_url)
 
                 if not clone_result["success"]:
@@ -151,13 +144,12 @@ async def run_agents(request: AnalyzeRequest):
                     return
 
                 repo_path = clone_result["repo_path"]
+                yield json.dumps({"status": "reading_files"}) + "\n"
 
-            yield json.dumps({"status": "reading_files"}) + "\n"
-
-            # STEP 2: Read file structure and contents
-            print("\n[STEP 2] Reading files...")
-            folder_structure = get_folder_structure(repo_path)
-            files_content = read_files_for_analysis(repo_path)
+                # STEP 2: Read file structure and contents
+                print("\n[STEP 2] Reading files...")
+                folder_structure = get_folder_structure(repo_path)
+                files_content = read_files_for_analysis(repo_path)
             
             yield json.dumps({"status": "analyzing"}) + "\n"
 
@@ -171,18 +163,15 @@ async def run_agents(request: AnalyzeRequest):
             }
             
             # Stream the graph execution!
-            # LangGraph yields updates as each node completes
             final_state = {}
             for event in agent_graph.stream(initial_state):
-                # event is a dict mapping node_name -> partial_state
                 for node_name, partial_state in event.items():
                     print(f"[{node_name}] finished.")
                     yield json.dumps({"status": "node_finished", "node": node_name}) + "\n"
-                    # Update our running final_state
                     final_state.update(partial_state)
             
             # CACHE THE REPO DATA FOR CHAT
-            cache_key = get_cache_key(request.repo_url, request.local_path)
+            cache_key = get_cache_key(request.repo_url, request.workspace_name)
             REPO_CACHE[cache_key] = {
                 "folder_structure": folder_structure,
                 "files_content": files_content
@@ -190,13 +179,12 @@ async def run_agents(request: AnalyzeRequest):
 
             print("\n[DONE] All agents finished! Returning final results.")
 
-            # Yield the final payload (repo_url / local_path preserved as sent,
-            # so existing GitHub-flow consumers see the exact same shape as before)
+            # Yield the final payload
             yield json.dumps({
                 "status": "complete",
                 "success": True,
                 "repo_url": request.repo_url,
-                "local_path": request.local_path,
+                "workspace_name": request.workspace_name,
                 "architecture": final_state.get("architecture_result"),
                 "api_docs": final_state.get("api_result"),
                 "business_logic": final_state.get("business_logic_result"),
@@ -207,9 +195,8 @@ async def run_agents(request: AnalyzeRequest):
             yield json.dumps({"status": "error", "message": str(e)}) + "\n"
 
         finally:
-            # IMPORTANT: only delete cloned temp repos. A local workspace
-            # is the user's own project folder and must never be removed.
-            if repo_path and not is_local_workspace:
+            # IMPORTANT: only delete cloned temp repos.
+            if repo_path and not is_uploaded_workspace:
                 print("\n[CLEANUP] Cleaning up cloned repo...")
                 cleanup_repo(repo_path)
 
