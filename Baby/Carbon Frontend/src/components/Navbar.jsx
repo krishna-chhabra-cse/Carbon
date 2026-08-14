@@ -17,7 +17,8 @@ import {
   X, 
   Tv, 
   Cpu,
-  Film
+  Film,
+  Search
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, onOpenPalette }) {
