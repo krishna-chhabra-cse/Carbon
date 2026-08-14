@@ -33,6 +33,8 @@ import ArchitectureDiagram from './components/ArchitectureDiagram';
 import ApiEndpoints from './components/ApiEndpoints';
 import BusinessLogic from './components/BusinessLogic';
 import CodebaseStudio from './components/CodebaseStudio';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 
 export default function App() {
@@ -362,6 +364,10 @@ export default function App() {
           analysisData={result}
         />
       )}
+
+      {/* ── VERCEL REAL-TIME WEB ANALYTICS & SPEED INSIGHTS ── */}
+      <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
