@@ -3,7 +3,7 @@
 // ============================================================
 
 const DEFAULT_BACKEND_URL = 'http://localhost:3002';
-const DEFAULT_WEB_URL = 'http://localhost:5173';
+const DEFAULT_WEB_URL = 'https://carbons.codes';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const repoNameEl = document.getElementById('repo-name');

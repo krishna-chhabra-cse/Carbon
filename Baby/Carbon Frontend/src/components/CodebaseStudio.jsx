@@ -237,7 +237,7 @@ export default function CodebaseStudio({
           onClick={() => setActiveStudioTab('chat')}
         >
           <MessageSquare size={16} />
-          <span>AI Co-Pilot</span>
+          <span>AI Carbon</span>
         </button>
       </div>
 

@@ -4,7 +4,7 @@
 // ============================================================
 
 (function () {
-  const DEFAULT_WEB_URL = 'http://localhost:5173';
+  const DEFAULT_WEB_URL = 'https://carbons.codes';
 
   function injectCarbonButton() {
     // Only inject on repo root or repo pages

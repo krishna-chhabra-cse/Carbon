@@ -25,7 +25,10 @@ const SUGGESTED_PROMPTS = [
 
 export default function Chatbox({ repoUrl }) {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hello! I've fully parsed this codebase. Click one of the suggested prompts below or ask anything about its architecture, endpoints, or logic." }
+    {
+      role: 'assistant',
+      content: "Hello! I'm **AI Carbon**. I've fully parsed this codebase. Click one of the suggested prompts below or ask anything about its architecture, endpoints, or logic."
+    }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -64,7 +67,7 @@ export default function Chatbox({ repoUrl }) {
     } catch (error) {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: `❌ **Error:** ${error.response?.data?.detail || error.response?.data?.error || 'Could not reach the server.'}` 
+        content: `❌ Error: ${error.response?.data?.error || error.message || 'Failed to get answer.'}` 
       }]);
     } finally {
       setLoading(false);
@@ -76,10 +79,14 @@ export default function Chatbox({ repoUrl }) {
     sendQuery(input);
   };
 
-  const copyMessageText = (text, idx) => {
-    navigator.clipboard.writeText(text);
-    setCopiedMsgIdx(idx);
-    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  const copyMessageText = async (content, idx) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMsgIdx(idx);
+      setTimeout(() => setCopiedMsgIdx(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
   };
 
   return (
@@ -93,7 +100,7 @@ export default function Chatbox({ repoUrl }) {
           </div>
           <div>
             <h3 style={{ margin: 0, fontSize: '16px', color: '#f8fafc', fontWeight: 600 }}>
-              AI Codebase Intelligence Co-Pilot
+              AI Carbon
             </h3>
             <span style={{ fontSize: '12px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span className="live-dot" /> Repository graph indexed & ready
@@ -102,7 +109,7 @@ export default function Chatbox({ repoUrl }) {
         </div>
 
         <div className="chat-badge-tag">
-          <Sparkles size={13} /> Gemini 2.5 Flash
+          <Sparkles size={13} /> AI Carbon
         </div>
       </div>
       
