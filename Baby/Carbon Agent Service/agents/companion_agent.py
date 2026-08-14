@@ -140,35 +140,8 @@ USER QUERY / TOPIC:
 Generate your complete, beautifully formatted response:
 """
 
-    # Candidate models in priority order to guarantee high availability
-    CANDIDATE_MODELS = [
-        "gemini-2.5-flash",
-        "gemini-3.1-flash-lite",
-        "gemini-2.5-flash-lite",
-        "gemini-1.5-flash"
-    ]
-
-    answer_text = None
-    last_err = None
-
-    for candidate_model in CANDIDATE_MODELS:
-        try:
-            print(f"[COMPANION] Calling Gemini model: {candidate_model}...")
-            response = client.models.generate_content(
-                model=candidate_model,
-                contents=prompt
-            )
-            if response and response.text:
-                answer_text = response.text.strip()
-                print(f"[COMPANION] Generated successfully with: {candidate_model}")
-                break
-        except Exception as err:
-            print(f"[COMPANION WARNING] Model {candidate_model} failed ({err}). Trying next model...")
-            last_err = err
-            continue
-
-    if not answer_text:
-        raise RuntimeError(f"All Gemini models were temporarily busy: {str(last_err)}")
+    from tools.llm_client import generate_with_retry
+    answer_text = generate_with_retry(prompt)
 
     return {
         "success": True,

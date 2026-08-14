@@ -83,14 +83,8 @@ IMPORTANT:
 """
 
     print("[API AGENT] Sending to Gemini for API analysis...")
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-        )
-    )
-    raw_text = response.text.strip()
+    from tools.llm_client import generate_with_retry
+    raw_text = generate_with_retry(prompt)
 
     if raw_text.startswith("```"):
         lines = raw_text.split('\n')

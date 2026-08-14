@@ -134,7 +134,7 @@ router.post('/chat', async (req, res) => {
     const pythonResponse = await axios.post(
       `${PYTHON_SERVICE_URL}/chat`,
       { repo_url: repoUrl || '', query: query },
-      { timeout: 60000 }
+      { timeout: 120000 }
     );
 
     res.json(pythonResponse.data);
@@ -174,7 +174,7 @@ router.post('/companion', async (req, res) => {
         mode: mode || 'explain',
         context: context || {}
       },
-      { timeout: 60000 }
+      { timeout: 120000 }
     );
 
     res.json(pythonResponse.data);

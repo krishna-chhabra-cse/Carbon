@@ -104,16 +104,10 @@ IMPORTANT:
 - Focus on WHAT the code does, not HOW it is written
 """
 
-    # Step 4: Send to Gemini with strict JSON mode
+    # Step 4: Send to Gemini with resilient failover
     print("[BIZ AGENT] Sending to Gemini for business logic analysis...")
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-        )
-    )
-    raw_text = response.text.strip()
+    from tools.llm_client import generate_with_retry
+    raw_text = generate_with_retry(prompt)
 
     # Step 5: Parse the JSON response
     if raw_text.startswith("```"):

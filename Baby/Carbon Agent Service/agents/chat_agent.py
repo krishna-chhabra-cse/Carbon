@@ -45,9 +45,5 @@ INSTRUCTIONS:
 - Format your entire response in clear, well-structured GitHub-flavored Markdown.
 """
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt
-    )
-    
-    return response.text.strip()
+    from tools.llm_client import generate_with_retry
+    return generate_with_retry(prompt)

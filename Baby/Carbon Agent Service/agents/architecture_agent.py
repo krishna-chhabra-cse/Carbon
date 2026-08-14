@@ -116,16 +116,10 @@ IMPORTANT:
 - Keep the summary beginner-friendly but technical
 """
 
-    # Step 5: Send the prompt to Gemini and get the response
+    # Step 5: Send the prompt to Gemini with resilient multi-model failover
     print("[ARCH AGENT] Sending to Gemini for analysis...")
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config=genai.types.GenerateContentConfig(
-            response_mime_type="application/json",
-        )
-    )
-    raw_text = response.text.strip()
+    from tools.llm_client import generate_with_retry
+    raw_text = generate_with_retry(prompt)
 
     # Step 6: Parse Gemini's response as JSON
     # Sometimes Gemini wraps JSON in ```json ... ``` — we need to strip that
