@@ -16,7 +16,7 @@ const express = require('express');
 const axios   = require('axios');
 const router  = express.Router();
 
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8000';
+const PYTHON_SERVICE_URL = (process.env.PYTHON_SERVICE_URL || 'http://localhost:8000').trim().replace(/\/+$/, '');
 const SCRIMBA_MCP_URL    = 'https://scrimba.com/mcp/explain';
 
 const SCRIMBA_HEADERS = {

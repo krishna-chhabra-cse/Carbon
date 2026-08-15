@@ -15,7 +15,7 @@ const axios   = require('axios');   // for making HTTP calls to Python service
 const router = express.Router();
 
 // The URL of our Python agent service (read from .env)
-const PYTHON_SERVICE_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8000';
+const PYTHON_SERVICE_URL = (process.env.PYTHON_SERVICE_URL || 'http://localhost:8000').trim().replace(/\/+$/, '');
 
 // -------------------------------------------------------
 // POST /api/analyze
