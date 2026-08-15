@@ -64,7 +64,7 @@ You can customize your Carbon backend endpoint in VS Code Settings (`Ctrl + ,` o
 
 | Setting | Default | Description |
 |---|---|---|
-| `carbon.backendUrl` | `http://localhost:3002` | HTTPS URL of your deployed Carbon Backend server (or `http://localhost:3002` for local development). |
+| `carbon.backendUrl` | `https://carbons.codes` | HTTPS URL of your deployed Carbon Backend server (or `http://localhost:3002` for local development). |
 
 ---
 
