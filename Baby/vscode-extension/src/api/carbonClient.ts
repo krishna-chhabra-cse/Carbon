@@ -103,16 +103,28 @@ export function analyzeWorkspacePayload(
           // Non-streaming error responses from Express (400/503/500) look like
           // { error: "...", details: "..." } with no "status" field.
           if (!parsed.status && (parsed.error || parsed.details)) {
-            errorMessage = parsed.error
+            const rawErr = parsed.error
               ? `${parsed.error}${parsed.details ? `: ${parsed.details}` : ''}`
               : String(parsed.details);
+            
+            if (rawErr.includes('429') || rawErr.includes('RESOURCE_EXHAUSTED')) {
+              errorMessage = 'AI Rate Limit (429): Free Gemini quota was briefly reached. Please wait 15 seconds and try again.';
+            } else {
+              errorMessage = rawErr;
+            }
             return;
           }
 
           if (parsed.status === 'error') {
-            errorMessage = typeof parsed.message === 'string'
+            const rawMsg = typeof parsed.message === 'string'
               ? parsed.message
               : 'Analysis failed with an unknown error.';
+            
+            if (rawMsg.includes('429') || rawMsg.includes('RESOURCE_EXHAUSTED')) {
+              errorMessage = 'AI Rate Limit (429): Free Gemini quota was briefly reached. Please wait 15 seconds and try again.';
+            } else {
+              errorMessage = rawMsg;
+            }
             return;
           }
 

@@ -9,13 +9,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Active models in priority order
+# Active officially supported models in priority order
 CANDIDATE_MODELS = [
-    "gemini-3.1-flash-lite",
-    "gemini-3.5-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-flash-latest",
-    "gemini-3.7-flash"
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-2.5-pro"
 ]
 
 def get_gemini_client():
@@ -26,25 +27,31 @@ def get_gemini_client():
 
 def generate_with_retry(prompt: str, system_instruction: str = None) -> str:
     """
-    Calls Gemini with automatic multi-model failover on 503 UNAVAILABLE or 429 RATE_LIMIT.
+    Calls Gemini with automatic multi-model failover and exponential backoff
+    on 503 UNAVAILABLE or 429 RATE_LIMIT.
     """
     client = get_gemini_client()
     last_err = None
 
     for model_name in CANDIDATE_MODELS:
-        try:
-            print(f"[LLM] Calling {model_name}...")
-            response = client.models.generate_content(
-                model=model_name,
-                contents=prompt
-            )
-            if response and response.text:
-                return response.text.strip()
-        except Exception as e:
-            err_str = str(e)
-            print(f"[LLM WARNING] Model {model_name} failed: {err_str[:120]}. Failing over...")
-            last_err = e
-            time.sleep(0.5)
-            continue
+        for attempt in range(2):
+            try:
+                print(f"[LLM] Calling {model_name} (attempt {attempt + 1})...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                if response and response.text:
+                    return response.text.strip()
+            except Exception as e:
+                err_str = str(e)
+                last_err = e
+                print(f"[LLM WARNING] Model {model_name} failed: {err_str[:120]}.")
+                
+                # If rate limited (429), wait briefly before retrying or failing over
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    time.sleep(1.5 * (attempt + 1))
+                else:
+                    time.sleep(0.5)
 
     raise RuntimeError(f"All Gemini models failed. Last error: {str(last_err)}")
