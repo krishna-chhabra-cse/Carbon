@@ -37,7 +37,7 @@ export class CarbonApiError extends Error {}
 export function getBackendBaseUrl(): string {
   const config = vscode.workspace.getConfiguration('carbon');
   const url = config.get<string>('backendUrl');
-  return (url && url.trim()) ? url.trim().replace(/\/+$/, '') : 'https://carbons.codes';
+  return (url && url.trim()) ? url.trim().replace(/\/+$/, '') : 'https://carbon-backend-a1sg.onrender.com';
 }
 
 /**

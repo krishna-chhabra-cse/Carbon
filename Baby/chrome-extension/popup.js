@@ -2,7 +2,7 @@
 //  Carbon Chrome Extension — Popup Controller
 // ============================================================
 
-const DEFAULT_BACKEND_URL = 'http://localhost:3002';
+const DEFAULT_BACKEND_URL = 'https://carbon-backend-a1sg.onrender.com';
 const DEFAULT_WEB_URL = 'https://carbons.codes';
 
 document.addEventListener('DOMContentLoaded', async () => {

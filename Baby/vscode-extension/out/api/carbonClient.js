@@ -58,7 +58,7 @@ exports.CarbonApiError = CarbonApiError;
 function getBackendBaseUrl() {
     const config = vscode.workspace.getConfiguration('carbon');
     const url = config.get('backendUrl');
-    return (url && url.trim()) ? url.trim().replace(/\/+$/, '') : 'https://carbons.codes';
+    return (url && url.trim()) ? url.trim().replace(/\/+$/, '') : 'https://carbon-backend-a1sg.onrender.com';
 }
 /**
  * Sends a collected workspace payload (safe files + structure) to the
