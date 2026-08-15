@@ -59,7 +59,15 @@ export default function App() {
     videoUrl: null
   });
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+  const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) 
+    ? import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '') 
+    : 'https://carbon-backend-a1sg.onrender.com';
+
+  // Pre-warm Render backend & Python service on page load
+  useEffect(() => {
+    fetch(`${apiUrl}/health`).catch(() => {});
+    fetch('https://carbon-agent-service.onrender.com/').catch(() => {});
+  }, [apiUrl]);
 
   // Global Cmd+K / Ctrl+K keyboard shortcut listener
   useEffect(() => {
@@ -84,12 +92,12 @@ export default function App() {
     }
   }, []);
 
-  const triggerAnalyzeWithRepo = async (targetRepo) => {
+  const triggerAnalyzeWithRepo = async (targetRepo, retryAttempt = 0) => {
     if (!targetRepo.trim()) return;
 
     setActiveTab('analyzer');
     setLoading(true);
-    setStatusMessage('Starting analysis...');
+    setStatusMessage(retryAttempt > 0 ? `Warming up Carbon AI cloud engine (attempt ${retryAttempt + 1})...` : 'Starting analysis...');
     setCurrentStep(1);
     setError('');
     setResult(null);
@@ -103,8 +111,20 @@ export default function App() {
         body: JSON.stringify({ repoUrl: targetRepo.trim() })
       });
       
+      // If Render is cold-starting (502/503), auto-retry up to 3 times
+      if ((response.status === 502 || response.status === 503) && retryAttempt < 3) {
+        setStatusMessage('⚡ Carbon AI is booting on Render (~20s on first load). Retrying...');
+        await new Promise(r => setTimeout(r, 6000));
+        return triggerAnalyzeWithRepo(targetRepo, retryAttempt + 1);
+      }
+
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: Failed to reach Carbon AI backend.`);
+        let errData;
+        try {
+          errData = await response.json();
+        } catch {}
+        const detail = errData?.error || errData?.details || `HTTP ${response.status}: Failed to reach Carbon AI backend.`;
+        throw new Error(detail);
       }
 
       const reader = response.body.getReader();
