@@ -9,14 +9,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Active officially supported models in priority order
+# Active verified models in priority order
 CANDIDATE_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-    "gemini-2.5-pro"
+    "gemini-3.1-flash-lite",
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash",
+    "gemini-3.6-flash",
+    "gemini-3.7-flash",
+    "gemini-flash-latest",
+    "gemini-flash-lite-latest"
 ]
 
 def get_gemini_client():
@@ -48,7 +49,7 @@ def generate_with_retry(prompt: str, system_instruction: str = None) -> str:
                 last_err = e
                 print(f"[LLM WARNING] Model {model_name} failed: {err_str[:120]}.")
                 
-                # If rate limited (429), wait briefly before retrying or failing over
+                # If rate limited (429), back off briefly before retrying or failing over
                 if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
                     time.sleep(1.5 * (attempt + 1))
                 else:
