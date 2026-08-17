@@ -108,6 +108,23 @@ def get_cache_key(repo_url: Optional[str], workspace_name: Optional[str]) -> str
 def health_check():
     return {"status": "ok", "message": "🐍 Python Agent Service is running!"}
 
+@app.get("/llm-status")
+def get_llm_status():
+    from tools.llm_client import is_ollama_available, get_installed_ollama_models
+    ollama_online = is_ollama_available()
+    models = get_installed_ollama_models() if ollama_online else []
+    provider = os.getenv("LLM_PROVIDER", "auto")
+    active_engine = "ollama" if (provider == "ollama" or (provider == "auto" and ollama_online)) else "gemini"
+
+    return {
+        "status": "ok",
+        "activeEngine": active_engine,
+        "ollamaOnline": ollama_online,
+        "installedOllamaModels": models,
+        "cloudProvider": "Google Gemini",
+        "airGappedMode": active_engine == "ollama"
+    }
+
 
 # -------------------------------------------------------
 # The main endpoint — Node.js calls this

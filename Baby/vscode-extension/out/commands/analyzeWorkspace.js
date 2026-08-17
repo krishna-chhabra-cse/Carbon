@@ -320,7 +320,14 @@ function buildResultsHtml(workspaceName, result) {
 </style>
 </head>
 <body>
-  <h1>Carbon Analysis — ${escapeHtml(workspaceName)}</h1>
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 1.25rem;">
+    <h1 style="margin: 0;">Carbon Analysis — ${escapeHtml(workspaceName)}</h1>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span style="font-size: 0.8rem; padding: 4px 10px; border-radius: 20px; background: rgba(79, 126, 248, 0.15); color: #4F7EF8; border: 1px solid rgba(79, 126, 248, 0.3);">
+        🔒 Engine: Dual (Ollama Offline / Gemini)
+      </span>
+    </div>
+  </div>
 
   <div style="margin-bottom: 2rem;">
     <button id="video-btn" class="btn">🎥 Explain with Video</button>
