@@ -108,6 +108,23 @@ def get_cache_key(repo_url: Optional[str], workspace_name: Optional[str]) -> str
 def health_check():
     return {"status": "ok", "message": "🐍 Python Agent Service is running!"}
 
+@app.get("/llm-status")
+def get_llm_status():
+    from tools.llm_client import is_ollama_available, get_installed_ollama_models
+    ollama_online = is_ollama_available()
+    models = get_installed_ollama_models() if ollama_online else []
+    provider = os.getenv("LLM_PROVIDER", "auto")
+    active_engine = "ollama" if (provider == "ollama" or (provider == "auto" and ollama_online)) else "gemini"
+
+    return {
+        "status": "ok",
+        "activeEngine": active_engine,
+        "ollamaOnline": ollama_online,
+        "installedOllamaModels": models,
+        "cloudProvider": "Google Gemini",
+        "airGappedMode": active_engine == "ollama"
+    }
+
 
 # -------------------------------------------------------
 # The main endpoint — Node.js calls this
@@ -131,7 +148,9 @@ async def run_agents(request: AnalyzeRequest):
                 yield json.dumps({"status": "reading_files"}) + "\n"
 
                 print(f"\n[STEP 1] Processing {len(request.files)} uploaded workspace files...")
-                files_content = { item.path: item.content for item in request.files }
+                raw_uploaded = { item.path: item.content for item in request.files }
+                from tools.ast_skeletonizer import optimize_repo_files
+                files_content, _ = optimize_repo_files(raw_uploaded, max_total_chars=40000)
                 folder_structure = request.folder_structure or "\n".join(f"[FILE] {f.path}" for f in request.files)
             else:
                 yield json.dumps({"status": "cloning"}) + "\n"
@@ -188,6 +207,7 @@ async def run_agents(request: AnalyzeRequest):
                 "architecture": final_state.get("architecture_result"),
                 "api_docs": final_state.get("api_result"),
                 "business_logic": final_state.get("business_logic_result"),
+                "security": final_state.get("security_result"),
             }) + "\n"
 
         except Exception as e:

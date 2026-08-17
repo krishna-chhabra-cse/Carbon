@@ -2,7 +2,7 @@
   "name": "carbon-ai",
   "displayName": "Carbon — AI Architecture & Codebase Intelligence",
   "description": "Instant codebase intelligence in VS Code: interactive architecture flowcharts, component breakdown, and AI video explanations.",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "publisher": "krishcarbon",
   "pricing": "Free",
   "icon": "media/icon.png",
@@ -52,6 +52,22 @@
           "type": "string",
           "default": "https://carbon-backend-a1sg.onrender.com",
           "description": "HTTPS URL of the live Carbon AI Cloud Backend on Render."
+        },
+        "carbon.llmProvider": {
+          "type": "string",
+          "enum": ["auto", "gemini", "ollama"],
+          "default": "auto",
+          "description": "AI Inference engine: 'auto' uses local Ollama if running with cloud fallback, 'ollama' forces 100% private offline inference, 'gemini' uses Google Gemini cloud."
+        },
+        "carbon.ollamaEndpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Local Ollama server API endpoint URL."
+        },
+        "carbon.ollamaModel": {
+          "type": "string",
+          "default": "qwen2.5-coder",
+          "description": "Name of local Ollama model to run (e.g. qwen2.5-coder, deepseek-r1, llama3.1, codellama)."
         }
       }
     }

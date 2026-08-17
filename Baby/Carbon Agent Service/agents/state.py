@@ -7,3 +7,4 @@ class AgentState(TypedDict):
     architecture_result: Optional[dict]
     api_result: Optional[dict]
     business_logic_result: Optional[dict]
+    security_result: Optional[dict]
