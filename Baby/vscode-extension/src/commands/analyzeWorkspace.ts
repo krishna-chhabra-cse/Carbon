@@ -5,7 +5,7 @@
 // ============================================================
 
 import * as vscode from 'vscode';
-import { analyzeWorkspacePayload, AnalyzeFinalResult, CarbonApiError, explainWithVideo } from '../api/carbonClient';
+import { analyzeWorkspacePayload, AnalyzeFinalResult, CarbonApiError, explainWithVideo, askCodebaseChat } from '../api/carbonClient';
 import { collectWorkspaceFiles } from '../utils/workspaceCollector';
 
 let activePanel: vscode.WebviewPanel | undefined;
@@ -106,6 +106,14 @@ function showResultsPanel(workspaceName: string, result: AnalyzeFinalResult): vo
     } else if (message.command === 'jumpToFile') {
       // Bidirectional Click-to-Code: Jump to source file in editor
       await jumpToWorkspaceFile(message.target);
+    } else if (message.command === 'askGraphRag') {
+      // GraphRAG Conversational Codebase Architecture Q&A
+      try {
+        const answer = await askCodebaseChat(workspaceName, message.query);
+        activePanel?.webview.postMessage({ command: 'graphRagAnswer', answer, query: message.query });
+      } catch (err) {
+        activePanel?.webview.postMessage({ command: 'graphRagError', message: String(err) });
+      }
     }
   });
 
@@ -434,8 +442,31 @@ function buildResultsHtml(workspaceName: string, result: AnalyzeFinalResult): st
     `}
   </div>
 
+  <h2>🧠 GraphRAG Architecture Q&A</h2>
+  <div style="margin-top: 0.75rem; padding: 1.25rem; border: 1px solid var(--vscode-panel-border); border-radius: 8px; background: var(--vscode-editor-inactiveSelectionBackground, rgba(255, 255, 255, 0.02));">
+    <div style="font-size: 0.85rem; color: var(--vscode-descriptionForeground); margin-bottom: 0.75rem;">
+      Ask architectural questions, dependency paths, or blast radius impact queries (e.g. <i>"What breaks if I rename User model?"</i> or <i>"Explain the auth flow"</i>):
+    </div>
+    <form id="graphrag-form" style="display: flex; gap: 8px; margin-bottom: 1rem;">
+      <input 
+        id="graphrag-input" 
+        type="text" 
+        placeholder="Ask a technical or architectural question about this codebase..."
+        style="flex: 1; padding: 8px 12px; border-radius: 4px; border: 1px solid var(--vscode-panel-border); background: var(--vscode-input-background, rgba(0,0,0,0.2)); color: var(--vscode-input-foreground, inherit); font-family: inherit; font-size: 0.9rem;"
+      />
+      <button id="graphrag-submit" type="submit" class="btn" style="padding: 8px 14px;">💬 Ask AI</button>
+    </form>
+    <div id="graphrag-loading" style="display: none; font-size: 0.85rem; color: #4F7EF8; margin-bottom: 0.75rem;">
+      ⚡ Traversing dependency graph & synthesizing answer...
+    </div>
+    <div id="graphrag-responses" style="display: flex; flex-direction: column; gap: 12px;"></div>
+  </div>
+
   <script>
     const vscode = acquireVsCodeApi();
+    function escapeClientHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
     const videoBtn       = document.getElementById('video-btn');
     const videoStatus    = document.getElementById('video-status');
     const videoCard      = document.getElementById('video-card');
@@ -470,11 +501,51 @@ function buildResultsHtml(workspaceName: string, result: AnalyzeFinalResult): st
       }
     });
 
+    // ── GraphRAG Architecture Q&A ────────────────────────────
+    const ragForm = document.getElementById('graphrag-form');
+    const ragInput = document.getElementById('graphrag-input');
+    const ragLoading = document.getElementById('graphrag-loading');
+    const ragResponses = document.getElementById('graphrag-responses');
+    const ragSubmit = document.getElementById('graphrag-submit');
+
+    if (ragForm && ragInput) {
+      ragForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = (ragInput.value || '').trim();
+        if (!query) return;
+
+        ragLoading.style.display = 'block';
+        ragInput.disabled = true;
+        ragSubmit.disabled = true;
+        vscode.postMessage({ command: 'askGraphRag', query });
+      });
+    }
+
     // ── Receive messages from extension host ──────────────────
     window.addEventListener('message', (event) => {
       const msg = event.data;
 
-      if (msg.command === 'videoUrlReady') {
+      if (msg.command === 'graphRagAnswer') {
+        ragLoading.style.display = 'none';
+        ragInput.disabled = false;
+        ragSubmit.disabled = false;
+        ragInput.value = '';
+
+        const card = document.createElement('div');
+        card.style.padding = '0.9rem 1.1rem';
+        card.style.borderRadius = '6px';
+        card.style.border = '1px solid var(--vscode-panel-border)';
+        card.style.background = 'var(--vscode-editor-background)';
+        card.innerHTML = '<div style="font-weight: bold; font-size: 0.9rem; color: #4F7EF8; margin-bottom: 6px;">Q: ' + escapeClientHtml(msg.query || '') + '</div><div style="font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap; color: var(--vscode-editor-foreground);">' + escapeClientHtml(msg.answer || '') + '</div>';
+        ragResponses.prepend(card);
+
+      } else if (msg.command === 'graphRagError') {
+        ragLoading.style.display = 'none';
+        ragInput.disabled = false;
+        ragSubmit.disabled = false;
+        alert('GraphRAG query error: ' + msg.message);
+
+      } else if (msg.command === 'videoUrlReady') {
         // #3: Show the video preview card
         currentVideoUrl = msg.url;
         videoBtn.disabled = false;

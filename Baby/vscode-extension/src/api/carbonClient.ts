@@ -273,3 +273,52 @@ export function explainWithVideo(
   });
 }
 
+/**
+ * Sends a GraphRAG architectural query to Carbon AI.
+ */
+export function askCodebaseChat(repoUrl: string, query: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const baseUrl = getBackendBaseUrl();
+    const endpoint = `${baseUrl}/api/chat`;
+    let target: URL;
+    try {
+      target = new URL(endpoint);
+    } catch {
+      reject(new CarbonApiError(`Invalid backend URL: ${endpoint}`));
+      return;
+    }
+
+    const bodyData = JSON.stringify({ repoUrl, query });
+    const transport = target.protocol === 'https:' ? https : http;
+
+    const req = transport.request(
+      {
+        hostname: target.hostname,
+        port: target.port,
+        path: target.pathname,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(bodyData),
+        },
+      },
+      (res) => {
+        let raw = '';
+        res.on('data', chunk => raw += chunk);
+        res.on('end', () => {
+          try {
+            const data = JSON.parse(raw);
+            resolve(data.answer || 'No response generated.');
+          } catch {
+            resolve(raw || 'No response generated.');
+          }
+        });
+      }
+    );
+
+    req.on('error', err => reject(err));
+    req.write(bodyData);
+    req.end();
+  });
+}
+
