@@ -1,0 +1,27 @@
+name: 'Carbon — AI Architecture & PR Impact Reviewer'
+description: 'Autonomous PR intelligence: Architecture impact flowcharts, blast radius calculation, API drift detection, and review summaries.'
+author: 'Carbon'
+
+branding:
+  icon: 'git-pull-request'
+  color: 'blue'
+
+inputs:
+  github-token:
+    description: 'GitHub Token for posting and updating PR comments (e.g. secrets.GITHUB_TOKEN)'
+    required: true
+  gemini-api-key:
+    description: 'Google Gemini API Key for direct AI agent analysis (or use backend-url)'
+    required: false
+  backend-url:
+    description: 'Carbon Backend URL (defaults to https://carbon-backend-a1sg.onrender.com)'
+    required: false
+    default: 'https://carbon-backend-a1sg.onrender.com'
+  max-files:
+    description: 'Maximum number of changed files to analyze in deep AST diff'
+    required: false
+    default: '30'
+
+runs:
+  using: 'node20'
+  main: 'src/index.js'
