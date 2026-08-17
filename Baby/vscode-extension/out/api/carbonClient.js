@@ -48,6 +48,7 @@ exports.CarbonApiError = void 0;
 exports.getBackendBaseUrl = getBackendBaseUrl;
 exports.analyzeWorkspacePayload = analyzeWorkspacePayload;
 exports.explainWithVideo = explainWithVideo;
+exports.askCodebaseChat = askCodebaseChat;
 const http = __importStar(require("http"));
 const https = __importStar(require("https"));
 const url_1 = require("url");
@@ -257,6 +258,50 @@ function explainWithVideo(analysisResult) {
             reject(new CarbonApiError(`Request to Carbon backend failed: ${err.message}`));
         });
         req.write(payload);
+        req.end();
+    });
+}
+/**
+ * Sends a GraphRAG architectural query to Carbon AI.
+ */
+function askCodebaseChat(repoUrl, query) {
+    return new Promise((resolve, reject) => {
+        const baseUrl = getBackendBaseUrl();
+        const endpoint = `${baseUrl}/api/chat`;
+        let target;
+        try {
+            target = new url_1.URL(endpoint);
+        }
+        catch {
+            reject(new CarbonApiError(`Invalid backend URL: ${endpoint}`));
+            return;
+        }
+        const bodyData = JSON.stringify({ repoUrl, query });
+        const transport = target.protocol === 'https:' ? https : http;
+        const req = transport.request({
+            hostname: target.hostname,
+            port: target.port,
+            path: target.pathname,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(bodyData),
+            },
+        }, (res) => {
+            let raw = '';
+            res.on('data', chunk => raw += chunk);
+            res.on('end', () => {
+                try {
+                    const data = JSON.parse(raw);
+                    resolve(data.answer || 'No response generated.');
+                }
+                catch {
+                    resolve(raw || 'No response generated.');
+                }
+            });
+        });
+        req.on('error', err => reject(err));
+        req.write(bodyData);
         req.end();
     });
 }

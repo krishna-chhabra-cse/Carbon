@@ -235,19 +235,19 @@ class CompanionRequest(BaseModel):
 # -------------------------------------------------------
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    # If repo is cached, answer with codebase context
+    # If repo is cached, answer with GraphRAG codebase context & blast radius!
     if request.repo_url in REPO_CACHE:
         cached_data = REPO_CACHE[request.repo_url]
-        from agents.chat_agent import run as run_chat_agent
+        from agents.graphrag_agent import run_graphrag_chat
         try:
-            answer = run_chat_agent(
-                folder_structure=cached_data["folder_structure"],
-                files_content=cached_data["files_content"],
-                query=request.query
+            res = run_graphrag_chat(
+                files_dict=cached_data["files_content"],
+                query=request.query,
+                folder_structure=cached_data.get("folder_structure", "")
             )
-            return {"success": True, "answer": answer}
+            return res
         except Exception as e:
-            print(f"[ERROR] Codebase chat failed, falling back to companion: {e}")
+            print(f"[ERROR] GraphRAG chat failed, falling back to companion: {e}")
 
     # Fallback to general AI companion
     from agents.companion_agent import run as run_companion_agent
