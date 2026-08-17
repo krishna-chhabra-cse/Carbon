@@ -116,6 +116,10 @@ function showResultsPanel(workspaceName, result) {
             // Open in the system's default browser
             await vscode.env.openExternal(vscode.Uri.parse(message.url));
         }
+        else if (message.command === 'jumpToFile') {
+            // Bidirectional Click-to-Code: Jump to source file in editor
+            await jumpToWorkspaceFile(message.target);
+        }
     });
     activePanel.webview.html = buildResultsHtml(workspaceName, result);
 }
@@ -145,6 +149,49 @@ async function generateVideoExplainer(result) {
         if (activePanel) {
             activePanel.webview.postMessage({ command: 'videoError', message: msg });
         }
+    }
+}
+/**
+ * Searches the active workspace for a matching file/module and opens it in the editor.
+ *
+ * @param target String representation of the node clicked in the Mermaid diagram
+ */
+async function jumpToWorkspaceFile(target) {
+    if (!target || typeof target !== 'string') {
+        return;
+    }
+    // Clean the node label (strip symbols, brackets, method prefixes)
+    const cleaned = target
+        .replace(/^\[(NEW|MODIFIED|DELETED)\]\s*/i, '')
+        .replace(/^(GET|POST|PUT|DELETE|PATCH)\s+/i, '')
+        .replace(/[\(\)\[\]\{\}'"`,;:<>]/g, ' ')
+        .trim();
+    // Look for file path candidates with extensions (e.g. auth.js, User.py, schema.prisma)
+    const tokens = cleaned.split(/\s+/).filter(t => /\.[a-zA-Z0-9_-]{1,6}$/.test(t) || t.includes('/'));
+    const candidate = tokens[0] || cleaned.split(/\s+/)[0];
+    if (!candidate || candidate.length < 2) {
+        return;
+    }
+    const baseName = candidate.split('/').pop() || candidate;
+    // Search workspace for matching file
+    const matchedUris = await vscode.workspace.findFiles(`**/${baseName}*`, '**/node_modules/**', 5);
+    if (matchedUris.length > 0) {
+        const targetUri = matchedUris[0];
+        const doc = await vscode.workspace.openTextDocument(targetUri);
+        await vscode.window.showTextDocument(doc, {
+            viewColumn: vscode.ViewColumn.Beside,
+            preserveFocus: false,
+            preview: true
+        });
+        vscode.window.setStatusBarMessage(`$(file-code) Carbon: Opened ${vscode.workspace.asRelativePath(targetUri)}`, 4000);
+    }
+    else {
+        // If not found as a file, perform a symbol / text search across workspace
+        vscode.window.setStatusBarMessage(`$(search) Carbon: Searching workspace for "${baseName}"...`, 3000);
+        await vscode.commands.executeCommand('workbench.action.findInFiles', {
+            query: baseName,
+            triggerSearch: true
+        });
     }
 }
 function buildResultsHtml(workspaceName, result) {
@@ -248,6 +295,15 @@ function buildResultsHtml(workspaceName, result) {
     max-width: 100%;
     height: auto;
   }
+  /* ── Interactive Click-to-Code Nodes ── */
+  .mermaid-box svg .node, .mermaid-box svg g[class*="node"], .mermaid-box svg g[id*="flowchart-"] {
+    cursor: pointer !important;
+    transition: all 0.15s ease-in-out;
+  }
+  .mermaid-box svg .node:hover, .mermaid-box svg g[class*="node"]:hover, .mermaid-box svg g[id*="flowchart-"]:hover {
+    filter: drop-shadow(0 0 8px rgba(79, 126, 248, 0.9));
+    transform: scale(1.02);
+  }
 </style>
 </head>
 <body>
@@ -285,7 +341,7 @@ function buildResultsHtml(workspaceName, result) {
   <h2>Architecture Diagram</h2>
   <div class="diagram-wrapper">
     <div class="diagram-toolbar">
-      <span style="font-size: 0.85rem; color: var(--vscode-descriptionForeground);">Interactive visual flowchart</span>
+      <span style="font-size: 0.85rem; color: var(--vscode-descriptionForeground);">⚡ <b>Click any diagram node</b> to jump directly to its source code in VS Code</span>
       <button id="toggle-raw-diagram-btn" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.8rem;">Show Mermaid Source</button>
     </div>
     <div id="mermaid-rendered" class="mermaid-box">
@@ -377,6 +433,36 @@ function buildResultsHtml(workspaceName, result) {
         rawDiagramDiv.style.display = isHidden ? 'block' : 'none';
         toggleDiagramBtn.textContent = isHidden ? 'Hide Mermaid Source' : 'Show Mermaid Source';
       });
+    }
+
+    // ── Bidirectional Click-to-Code: Click Diagram Node to Jump to Code ──
+    function setupNodeClickListeners() {
+      const nodes = document.querySelectorAll('.mermaid-box svg .node, .mermaid-box svg g[class*="node"], .mermaid-box svg g[id*="flowchart-"]');
+      nodes.forEach(node => {
+        node.style.cursor = 'pointer';
+        node.setAttribute('title', '⚡ Click to open matching file in VS Code editor');
+        node.onclick = (e) => {
+          e.stopPropagation();
+          const labelEl = node.querySelector('.nodeLabel, text, span') || node;
+          const text = (labelEl.textContent || '').trim();
+          if (text) {
+            vscode.postMessage({ command: 'jumpToFile', target: text });
+          }
+        };
+      });
+    }
+
+    // Monitor for Mermaid rendering completion
+    const mermaidContainer = document.getElementById('mermaid-rendered');
+    if (mermaidContainer) {
+      const observer = new MutationObserver(() => {
+        if (mermaidContainer.querySelector('svg')) {
+          setupNodeClickListeners();
+        }
+      });
+      observer.observe(mermaidContainer, { childList: true, subtree: true });
+      setTimeout(setupNodeClickListeners, 800);
+      setTimeout(setupNodeClickListeners, 2000);
     }
   </script>
   <script type="module">

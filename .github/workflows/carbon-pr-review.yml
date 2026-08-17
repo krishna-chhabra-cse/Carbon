@@ -1,0 +1,33 @@
+name: Carbon PR Architecture Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  carbon-review:
+    runs-on: ubuntu-latest
+    name: Carbon PR Architecture Review
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Action Dependencies
+        run: npm --prefix "Baby/carbon-pr-action" install
+
+      - name: Run Carbon PR Reviewer
+        uses: ./Baby/carbon-pr-action
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          backend-url: 'https://carbon-backend-a1sg.onrender.com'
