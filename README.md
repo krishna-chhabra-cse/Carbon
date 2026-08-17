@@ -222,13 +222,31 @@ jobs:
 
 ---
 
-## 🔌 VS Code Extension
+## 🎬 AI Video Walkthrough Engine
+
+Carbon compiles full-stack repository architectures into chapter-based video lectures with synchronized narration and interactive timelines:
+
+<p align="center">
+  <img src="docs/assets/carbon_ai_video_walkthrough.png" alt="Carbon AI Video Walkthrough Player" width="100%" style="border-radius: 8px; max-width: 850px; border: 1px solid #30363d;" />
+</p>
+
+---
+
+## 📸 Interactive Dashboard & Multi-Agent Visualization
+
+<p align="center">
+  <img src="docs/assets/carbon_architecture_flowchart.png" alt="Carbon Architecture Flowchart" width="48%" style="border-radius: 6px; margin-right: 2%; border: 1px solid #30363d;" />
+  <img src="docs/assets/carbon_langgraph_multi_agent.png" alt="Carbon LangGraph Multi Agent Discovered Components" width="48%" style="border-radius: 6px; border: 1px solid #30363d;" />
+</p>
+
+---
+
+## 🔌 VS Code Extension (v1.1.0)
 
 Install `carbon-ai-1.1.0.vsix` directly into VS Code or Cursor:
 
 <p align="center">
-  <img src="docs/assets/carbon_architecture_diagram.png" alt="Carbon Architecture Flowchart" width="48%" style="border-radius: 6px; margin-right: 2%; border: 1px solid #30363d;" />
-  <img src="docs/assets/carbon_scrimba_video.png" alt="Carbon Scrimba Video Explainer" width="48%" style="border-radius: 6px; border: 1px solid #30363d;" />
+  <img src="docs/assets/carbon_codebase_chat.png" alt="Carbon Codebase Intelligence Chat" width="100%" style="border-radius: 8px; max-width: 850px; border: 1px solid #30363d;" />
 </p>
 
 ### Features in Extension:
@@ -236,7 +254,7 @@ Install `carbon-ai-1.1.0.vsix` directly into VS Code or Cursor:
 - 🔍 **Interactive Diagram Controls**: Zoom in, zoom out, reset view, and toggle raw Mermaid DSL.
 - 🛡️ **Embedded Security Scorecard**: Color-coded security grade badge with clickable vulnerability file links.
 - 🧠 **GraphRAG Q&A Console**: Embedded chat assistant answering architectural questions about the open workspace.
-- 🎥 **Scrimba Video Generation**: Instant 1-click video synthesis with in-editor and external playback options.
+- 🎥 **Video Generation**: Instant 1-click video synthesis with in-editor and external playback options.
 
 ---
 
