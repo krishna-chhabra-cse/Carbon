@@ -198,10 +198,23 @@ function buildResultsHtml(workspaceName, result) {
     const architecture = asRecord(result.architecture);
     const apiDocs = asRecord(result.api_docs);
     const businessLogic = asRecord(result.business_logic);
+    const security = asRecord(result.security);
     const summary = pickString(architecture, ['summary', 'overview']) ?? 'No summary returned.';
     const techStack = pickString(architecture, ['tech_stack', 'techStack']) ?? renderUnavailable();
     const keyComponents = pickString(architecture, ['key_components', 'keyComponents', 'components']) ?? renderUnavailable();
     const diagram = pickString(architecture, ['diagram', 'mermaid', 'mermaid_diagram']);
+    // Security Scorecard & Findings
+    const scorecard = asRecord(security.scorecard);
+    const securityGrade = String(scorecard.grade || 'A+');
+    const securityStatus = String(scorecard.statusText || security.summary || 'Security audit clean.');
+    const totalFindings = Number(scorecard.totalFindings || 0);
+    const criticalCount = Number(scorecard.critical || 0);
+    const highCount = Number(scorecard.high || 0);
+    const mediumCount = Number(scorecard.medium || 0);
+    const lowCount = Number(scorecard.low || 0);
+    const findingsList = Array.isArray(security.findings) ? security.findings : [];
+    const remediationsList = Array.isArray(security.remediations) ? security.remediations : [];
+    const gradeColor = securityGrade.startsWith('A') ? '#10B981' : (securityGrade === 'B' ? '#38BDF8' : (securityGrade === 'C' || securityGrade === 'D' ? '#F59E0B' : '#EF4444'));
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -358,6 +371,54 @@ function buildResultsHtml(workspaceName, result) {
 
   <h2>Business Logic</h2>
   <pre><code>${escapeHtml(stringifyForDisplay(businessLogic))}</code></pre>
+
+  <h2>🛡️ DevSecOps Security Audit</h2>
+  <div style="margin-top: 0.75rem; padding: 1.25rem; border: 1px solid var(--vscode-panel-border); border-radius: 8px; background: var(--vscode-editor-inactiveSelectionBackground, rgba(255, 255, 255, 0.02));">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.8rem; font-weight: 900; padding: 4px 14px; border-radius: 6px; background: ${gradeColor}22; color: ${gradeColor}; border: 1.5px solid ${gradeColor};">
+          ${escapeHtml(securityGrade)}
+        </span>
+        <div>
+          <div style="font-weight: bold; font-size: 1rem; color: var(--vscode-editor-foreground);">Security Scorecard</div>
+          <div style="font-size: 0.85rem; color: var(--vscode-descriptionForeground);">${escapeHtml(securityStatus)}</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; font-size: 0.85rem;">
+        <span style="padding: 4px 8px; border-radius: 4px; background: rgba(239, 68, 68, 0.15); color: #EF4444;">Critical: <b>${criticalCount}</b></span>
+        <span style="padding: 4px 8px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: #F59E0B;">High: <b>${highCount}</b></span>
+        <span style="padding: 4px 8px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">Medium: <b>${mediumCount}</b></span>
+      </div>
+    </div>
+
+    ${findingsList.length > 0 ? `
+    <h3 style="font-size: 0.95rem; margin-top: 1rem; margin-bottom: 0.5rem;">Detected Vulnerabilities & Remediations:</h3>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      ${findingsList.map((f) => `
+        <div style="padding: 0.75rem; border: 1px solid var(--vscode-panel-border); border-radius: 6px; background: var(--vscode-editor-background);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="font-weight: bold; font-size: 0.9rem; color: ${f.severity === 'CRITICAL' ? '#EF4444' : (f.severity === 'HIGH' ? '#F59E0B' : '#38BDF8')};">
+              [${escapeHtml(f.severity || 'HIGH')}] ${escapeHtml(f.title || 'Security Finding')}
+            </span>
+            <span style="font-size: 0.8rem; cursor: pointer; color: var(--vscode-textLink-foreground);" onclick="vscode.postMessage({ command: 'jumpToFile', target: '${escapeHtml(f.filePath || '')}' })">
+              📁 ${escapeHtml(f.filePath || '')}:L${escapeHtml(String(f.lineNumber || '1'))} ↗
+            </span>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--vscode-descriptionForeground); margin-bottom: 6px;">
+            <code>${escapeHtml(f.snippet || '')}</code>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--vscode-editor-foreground); padding: 6px 10px; border-radius: 4px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10B981;">
+            💡 <b>Remediation:</b> ${escapeHtml(f.remediation || 'Move credentials to environment variables or parameterize queries.')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    ` : `
+    <div style="font-size: 0.88rem; color: #10B981; margin-top: 0.5rem;">
+      ✅ <b>Clean Audit:</b> No hardcoded secrets, dangerous evals, or SQL injection vulnerabilities found.
+    </div>
+    `}
+  </div>
 
   <script>
     const vscode = acquireVsCodeApi();

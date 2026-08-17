@@ -4,6 +4,7 @@ from agents.state import AgentState
 from agents.architecture_agent import run as run_architecture_agent
 from agents.api_agent import run as run_api_agent
 from agents.business_logic_agent import run as run_business_logic_agent
+from agents.security_agent import security_agent_node
 
 def architecture_node(state: AgentState):
     print("\n[GRAPH] Running Architecture Node...")
@@ -15,6 +16,9 @@ def api_node(state: AgentState):
     print("\n[GRAPH] Running API Node...")
     result = run_api_agent(state["folder_structure"], state["files_content"])
     return {"api_result": result}
+
+def security_node(state: AgentState):
+    return security_agent_node(state)
 
 def business_logic_node(state: AgentState):
     print("\n[GRAPH] Running Business Logic Node (Collaborative)...")
@@ -33,16 +37,19 @@ workflow = StateGraph(AgentState)
 # 2. Add our agent nodes
 workflow.add_node("architecture", architecture_node)
 workflow.add_node("api", api_node)
+workflow.add_node("security", security_node)
 workflow.add_node("business_logic", business_logic_node)
 
 # 3. Define the edges (the flow)
-# Architecture and API both start from START (run in parallel)
+# Architecture, API, and Security all start from START (run in parallel)
 workflow.add_edge(START, "architecture")
 workflow.add_edge(START, "api")
+workflow.add_edge(START, "security")
 
-# Both feed into business_logic (LangGraph waits for all incoming edges)
+# All feed into business_logic (LangGraph waits for all incoming edges)
 workflow.add_edge("architecture", "business_logic")
 workflow.add_edge("api", "business_logic")
+workflow.add_edge("security", "business_logic")
 workflow.add_edge("business_logic", END)
 
 # 4. Compile it into an executable graph

@@ -30,6 +30,7 @@ export interface AnalyzeFinalResult {
   architecture?: unknown;
   api_docs?: unknown;
   business_logic?: unknown;
+  security?: unknown;
 }
 
 export class CarbonApiError extends Error {}
