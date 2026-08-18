@@ -32,10 +32,12 @@ import {
   Clock,
   Terminal,
   Grid,
-  ChevronRight
+  ChevronRight,
+  Presentation
 } from 'lucide-react';
 import ArchitectureDiagram from './ArchitectureDiagram';
 import Chatbox from './Chatbox';
+import PresentationDeck from './PresentationDeck';
 
 export default function CodebaseStudio({ 
   result, 
@@ -162,7 +164,18 @@ export default function CodebaseStudio({
           </p>
         </div>
 
-        <div className="video-banner-actions">
+        <div className="video-banner-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setActiveStudioTab('slides')}
+            className="btn-video-hero"
+            style={{ background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)' }}
+            title="Open AI Slide Deck with 1-click Gamma AI and PowerPoint PPTX export"
+          >
+            <Presentation size={18} />
+            <span>AI Slide Deck & PPT</span>
+          </button>
+
           {!videoUrl ? (
             <button
               type="button"
@@ -202,6 +215,15 @@ export default function CodebaseStudio({
         >
           <Grid size={16} />
           <span>Overview</span>
+        </button>
+
+        <button
+          type="button"
+          className={`studio-tab-btn ${activeStudioTab === 'slides' ? 'active' : ''}`}
+          onClick={() => setActiveStudioTab('slides')}
+        >
+          <Presentation size={16} color="#ec4899" />
+          <span>Slide Deck & PPT</span>
         </button>
 
         <button
@@ -518,6 +540,11 @@ export default function CodebaseStudio({
           </div>
 
         </div>
+      )}
+
+      {/* ── TAB: AI PRESENTATION & GAMMA PPT DECK ── */}
+      {activeStudioTab === 'slides' && (
+        <PresentationDeck result={result} />
       )}
 
       {/* ── TAB: AI CO-PILOT CHAT ── */}

@@ -52,7 +52,7 @@ def get_installed_ollama_models(endpoint: str = DEFAULT_OLLAMA_ENDPOINT) -> list
         req = urllib.request.Request(f"{endpoint}/api/tags", headers={"User-Agent": "Carbon-AI/1.0"})
         with urllib.request.urlopen(req, timeout=2.0) as response:
             data = json.loads(response.read().decode("utf-8"))
-            return [m["name"].split(":")[0] for m in data.get("models", [])]
+            return [m["name"] for m in data.get("models", [])]
     except Exception:
         return []
 
@@ -67,8 +67,9 @@ def generate_with_ollama(prompt: str, model_name: str = None, endpoint: str = DE
     if not chosen_model:
         # Match highest priority installed coding model
         for candidate in CANDIDATE_OLLAMA_MODELS:
-            if any(candidate in m for m in installed):
-                chosen_model = candidate
+            match = next((m for m in installed if candidate in m), None)
+            if match:
+                chosen_model = match
                 break
         if not chosen_model:
             chosen_model = installed[0] if installed else "qwen2.5-coder"
