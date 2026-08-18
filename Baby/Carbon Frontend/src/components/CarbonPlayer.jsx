@@ -4,13 +4,14 @@
 //  In-App Carbon Cinema Native Video Player.
 //  Zero login walls, zero external redirects.
 //  Features:
-//    - Native synchronized audio narration (Web Speech API)
-//    - Real-time animated slide progression & code highlights
+//    - Real-time animated slide progression & visual code stage
+//    - Auto-plays on open with smooth timeline advancement
+//    - Speech synthesis narration with graceful silent fallback
 //    - Interactive playback controls: Play/Pause, Scrubber, Speed, Volume
-//    - Supports YouTube embeds for Explore gallery seamlessly
+//    - Normalizes & autoplays YouTube embeds for Explore gallery
 // ============================================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Sparkles, 
   X, 
@@ -23,7 +24,6 @@ import {
   Maximize2, 
   Minimize2, 
   RotateCcw, 
-  FastForward, 
   ShieldCheck, 
   Clock, 
   Layers, 
@@ -44,7 +44,7 @@ export default function CarbonPlayer({
   notes: customNotes
 }) {
   const [activeTab, setActiveTab] = useState('chapters'); // 'chapters' | 'notes'
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
   const [isMuted, setIsMuted] = useState(false);
@@ -53,9 +53,24 @@ export default function CarbonPlayer({
 
   const containerRef = useRef(null);
   const viewportRef = useRef(null);
-  const speechUtteranceRef = useRef(null);
 
-  const isYouTube = videoUrl && videoUrl.includes('youtube.com/embed');
+  // ── YouTube Embed Normalization ──────────────────────────────
+  const isYouTube = useMemo(() => {
+    return Boolean(videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')));
+  }, [videoUrl]);
+
+  const youtubeEmbedSrc = useMemo(() => {
+    if (!isYouTube || !videoUrl) return '';
+    let url = videoUrl;
+    if (url.includes('watch?v=')) {
+      url = url.replace('watch?v=', 'embed/');
+    } else if (url.includes('youtu.be/')) {
+      const vidId = url.split('youtu.be/')[1]?.split('?')[0];
+      url = `https://www.youtube.com/embed/${vidId}`;
+    }
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}autoplay=1&enablejsapi=1&rel=0`;
+  }, [isYouTube, videoUrl]);
 
   // ── 1. Prepare Dynamic Chapters & Narration ──────────────────
   const architecture = analysisData?.architecture || {};
@@ -69,49 +84,54 @@ export default function CarbonPlayer({
   const flows = businessLogic.business_flows || [];
   const securityGrade = security.scorecard?.grade || 'A+';
 
-  const defaultChapters = [
+  const defaultChapters = useMemo(() => [
     {
       id: 0,
       title: "1. Mission Briefing & Architecture",
-      duration: 35,
+      duration: 25,
       description: architecture.summary || "Overview of system design, architecture patterns, and application goals.",
-      speech: `Welcome to the Carbon architectural walkthrough for ${title}. ${architecture.summary || 'This project features a modular multi-tier architecture with clean separation of concerns.'}`
+      speech: `Welcome to the Carbon architectural walkthrough for ${title}. ${architecture.summary || 'This project features a modular architecture with clean separation of concerns.'}`
     },
     {
       id: 1,
       title: "2. Tech Stack & Dependencies",
-      duration: 30,
+      duration: 25,
       description: `Discovered core technologies: ${techStack.slice(0, 6).join(', ')}.`,
-      speech: `The core technology stack includes ${techStack.slice(0, 5).join(', ')}. These technologies interface across decoupled microservices and API gateways.`
+      speech: `The core technology stack includes ${techStack.slice(0, 5).join(', ')}. These interface across microservices and API routes.`
     },
     {
       id: 2,
       title: "3. Key Components & Modules",
-      duration: 40,
+      duration: 30,
       description: `Discovered ${components.length} primary architectural components and subsystems.`,
-      speech: `Carbon's multi-agent orchestrator discovered ${components.length} key components. These handle request routing, business execution, and persistence layers.`
+      speech: `Carbon's multi-agent mesh discovered ${components.length} key components handling routing, business execution, and persistence.`
     },
     {
       id: 3,
       title: "4. API Surface & Endpoints",
-      duration: 35,
+      duration: 25,
       description: `Discovered ${endpoints.length} communication endpoints and route contracts.`,
       speech: `The API surface exposes ${endpoints.length} endpoints protected by authentication guards and structured request validation.`
     },
     {
       id: 4,
       title: "5. DevSecOps Security Scorecard",
-      duration: 30,
+      duration: 25,
       description: `Security Grade: ${securityGrade}. Static taint audit and credential leak analysis.`,
-      speech: `DevSecOps audit completed with Security Grade ${securityGrade}. Zero critical vulnerabilities detected across code patterns and dependencies.`
+      speech: `DevSecOps audit completed with Security Grade ${securityGrade}. Zero critical vulnerabilities detected.`
     }
-  ];
+  ], [title, architecture.summary, techStack, components.length, endpoints.length, securityGrade]);
 
-  const chapters = (customChapters && customChapters.length > 0) ? customChapters : defaultChapters;
-  const totalDuration = chapters.reduce((acc, ch) => acc + (ch.duration || 30), 0);
+  const chapters = useMemo(() => {
+    return (customChapters && customChapters.length > 0) ? customChapters : defaultChapters;
+  }, [customChapters, defaultChapters]);
+
+  const totalDuration = useMemo(() => {
+    return chapters.reduce((acc, ch) => acc + (ch.duration || 25), 0);
+  }, [chapters]);
 
   // Dynamic key notes
-  const takeaways = customNotes?.takeaways || architecture.summary || "Key takeaways and insights synthesized for this topic.";
+  const takeaways = customNotes?.takeaways || architecture.summary || "Key takeaways and architectural insights synthesized for this codebase.";
   const keyPoints = customNotes?.points || [
     "Modular architecture with clean separation of concerns",
     "High testability with decoupled services and async pipelines",
@@ -122,30 +142,49 @@ export default function CarbonPlayer({
   const speakChapterNarration = (chapterIndex) => {
     if (isYouTube || isMuted || typeof window === 'undefined' || !window.speechSynthesis) return;
 
-    window.speechSynthesis.cancel();
-    const ch = chapters[chapterIndex];
-    if (!ch || !ch.speech) return;
+    try {
+      window.speechSynthesis.cancel();
+      const ch = chapters[chapterIndex];
+      if (!ch || !ch.speech) return;
 
-    const utterance = new SpeechSynthesisUtterance(ch.speech);
-    utterance.rate = playbackSpeed;
-    utterance.pitch = 1.0;
-    
-    // Choose natural voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.lang.startsWith('en')));
-    if (preferredVoice) utterance.voice = preferredVoice;
+      const utterance = new SpeechSynthesisUtterance(ch.speech);
+      utterance.rate = playbackSpeed;
+      utterance.pitch = 1.0;
+      
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.lang.startsWith('en')));
+      if (preferredVoice) utterance.voice = preferredVoice;
 
-    speechUtteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+      utterance.onerror = () => {}; // graceful ignore
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      // Ignore speech errors silently
+    }
   };
 
   const stopNarration = () => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
     }
   };
 
-  // ── 3. Playback Timer & Auto-Chapter Advancement ───────────
+  // ── 3. Auto-play on Mount ────────────────────────────────────
+  useEffect(() => {
+    if (!isYouTube) {
+      setIsPlaying(true);
+      const timer = setTimeout(() => {
+        speakChapterNarration(0);
+      }, 350);
+      return () => {
+        clearTimeout(timer);
+        stopNarration();
+      };
+    }
+  }, [isYouTube]);
+
+  // ── 4. Playback Timer & Auto-Chapter Advancement ───────────
   useEffect(() => {
     let interval = null;
     if (isPlaying && !isYouTube) {
@@ -171,7 +210,7 @@ export default function CarbonPlayer({
     if (isYouTube) return;
     let accumulated = 0;
     for (let i = 0; i < chapters.length; i++) {
-      const dur = chapters[i].duration || 30;
+      const dur = chapters[i].duration || 25;
       if (currentTime >= accumulated && currentTime < accumulated + dur) {
         if (activeChapterIndex !== i) {
           setActiveChapterIndex(i);
@@ -181,14 +220,7 @@ export default function CarbonPlayer({
       }
       accumulated += dur;
     }
-  }, [currentTime, chapters, isPlaying, isYouTube]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopNarration();
-    };
-  }, []);
+  }, [currentTime, chapters, isPlaying, isYouTube, activeChapterIndex]);
 
   const handleTogglePlay = () => {
     if (isPlaying) {
@@ -209,7 +241,7 @@ export default function CarbonPlayer({
     setActiveChapterIndex(idx);
     let targetTime = 0;
     for (let i = 0; i < idx; i++) {
-      targetTime += (chapters[i].duration || 30);
+      targetTime += (chapters[i].duration || 25);
     }
     setCurrentTime(targetTime);
     if (isPlaying) {
@@ -270,7 +302,7 @@ export default function CarbonPlayer({
               type="button" 
               onClick={toggleFullscreen} 
               className="btn-icon" 
-              title="Toggle Fullscreen"
+              title="Toggle Fullscreen (F)"
             >
               {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
@@ -298,7 +330,7 @@ export default function CarbonPlayer({
             {/* Case A: YouTube Video (Explore Gallery) */}
             {isYouTube ? (
               <iframe
-                src={videoUrl}
+                src={youtubeEmbedSrc}
                 title={title}
                 className="carbon-video-iframe"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -309,7 +341,13 @@ export default function CarbonPlayer({
               <div className="native-cinema-stage">
                 
                 {/* Visual Stage Content */}
-                <div className="cinema-screen-canvas animate-fade-in" key={activeChapterIndex}>
+                <div 
+                  className="cinema-screen-canvas animate-fade-in" 
+                  key={activeChapterIndex}
+                  onClick={handleTogglePlay}
+                  style={{ cursor: 'pointer', position: 'relative' }}
+                  title={isPlaying ? "Click to Pause" : "Click to Play"}
+                >
                   <div className="cinema-slide-tag">
                     <span>{activeChapterData.title}</span>
                   </div>
@@ -407,6 +445,16 @@ export default function CarbonPlayer({
                     </div>
                   )}
 
+                  {/* Play Overlay if Paused */}
+                  {!isPlaying && (
+                    <div className="cinema-paused-overlay animate-fade-in">
+                      <div className="play-pulse-circle">
+                        <Play size={32} fill="#0b0f19" color="#0b0f19" />
+                      </div>
+                      <span>Paused • Click anywhere to resume</span>
+                    </div>
+                  )}
+
                 </div>
 
                 {/* ── NATIVE VIDEO PLAYER CONTROLS ── */}
@@ -425,7 +473,8 @@ export default function CarbonPlayer({
                     onClick={() => {
                       setCurrentTime(0);
                       setActiveChapterIndex(0);
-                      if (isPlaying) speakChapterNarration(0);
+                      setIsPlaying(true);
+                      speakChapterNarration(0);
                     }}
                     className="btn-control-icon"
                     title="Restart Video"
