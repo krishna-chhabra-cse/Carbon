@@ -3,6 +3,12 @@
 //  src/commands/analyzeWorkspace.ts
 //
 //  Implements "Carbon: Explain Current Workspace".
+//  Features:
+//    - Zero-login Native In-Editor Walkthrough Video Cinema
+//    - 1-Click Gamma AI & Slide Deck Generator
+//    - DevSecOps Security Scorecard & Remediations
+//    - GraphRAG Codebase Q&A & Blast Radius Traversal
+//    - Bidirectional Click-to-Code Navigation
 // ============================================================
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -104,16 +110,8 @@ function showResultsPanel(workspaceName, result) {
         activePanel = undefined;
     });
     activePanel.webview.onDidReceiveMessage(async (message) => {
-        if (message.command === 'explainWithVideo') {
-            await generateVideoExplainer(result);
-        }
-        else if (message.command === 'openInSimpleBrowser') {
-            // #4: Open URL inside VS Code's built-in Simple Browser panel
-            const uri = vscode.Uri.parse(message.url);
-            await vscode.commands.executeCommand('simpleBrowser.show', uri);
-        }
-        else if (message.command === 'openExternal') {
-            // Open in the system's default browser
+        if (message.command === 'openExternal') {
+            // Open in system default browser
             await vscode.env.openExternal(vscode.Uri.parse(message.url));
         }
         else if (message.command === 'jumpToFile') {
@@ -130,79 +128,46 @@ function showResultsPanel(workspaceName, result) {
                 activePanel?.webview.postMessage({ command: 'graphRagError', message: String(err) });
             }
         }
+        else if (message.command === 'copyClipboard') {
+            await vscode.env.clipboard.writeText(message.text);
+            vscode.window.showInformationMessage('Carbon: Copied AI Presentation Deck to clipboard! Opening Gamma AI…');
+            await vscode.env.openExternal(vscode.Uri.parse('https://gamma.app/new'));
+        }
     });
     activePanel.webview.html = buildResultsHtml(workspaceName, result);
 }
-async function generateVideoExplainer(result) {
-    try {
-        const videoResult = await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: 'Carbon: Generating video explanation on Scrimba…',
-            cancellable: false,
-        }, async (progress) => {
-            progress.report({ message: 'Requesting Scrimba and writing video script…' });
-            return (0, carbonClient_1.explainWithVideo)(result);
-        });
-        if (activePanel) {
-            activePanel.webview.postMessage({ command: 'videoUrlReady', url: videoResult.url });
-        }
-        // Notify with the URL so the user can also copy it from the notification
-        vscode.window.showInformationMessage(`Carbon: Video ready! ${videoResult.url}`, 'Open in Browser').then(choice => {
-            if (choice === 'Open in Browser') {
-                vscode.env.openExternal(vscode.Uri.parse(videoResult.url));
-            }
-        });
-    }
-    catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        vscode.window.showErrorMessage(`Carbon: Failed to generate video explanation — ${msg}`);
-        if (activePanel) {
-            activePanel.webview.postMessage({ command: 'videoError', message: msg });
-        }
-    }
-}
 /**
  * Searches the active workspace for a matching file/module and opens it in the editor.
- *
- * @param target String representation of the node clicked in the Mermaid diagram
  */
-async function jumpToWorkspaceFile(target) {
-    if (!target || typeof target !== 'string') {
+async function jumpToWorkspaceFile(targetQuery) {
+    if (!targetQuery || !targetQuery.trim())
+        return;
+    const cleaned = targetQuery.trim()
+        .replace(/^📦\s*/, '')
+        .replace(/^⚡\s*/, '')
+        .replace(/["'`]/g, '');
+    const baseName = cleaned.split(/[\/\\]/).pop() || cleaned;
+    // 1. Exact file search
+    const foundUris = await vscode.workspace.findFiles(`**/${baseName}*`, '**/node_modules/**', 5);
+    if (foundUris.length > 0) {
+        const doc = await vscode.workspace.openTextDocument(foundUris[0]);
+        await vscode.window.showTextDocument(doc, { preview: false });
+        vscode.window.setStatusBarMessage(`$(check) Carbon: Jumped to ${foundUris[0].fsPath.split(/[\\/]/).pop()}`, 3000);
         return;
     }
-    // Clean the node label (strip symbols, brackets, method prefixes)
-    const cleaned = target
-        .replace(/^\[(NEW|MODIFIED|DELETED)\]\s*/i, '')
-        .replace(/^(GET|POST|PUT|DELETE|PATCH)\s+/i, '')
-        .replace(/[\(\)\[\]\{\}'"`,;:<>]/g, ' ')
-        .trim();
-    // Look for file path candidates with extensions (e.g. auth.js, User.py, schema.prisma)
-    const tokens = cleaned.split(/\s+/).filter(t => /\.[a-zA-Z0-9_-]{1,6}$/.test(t) || t.includes('/'));
-    const candidate = tokens[0] || cleaned.split(/\s+/)[0];
-    if (!candidate || candidate.length < 2) {
+    // 2. Fuzzy text search across workspace
+    const fuzzyUris = await vscode.workspace.findFiles(`**/*${baseName.slice(0, 4)}*`, '**/node_modules/**', 1);
+    if (fuzzyUris.length > 0) {
+        const doc = await vscode.workspace.openTextDocument(fuzzyUris[0]);
+        await vscode.window.showTextDocument(doc, { preview: false });
         return;
     }
-    const baseName = candidate.split('/').pop() || candidate;
-    // Search workspace for matching file
-    const matchedUris = await vscode.workspace.findFiles(`**/${baseName}*`, '**/node_modules/**', 5);
-    if (matchedUris.length > 0) {
-        const targetUri = matchedUris[0];
-        const doc = await vscode.workspace.openTextDocument(targetUri);
-        await vscode.window.showTextDocument(doc, {
-            viewColumn: vscode.ViewColumn.Beside,
-            preserveFocus: false,
-            preview: true
-        });
-        vscode.window.setStatusBarMessage(`$(file-code) Carbon: Opened ${vscode.workspace.asRelativePath(targetUri)}`, 4000);
-    }
-    else {
-        // If not found as a file, perform a symbol / text search across workspace
-        vscode.window.setStatusBarMessage(`$(search) Carbon: Searching workspace for "${baseName}"...`, 3000);
-        await vscode.commands.executeCommand('workbench.action.findInFiles', {
-            query: baseName,
-            triggerSearch: true
-        });
-    }
+    // 3. Fallback: trigger workspace symbol / text search
+    vscode.window.setStatusBarMessage(`$(search) Carbon: Searching workspace for "${baseName}"...`, 3000);
+    await vscode.commands.executeCommand('workbench.action.findInFiles', {
+        query: baseName,
+        triggerSearch: true
+    });
 }
 function buildResultsHtml(workspaceName, result) {
     const architecture = asRecord(result.architecture);
@@ -217,24 +182,23 @@ function buildResultsHtml(workspaceName, result) {
     const scorecard = asRecord(security.scorecard);
     const securityGrade = String(scorecard.grade || 'A+');
     const securityStatus = String(scorecard.statusText || security.summary || 'Security audit clean.');
-    const totalFindings = Number(scorecard.totalFindings || 0);
     const criticalCount = Number(scorecard.critical || 0);
     const highCount = Number(scorecard.high || 0);
     const mediumCount = Number(scorecard.medium || 0);
-    const lowCount = Number(scorecard.low || 0);
     const findingsList = Array.isArray(security.findings) ? security.findings : [];
-    const remediationsList = Array.isArray(security.remediations) ? security.remediations : [];
     const gradeColor = securityGrade.startsWith('A') ? '#10B981' : (securityGrade === 'B' ? '#38BDF8' : (securityGrade === 'C' || securityGrade === 'D' ? '#F59E0B' : '#EF4444'));
+    // Build Gamma presentation markdown string for clipboard
+    const gammaDeckPrompt = `# ${workspaceName} — System Architecture & Technical Specification\n\n> Synthesized by Carbon AI Codebase Intelligence\n\n---\n\n## Executive Summary\n${summary}\n- **Security Grade:** ${securityGrade}\n- **Status:** ${securityStatus}\n\n---\n\n## Tech Stack\n\`\`\`json\n${techStack}\n\`\`\`\n\n---\n\n## Key Architectural Components\n\`\`\`json\n${keyComponents}\n\`\`\`\n\n---\n\n## DevSecOps Audit & Security Findings\n- Overall Grade: ${securityGrade}\n- Critical: ${criticalCount}, High: ${highCount}, Medium: ${mediumCount}\n`;
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; connect-src https://cdn.jsdelivr.net; font-src https:; img-src https: data:;" />
 <style>
-  body { font-family: var(--vscode-font-family); padding: 1.5rem; line-height: 1.5; }
-  h1 { font-size: 1.3rem; margin-bottom: 1.5rem; }
+  body { font-family: var(--vscode-font-family); padding: 1.5rem; line-height: 1.5; color: var(--vscode-editor-foreground); background: var(--vscode-editor-background); }
+  h1 { font-size: 1.3rem; margin-bottom: 1rem; }
   h2 { font-size: 1.05rem; margin-top: 2rem; border-bottom: 1px solid var(--vscode-panel-border); padding-bottom: 0.25rem; }
-  pre { background: var(--vscode-textCodeBlock-background); padding: 0.75rem; overflow-x: auto; white-space: pre-wrap; }
+  pre { background: var(--vscode-textCodeBlock-background); padding: 0.75rem; overflow-x: auto; white-space: pre-wrap; border-radius: 4px; }
   code { font-family: var(--vscode-editor-font-family); }
   .btn {
     padding: 8px 16px;
@@ -243,11 +207,12 @@ function buildResultsHtml(workspaceName, result) {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: bold;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    transition: all 0.15s ease;
   }
   .btn:hover { background-color: var(--vscode-button-hoverBackground); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -258,39 +223,79 @@ function buildResultsHtml(workspaceName, result) {
   .btn-secondary:hover {
     background-color: var(--vscode-button-secondaryHoverBackground, #4c4c4c);
   }
-  /* ── Video preview card (#3) ──────────────────────────────── */
-  .video-card {
-    display: none;
-    margin-top: 1rem;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 6px;
-    background: var(--vscode-editor-inactiveSelectionBackground, rgba(255,255,255,0.04));
+  .btn-gamma {
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    color: #ffffff;
   }
-  .video-card-header {
+  .btn-gamma:hover { opacity: 0.95; }
+
+  /* ── Native In-Editor Video Cinema ─────────────────────────── */
+  .cinema-container {
+    display: none;
+    margin-top: 1.25rem;
+    border: 1px solid rgba(79, 126, 248, 0.35);
+    border-radius: 8px;
+    background: var(--vscode-editor-inactiveSelectionBackground, rgba(0,0,0,0.3));
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .cinema-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(79, 126, 248, 0.12);
+    border-bottom: 1px solid var(--vscode-panel-border);
+  }
+  .cinema-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #4F7EF8;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.5rem;
+    gap: 6px;
   }
-  .video-card-icon { font-size: 1.5rem; }
-  .video-card-title {
+  .cinema-stage-box {
+    padding: 1.5rem;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .cinema-chapter-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     font-weight: bold;
-    font-size: 1rem;
+    color: #38BDF8;
+    margin-bottom: 6px;
+  }
+  .cinema-stage-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 0 8px 0;
     color: var(--vscode-editor-foreground);
   }
-  .video-card-subtitle {
-    font-size: 0.82rem;
+  .cinema-stage-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
     color: var(--vscode-descriptionForeground);
-    margin-bottom: 0.75rem;
+    margin: 0 0 12px 0;
   }
-  .video-card-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-  .video-card-error {
-    display: none;
-    margin-top: 0.6rem;
-    font-size: 0.88rem;
-    color: var(--vscode-testing-iconFailedColor, #F48771);
+  .cinema-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.25);
+    border-top: 1px solid var(--vscode-panel-border);
   }
+  .cinema-scrubber {
+    flex: 1;
+    cursor: pointer;
+    accent-color: #4F7EF8;
+  }
+
   /* ── Interactive Architecture Diagram ──────────────────────── */
   .diagram-wrapper {
     margin-top: 0.5rem;
@@ -318,7 +323,6 @@ function buildResultsHtml(workspaceName, result) {
     max-width: 100%;
     height: auto;
   }
-  /* ── Interactive Click-to-Code Nodes ── */
   .mermaid-box svg .node, .mermaid-box svg g[class*="node"], .mermaid-box svg g[id*="flowchart-"] {
     cursor: pointer !important;
     transition: all 0.15s ease-in-out;
@@ -339,22 +343,33 @@ function buildResultsHtml(workspaceName, result) {
     </div>
   </div>
 
-  <div style="margin-bottom: 2rem;">
-    <button id="video-btn" class="btn">🎥 Explain with Video</button>
-    <div id="video-status" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--vscode-descriptionForeground); display: none;"></div>
+  <!-- Action Controls -->
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1.5rem;">
+    <button id="toggle-video-btn" class="btn">🎥 Watch AI Video Walkthrough</button>
+    <button id="gamma-deck-btn" class="btn btn-gamma" title="Copies slide deck & opens Gamma AI to generate presentation">🚀 Create in Gamma AI / PPT</button>
+  </div>
 
-    <!-- #3 Video preview card: hidden until a URL arrives -->
-    <div class="video-card" id="video-card">
-      <div class="video-card-header">
-        <span class="video-card-icon">🎬</span>
-        <span class="video-card-title">Scrimba Video Explanation</span>
+  <!-- Native In-Editor Walkthrough Video Cinema (Zero Login Walls!) -->
+  <div class="cinema-container" id="cinema-container">
+    <div class="cinema-header">
+      <div class="cinema-title">
+        <span>🎬 Carbon Cinema: Architectural Walkthrough</span>
       </div>
-      <div class="video-card-subtitle" id="video-card-url">Generating…</div>
-      <div class="video-card-actions">
-        <button id="open-browser-btn" class="btn">🌐 Open in Browser</button>
-        <button id="open-vscode-btn" class="btn btn-secondary">⌨️ Open in VS Code</button>
-      </div>
-      <div class="video-card-error" id="video-card-error"></div>
+      <span id="cinema-chapter-badge" style="font-size: 0.8rem; color: var(--vscode-descriptionForeground);">Chapter 1 of 4</span>
+    </div>
+
+    <div class="cinema-stage-box" id="cinema-stage-box">
+      <div class="cinema-chapter-tag" id="stage-tag">Overview & Topology</div>
+      <div class="cinema-stage-title" id="stage-title">${escapeHtml(workspaceName)} Architecture Briefing</div>
+      <div class="cinema-stage-text" id="stage-desc">${escapeHtml(summary)}</div>
+    </div>
+
+    <div class="cinema-controls">
+      <button id="cinema-play-btn" class="btn" style="padding: 6px 12px;">▶ Play</button>
+      <span id="cinema-time" style="font-size: 0.8rem; font-family: monospace;">0:00 / 2:00</span>
+      <input type="range" id="cinema-scrubber" class="cinema-scrubber" min="0" max="120" value="0" />
+      <button id="cinema-mute-btn" class="btn btn-secondary" style="padding: 6px 10px;">🔊 Voice</button>
+      <button id="cinema-close-btn" class="btn btn-secondary" style="padding: 6px 10px;">✕ Close</button>
     </div>
   </div>
 
@@ -462,41 +477,138 @@ function buildResultsHtml(workspaceName, result) {
     function escapeClientHtml(str) {
       return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-    const videoBtn       = document.getElementById('video-btn');
-    const videoStatus    = document.getElementById('video-status');
-    const videoCard      = document.getElementById('video-card');
-    const videoCardUrl   = document.getElementById('video-card-url');
-    const videoCardError = document.getElementById('video-card-error');
-    const openBrowserBtn = document.getElementById('open-browser-btn');
-    const openVscodeBtn  = document.getElementById('open-vscode-btn');
 
-    let currentVideoUrl = null;
+    // ── 1. Native In-Editor Video Walkthrough Engine ─────────
+    const cinemaContainer = document.getElementById('cinema-container');
+    const toggleVideoBtn = document.getElementById('toggle-video-btn');
+    const cinemaPlayBtn = document.getElementById('cinema-play-btn');
+    const cinemaCloseBtn = document.getElementById('cinema-close-btn');
+    const cinemaMuteBtn = document.getElementById('cinema-mute-btn');
+    const cinemaScrubber = document.getElementById('cinema-scrubber');
+    const cinemaTime = document.getElementById('cinema-time');
+    const stageTag = document.getElementById('stage-tag');
+    const stageTitle = document.getElementById('stage-title');
+    const stageDesc = document.getElementById('stage-desc');
+    const chapterBadge = document.getElementById('cinema-chapter-badge');
 
-    // ── Trigger video generation ──────────────────────────────
-    videoBtn.addEventListener('click', () => {
-      videoBtn.disabled = true;
-      videoCard.style.display = 'none';
-      videoCardError.style.display = 'none';
-      videoStatus.style.display = 'block';
-      videoStatus.textContent = '⚡ Initiating video generation — check VS Code notifications for progress...';
-      vscode.postMessage({ command: 'explainWithVideo' });
-    });
+    const chapters = [
+      {
+        tag: 'Chapter 1: Overview & Topology',
+        title: '${escapeHtml(workspaceName)} Architecture Briefing',
+        desc: '${escapeHtml(summary)}',
+        speech: 'Welcome to the Carbon architectural walkthrough for ${escapeHtml(workspaceName)}. ${escapeHtml(summary)}'
+      },
+      {
+        tag: 'Chapter 2: Discovered Tech Stack',
+        title: 'Technology Stack & Runtimes',
+        desc: 'Core languages, frameworks, and runtimes powering the system architecture: ${escapeHtml(techStack.slice(0, 100))}',
+        speech: 'Here is the core technology stack discovered across the codebase.'
+      },
+      {
+        tag: 'Chapter 3: Key Modules & Components',
+        title: 'Primary Subsystems & Separation of Concerns',
+        desc: 'Discovered key components, file locations, and modular architectural boundaries.',
+        speech: 'These are the primary components and modular boundaries discovered by Carbon.'
+      },
+      {
+        tag: 'Chapter 4: DevSecOps Audit',
+        title: 'Security Scorecard: ${escapeHtml(securityGrade)}',
+        desc: '${escapeHtml(securityStatus)} — Zero-trust credential leak scan and static taint audit.',
+        speech: 'DevSecOps audit completed with Security Grade ${escapeHtml(securityGrade)}.'
+      }
+    ];
 
-    // ── #4: Open in browser (external) ───────────────────────
-    openBrowserBtn.addEventListener('click', () => {
-      if (currentVideoUrl) {
-        vscode.postMessage({ command: 'openExternal', url: currentVideoUrl });
+    let currentChapter = 0;
+    let isPlaying = false;
+    let isMuted = false;
+    let timer = null;
+    let elapsed = 0;
+    const totalSecs = 120;
+
+    function renderStage(idx) {
+      const ch = chapters[idx];
+      if (!ch) return;
+      stageTag.textContent = ch.tag;
+      stageTitle.textContent = ch.title;
+      stageDesc.textContent = ch.desc;
+      chapterBadge.textContent = 'Chapter ' + (idx + 1) + ' of ' + chapters.length;
+
+      if (!isMuted && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const ut = new SpeechSynthesisUtterance(ch.speech);
+        window.speechSynthesis.speak(ut);
+      }
+    }
+
+    toggleVideoBtn.addEventListener('click', () => {
+      cinemaContainer.style.display = cinemaContainer.style.display === 'block' ? 'none' : 'block';
+      if (cinemaContainer.style.display === 'block') {
+        renderStage(0);
+      } else {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        isPlaying = false;
+        clearInterval(timer);
+        cinemaPlayBtn.textContent = '▶ Play';
       }
     });
 
-    // ── #4: Open in VS Code Simple Browser ───────────────────
-    openVscodeBtn.addEventListener('click', () => {
-      if (currentVideoUrl) {
-        vscode.postMessage({ command: 'openInSimpleBrowser', url: currentVideoUrl });
+    cinemaCloseBtn.addEventListener('click', () => {
+      cinemaContainer.style.display = 'none';
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      isPlaying = false;
+      clearInterval(timer);
+      cinemaPlayBtn.textContent = '▶ Play';
+    });
+
+    cinemaPlayBtn.addEventListener('click', () => {
+      if (isPlaying) {
+        isPlaying = false;
+        clearInterval(timer);
+        cinemaPlayBtn.textContent = '▶ Play';
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+      } else {
+        isPlaying = true;
+        cinemaPlayBtn.textContent = '⏸ Pause';
+        renderStage(currentChapter);
+        timer = setInterval(() => {
+          elapsed++;
+          if (elapsed > totalSecs) {
+            elapsed = 0;
+            currentChapter = 0;
+            isPlaying = false;
+            clearInterval(timer);
+            cinemaPlayBtn.textContent = '▶ Play';
+            return;
+          }
+          cinemaScrubber.value = elapsed;
+          const mins = Math.floor(elapsed / 60);
+          const secs = elapsed % 60;
+          cinemaTime.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs + ' / 2:00';
+
+          const chIdx = Math.min(Math.floor(elapsed / 30), chapters.length - 1);
+          if (chIdx !== currentChapter) {
+            currentChapter = chIdx;
+            renderStage(chIdx);
+          }
+        }, 1000);
       }
     });
 
-    // ── GraphRAG Architecture Q&A ────────────────────────────
+    cinemaMuteBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      cinemaMuteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Voice';
+      if (isMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+    });
+
+    // ── 2. Gamma AI & Slide Deck Generator ────────────────────
+    const gammaBtn = document.getElementById('gamma-deck-btn');
+    const gammaPromptText = ${JSON.stringify(gammaDeckPrompt)};
+
+    gammaBtn.addEventListener('click', () => {
+      vscode.postMessage({ command: 'copyClipboard', text: gammaPromptText });
+    });
+
+    // ── 3. GraphRAG Architecture Q&A ──────────────────────────
     const ragForm = document.getElementById('graphrag-form');
     const ragInput = document.getElementById('graphrag-input');
     const ragLoading = document.getElementById('graphrag-loading');
@@ -539,28 +651,6 @@ function buildResultsHtml(workspaceName, result) {
         ragInput.disabled = false;
         ragSubmit.disabled = false;
         alert('GraphRAG query error: ' + msg.message);
-
-      } else if (msg.command === 'videoUrlReady') {
-        // #3: Show the video preview card
-        currentVideoUrl = msg.url;
-        videoBtn.disabled = false;
-        videoStatus.style.display = 'none';
-        videoCard.style.display = 'block';
-        videoCardUrl.textContent = msg.url;
-        videoCardError.style.display = 'none';
-
-      } else if (msg.command === 'videoError') {
-        // Show error inline in the card (or status area if card not yet shown)
-        videoBtn.disabled = false;
-        videoStatus.style.display = 'none';
-        if (videoCard.style.display === 'block') {
-          videoCardError.style.display = 'block';
-          videoCardError.textContent = '\u274c ' + msg.message;
-        } else {
-          videoStatus.style.display = 'block';
-          videoStatus.style.color = 'var(--vscode-testing-iconFailedColor, #F48771)';
-          videoStatus.textContent = '\u274c Generation failed: ' + msg.message;
-        }
       }
     });
 
@@ -593,7 +683,6 @@ function buildResultsHtml(workspaceName, result) {
       });
     }
 
-    // Monitor for Mermaid rendering completion
     const mermaidContainer = document.getElementById('mermaid-rendered');
     if (mermaidContainer) {
       const observer = new MutationObserver(() => {
