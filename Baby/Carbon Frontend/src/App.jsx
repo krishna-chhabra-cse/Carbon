@@ -200,26 +200,17 @@ export default function App() {
     setVideoError('');
 
     try {
-      const response = await axios.post(`${apiUrl}/api/explain-video`, {
-        architecture: result.architecture,
-        apiDocs: result.api_docs,
-        businessLogic: result.business_logic
+      // Launch Native Carbon Cinema (Zero login wall!)
+      const projectName = result.workspace_name || (result.repo_url ? result.repo_url.replace(/^https?:\/\/github\.com\//i, '') : 'Codebase');
+      setVideoUrl('native_cinema');
+      setCinemaDetails({
+        title: `${projectName} • AI Architectural Walkthrough`,
+        subtitle: 'Synthesized In-App Video Walkthrough',
+        videoUrl: 'native_cinema'
       });
-
-      if (response.data?.url) {
-        setVideoUrl(response.data.url);
-        // Automatically open the in-app Carbon Cinema
-        setCinemaDetails({
-          title: `${result.workspace_name || 'Codebase'} • AI Architectural Walkthrough`,
-          subtitle: 'Synthesized In-App Video Walkthrough',
-          videoUrl: response.data.url
-        });
-        setCinemaOpen(true);
-      } else {
-        throw new Error('Backend did not return a valid video stream URL.');
-      }
+      setCinemaOpen(true);
     } catch (err) {
-      setVideoError(err.response?.data?.error || err.message || 'Failed to synthesize video walkthrough.');
+      setVideoError(err.message || 'Failed to synthesize video walkthrough.');
     } finally {
       setVideoLoading(false);
     }
