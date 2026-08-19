@@ -4,9 +4,10 @@
 //  In-App Carbon Cinema Native Video Player.
 //  Zero login walls, zero external redirects.
 //  Features:
+//    - Hybrid Voice Engine: ElevenLabs Studio AI + Free Natural Neural fallback
 //    - Real-time animated slide progression & visual code stage
 //    - Auto-plays on open with smooth timeline advancement
-//    - Speech synthesis narration with graceful silent fallback
+//    - Voice Selector (Adam, Rachel, Antoni, Josh, Natural Edge/Google)
 //    - Interactive playback controls: Play/Pause, Scrubber, Speed, Volume
 //    - Normalizes & autoplays YouTube embeds for Explore gallery
 // ============================================================
@@ -31,7 +32,10 @@ import {
   Code2, 
   Cpu, 
   CheckCircle2, 
-  Workflow
+  Workflow,
+  Mic,
+  Key,
+  Settings
 } from 'lucide-react';
 
 export default function CarbonPlayer({ 
@@ -50,9 +54,18 @@ export default function CarbonPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const [activeChapterIndex, setActiveChapterIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState(() => localStorage.getItem('carbon_selected_voice') || 'adam');
+  const [elevenLabsKey, setElevenLabsKey] = useState(() => localStorage.getItem('carbon_elevenlabs_key') || '');
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [audioSourceType, setAudioSourceType] = useState('natural'); // 'elevenlabs' | 'natural'
 
   const containerRef = useRef(null);
   const viewportRef = useRef(null);
+  const audioRef = useRef(null);
+
+  const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) 
+    ? import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '') 
+    : 'https://carbon-backend-a1sg.onrender.com';
 
   // ── YouTube Embed Normalization ──────────────────────────────
   const isYouTube = useMemo(() => {
@@ -138,31 +151,73 @@ export default function CarbonPlayer({
     "DevSecOps grade verified with automated remediation patches"
   ];
 
-  // ── 2. Speech Narration Engine (Web Speech API) ─────────────
-  const speakChapterNarration = (chapterIndex) => {
-    if (isYouTube || isMuted || typeof window === 'undefined' || !window.speechSynthesis) return;
+  // ── 2. Hybrid Audio Engine (ElevenLabs + Natural Browser Fallback) ──
+  const speakChapterNarration = async (chapterIndex) => {
+    if (isYouTube || isMuted) return;
 
-    try {
-      window.speechSynthesis.cancel();
-      const ch = chapters[chapterIndex];
-      if (!ch || !ch.speech) return;
+    stopNarration();
+    const ch = chapters[chapterIndex];
+    if (!ch || !ch.speech) return;
 
-      const utterance = new SpeechSynthesisUtterance(ch.speech);
-      utterance.rate = playbackSpeed;
-      utterance.pitch = 1.0;
-      
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha') || v.lang.startsWith('en')));
-      if (preferredVoice) utterance.voice = preferredVoice;
+    // Try ElevenLabs AI Studio Audio if selected
+    if (['adam', 'rachel', 'antoni', 'josh'].includes(selectedVoice)) {
+      try {
+        const res = await fetch(`${apiUrl}/api/tts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: ch.speech,
+            voice: selectedVoice,
+            apiKey: elevenLabsKey || undefined
+          })
+        });
+        const data = await res.json();
 
-      utterance.onerror = () => {}; // graceful ignore
-      window.speechSynthesis.speak(utterance);
-    } catch {
-      // Ignore speech errors silently
+        if (data.success && data.audioUrl) {
+          setAudioSourceType('elevenlabs');
+          const audio = new Audio(data.audioUrl);
+          audio.playbackRate = playbackSpeed;
+          audioRef.current = audio;
+          await audio.play();
+          return;
+        }
+      } catch (err) {
+        console.warn('ElevenLabs stream unavailable, using natural browser engine:', err);
+      }
+    }
+
+    // Fallback: High-Definition Natural In-Browser Voice
+    setAudioSourceType('natural');
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(ch.speech);
+        utterance.rate = playbackSpeed;
+        utterance.pitch = selectedVoice === 'natural_female' ? 1.1 : 0.95;
+        
+        const voices = window.speechSynthesis.getVoices();
+        let preferredVoice;
+        if (selectedVoice === 'natural_female') {
+          preferredVoice = voices.find(v => (v.name.includes('Jenny') || v.name.includes('Samantha') || v.name.includes('Zira') || (v.name.includes('Female') && v.lang.startsWith('en'))));
+        } else {
+          preferredVoice = voices.find(v => (v.name.includes('Ryan') || v.name.includes('Guy') || v.name.includes('David') || v.name.includes('Google US English') || v.lang.startsWith('en')));
+        }
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        utterance.onerror = () => {};
+        window.speechSynthesis.speak(utterance);
+      } catch {}
     }
   };
 
   const stopNarration = () => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch {}
+      audioRef.current = null;
+    }
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       try {
         window.speechSynthesis.cancel();
@@ -249,6 +304,24 @@ export default function CarbonPlayer({
     }
   };
 
+  const handleVoiceChange = (e) => {
+    const v = e.target.value;
+    setSelectedVoice(v);
+    localStorage.setItem('carbon_selected_voice', v);
+    if (isPlaying) {
+      speakChapterNarration(activeChapterIndex);
+    }
+  };
+
+  const saveElevenLabsKey = (key) => {
+    setElevenLabsKey(key);
+    localStorage.setItem('carbon_elevenlabs_key', key);
+    setShowKeyModal(false);
+    if (isPlaying) {
+      speakChapterNarration(activeChapterIndex);
+    }
+  };
+
   const toggleMute = () => {
     setIsMuted(prev => {
       const next = !prev;
@@ -298,6 +371,14 @@ export default function CarbonPlayer({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Voice Provider Badge */}
+            {!isYouTube && (
+              <div className="voice-status-badge">
+                <Mic size={13} color="#38bdf8" />
+                <span>{audioSourceType === 'elevenlabs' ? 'ElevenLabs AI' : 'Natural Neural'}</span>
+              </div>
+            )}
+
             <button 
               type="button" 
               onClick={toggleFullscreen} 
@@ -496,6 +577,29 @@ export default function CarbonPlayer({
                     className="cinema-scrubber"
                   />
 
+                  {/* Voice Selector Dropdown */}
+                  <div className="cinema-voice-picker">
+                    <Mic size={14} color="#38bdf8" />
+                    <select value={selectedVoice} onChange={handleVoiceChange} className="voice-select">
+                      <option value="adam">🎙️ Adam (ElevenLabs - Tech Host)</option>
+                      <option value="rachel">🎙️ Rachel (ElevenLabs - Studio)</option>
+                      <option value="antoni">🎙️ Antoni (ElevenLabs - Lead)</option>
+                      <option value="josh">🎙️ Josh (ElevenLabs - Dev)</option>
+                      <option value="natural_male">⚡ Natural Male (Edge/Chrome)</option>
+                      <option value="natural_female">⚡ Natural Female (Edge/Chrome)</option>
+                    </select>
+                  </div>
+
+                  {/* ElevenLabs API Key Modal Button */}
+                  <button
+                    type="button"
+                    onClick={() => setShowKeyModal(true)}
+                    className="btn-control-icon"
+                    title="ElevenLabs Free Key Settings"
+                  >
+                    <Key size={15} color={elevenLabsKey ? "#10b981" : "#94a3b8"} />
+                  </button>
+
                   {/* Audio Narration Toggle */}
                   <button 
                     type="button" 
@@ -590,6 +694,48 @@ export default function CarbonPlayer({
           </div>
 
         </div>
+
+        {/* ── ELEVENLABS KEY MODAL ── */}
+        {showKeyModal && (
+          <div className="elevenlabs-key-modal-overlay" onClick={() => setShowKeyModal(false)}>
+            <div className="elevenlabs-key-modal" onClick={e => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={18} color="#38bdf8" /> ElevenLabs Free Voice Setup
+                </h3>
+                <button type="button" onClick={() => setShowKeyModal(false)} className="btn-icon">
+                  <X size={16} />
+                </button>
+              </div>
+              <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.5', margin: '0 0 16px 0' }}>
+                ElevenLabs provides <b>10,000 free characters every month</b>. Get your free key at <a href="https://elevenlabs.io" target="_blank" rel="noreferrer" style={{ color: '#38bdf8' }}>elevenlabs.io</a> (Profile &gt; API Keys) and paste it below:
+              </p>
+              <input 
+                type="password"
+                placeholder="Paste ElevenLabs API Key (e.g. sk_...)"
+                defaultValue={elevenLabsKey}
+                id="elevenlabs-input-key"
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(0,0,0,0.3)', color: '#fff', fontSize: '13px', marginBottom: '16px', boxSizing: 'border-box' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" onClick={() => saveElevenLabsKey('')} className="btn-secondary" style={{ padding: '8px 14px', borderRadius: '6px', cursor: 'pointer' }}>
+                  Clear Key
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    const el = document.getElementById('elevenlabs-input-key');
+                    saveElevenLabsKey(el?.value || '');
+                  }}
+                  className="btn-gamma-ai" 
+                  style={{ padding: '8px 16px', borderRadius: '6px' }}
+                >
+                  Save & Apply Voice
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

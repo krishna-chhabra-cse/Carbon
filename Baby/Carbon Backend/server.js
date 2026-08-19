@@ -64,9 +64,11 @@ app.use('/api/analyze', analyzeLimiter);
 
 const analyzeRoutes = require('./routes/analyze');
 const explainVideoRoutes = require('./routes/explainVideo');
+const ttsRoutes = require('./routes/tts');
 
 app.use('/api', analyzeRoutes);
 app.use('/api', explainVideoRoutes);
+app.use('/api', ttsRoutes);
 
 // Healthcheck endpoints for uptime monitors & load balancers
 app.get(['/', '/health'], (req, res) => {
