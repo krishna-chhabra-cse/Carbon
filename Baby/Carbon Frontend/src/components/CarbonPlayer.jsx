@@ -151,7 +151,17 @@ export default function CarbonPlayer({
     "DevSecOps grade verified with automated remediation patches"
   ];
 
-  // ── 2. Hybrid Audio Engine (ElevenLabs + Natural Browser Fallback) ──
+  // Client-side cache for synthesized audio blobs
+  const clientAudioCache = useRef(new Map());
+
+  const ELEVEN_VOICES = {
+    adam: 'pNInz6obpgDQGcFmaJgB',
+    rachel: '21m00Tcm4TlvDq8ikWAM',
+    antoni: 'ErXwobaYiN019PkySvjV',
+    josh: 'TxGEqnHWrfWFTfGW9XjX'
+  };
+
+  // ── 2. Hybrid Audio Engine (Direct ElevenLabs + Backend Proxy + Browser Neural Fallback) ──
   const speakChapterNarration = async (chapterIndex) => {
     if (isYouTube || isMuted) return;
 
@@ -159,8 +169,68 @@ export default function CarbonPlayer({
     const ch = chapters[chapterIndex];
     if (!ch || !ch.speech) return;
 
-    // Try ElevenLabs AI Studio Audio if selected
-    if (['adam', 'rachel', 'antoni', 'josh'].includes(selectedVoice)) {
+    const isElevenVoice = ['adam', 'rachel', 'antoni', 'josh'].includes(selectedVoice);
+
+    if (isElevenVoice) {
+      const voiceId = ELEVEN_VOICES[selectedVoice] || ELEVEN_VOICES.adam;
+      const cacheKey = `${voiceId}_${ch.speech.trim()}`;
+
+      // Check client cache first
+      if (clientAudioCache.current.has(cacheKey)) {
+        try {
+          setAudioSourceType('elevenlabs');
+          const audio = new Audio(clientAudioCache.current.get(cacheKey));
+          audio.playbackRate = playbackSpeed;
+          audioRef.current = audio;
+          await audio.play();
+          return;
+        } catch (e) {
+          console.warn('Cached audio playback error:', e);
+        }
+      }
+
+      // 1. Direct ElevenLabs API call if user has configured an API key
+      if (elevenLabsKey && elevenLabsKey.trim()) {
+        try {
+          const directRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+            method: 'POST',
+            headers: {
+              'xi-api-key': elevenLabsKey.trim(),
+              'Content-Type': 'application/json',
+              'Accept': 'audio/mpeg'
+            },
+            body: JSON.stringify({
+              text: ch.speech.trim(),
+              model_id: 'eleven_turbo_v2_5',
+              voice_settings: {
+                stability: 0.5,
+                similarity_boost: 0.8,
+                use_speaker_boost: true
+              }
+            })
+          });
+
+          if (directRes.ok) {
+            const blob = await directRes.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            clientAudioCache.current.set(cacheKey, blobUrl);
+
+            setAudioSourceType('elevenlabs');
+            const audio = new Audio(blobUrl);
+            audio.playbackRate = playbackSpeed;
+            audioRef.current = audio;
+            await audio.play();
+            return;
+          } else {
+            const errBody = await directRes.text();
+            console.warn('Direct ElevenLabs returned error:', errBody);
+          }
+        } catch (err) {
+          console.warn('Direct ElevenLabs call failed:', err);
+        }
+      }
+
+      // 2. Try Backend TTS Proxy if no client key or direct call failed
       try {
         const res = await fetch(`${apiUrl}/api/tts`, {
           method: 'POST',
@@ -174,6 +244,7 @@ export default function CarbonPlayer({
         const data = await res.json();
 
         if (data.success && data.audioUrl) {
+          clientAudioCache.current.set(cacheKey, data.audioUrl);
           setAudioSourceType('elevenlabs');
           const audio = new Audio(data.audioUrl);
           audio.playbackRate = playbackSpeed;
@@ -182,7 +253,7 @@ export default function CarbonPlayer({
           return;
         }
       } catch (err) {
-        console.warn('ElevenLabs stream unavailable, using natural browser engine:', err);
+        console.warn('Backend ElevenLabs stream unavailable, using natural browser engine:', err);
       }
     }
 
