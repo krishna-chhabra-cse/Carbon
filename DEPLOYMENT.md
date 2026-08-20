@@ -46,7 +46,7 @@ This is the recommended, zero-cost cloud setup.
 3. Connect your GitHub repository.
 4. Fill in the service configuration:
    - **Name**: `carbon-agent-service`
-   - **Root Directory**: `Baby/Carbon Agent Service`
+   - **Root Directory**: `apps/Carbon Agent Service`
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
@@ -62,7 +62,7 @@ This is the recommended, zero-cost cloud setup.
 2. Select the same repository.
 3. Fill in the service configuration:
    - **Name**: `carbon-backend`
-   - **Root Directory**: `Baby/Carbon Backend`
+   - **Root Directory**: `apps/Carbon Backend`
    - **Runtime**: `Node`
    - **Build Command**: `npm install`
    - **Start Command**: `node server.js`
@@ -79,7 +79,7 @@ This is the recommended, zero-cost cloud setup.
 1. Go to [vercel.com](https://vercel.com) $\to$ **Add New Project**.
 2. Import your GitHub repository.
 3. Configure the project settings:
-   - **Root Directory**: `Baby/Carbon Frontend`
+   - **Root Directory**: `apps/Carbon Frontend`
    - **Framework Preset**: `Vite`
 4. Under **Environment Variables**, add:
    - `VITE_API_URL`: `https://carbon-backend.onrender.com` *(from Step 2)*
@@ -129,9 +129,8 @@ Turn GitHub into an interactive AI codebase explorer with the Carbon Chrome Exte
 3. Click the **"Load unpacked"** button in the top-left toolbar.
 4. Select the directory:
    ```
-   Baby/chrome-extension
+   apps/chrome-extension
    ```
-   *(Full path: `c:\Users\krish\Desktop\Project carbon\Carbon\Baby\chrome-extension`)*
 5. The **Carbon** extension is now installed!
 
 ### How to Use the Chrome Extension:
@@ -144,6 +143,6 @@ Turn GitHub into an interactive AI codebase explorer with the Carbon Chrome Exte
 ## 📦 Carbon VS Code Extension (.vsix)
 
 To distribute Carbon to VS Code users:
-1. Navigate to `Baby/vscode-extension`.
-2. Run `npm run package` to produce `carbon-vscode-0.1.0.vsix`.
+1. Navigate to `apps/vscode-extension`.
+2. Run `npm run package` to produce `carbon-ai-1.1.0.vsix`.
 3. Share the `.vsix` file — users can install it via **Extensions $\to$ Install from VSIX...**.

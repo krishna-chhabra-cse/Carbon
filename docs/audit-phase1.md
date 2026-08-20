@@ -52,8 +52,8 @@
 - **Navigation:** Desktop tab bar with live AI Mesh indicator and mobile slide-out drawer.
 
 ### 1.9 Extension Integration
-- **Chrome Extension (`Baby/chrome-extension`):** Native Manifest V3 Side Panel + Context Menu with 5 quick learning actions, communicating with backend `/api/companion` and `/api/chat`.
-- **VS Code Extension (`Baby/vscode-extension`):** Packaged VSIX (`1.0.0`) with client-side AST and safe file collector, visual webview diagrams, and Scrimba explainer generator.
+- **Chrome Extension (`apps/chrome-extension`):** Native Manifest V3 Side Panel + Context Menu with 5 quick learning actions, communicating with backend `/api/companion` and `/api/chat`.
+- **VS Code Extension (`apps/vscode-extension`):** Packaged VSIX (`1.1.0`) with client-side AST and safe file collector, visual webview diagrams, and Scrimba explainer generator.
 
 ### 1.10 Environment Variables Audit
 - `GEMINI_API_KEY`: Server-side only (private).
