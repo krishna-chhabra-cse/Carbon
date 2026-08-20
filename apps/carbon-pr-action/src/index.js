@@ -31,15 +31,35 @@ async function run() {
     core.info(`🪐 [Carbon PR Action] Analyzing PR #${pull_number} in ${owner}/${repo}...`);
     core.info(`📝 PR Title: "${pr.title}" by @${pr.user?.login || 'unknown'}`);
 
-    // 1. Fetch Pull Request Raw Unified Diff
-    const { data: diffData } = await octokit.rest.pulls.get({
-      owner,
-      repo,
-      pull_number,
-      mediaType: {
-        format: 'diff'
+    // 1. Fetch Pull Request Raw Unified Diff (with local git diff and pagination fallbacks for large PRs)
+    let diffData = '';
+    try {
+      const response = await octokit.rest.pulls.get({
+        owner,
+        repo,
+        pull_number,
+        mediaType: {
+          format: 'diff'
+        }
+      });
+      diffData = String(response.data);
+    } catch (apiErr) {
+      core.info(`⚠️ GitHub pulls.get diff API returned: ${apiErr.message}. Engaging local git diff fallback...`);
+      try {
+        const { execSync } = require('child_process');
+        const baseBranch = pr.base?.ref || 'main';
+        diffData = execSync(`git diff origin/${baseBranch}...HEAD`, { encoding: 'utf-8', maxBuffer: 20 * 1024 * 1024 });
+      } catch (gitErr) {
+        core.info(`⚠️ Local git diff fallback returned: ${gitErr.message}. Engaging paginated listFiles API fallback...`);
+        const filesList = await octokit.paginate(octokit.rest.pulls.listFiles, {
+          owner,
+          repo,
+          pull_number,
+          per_page: 100
+        });
+        diffData = filesList.map(f => `diff --git a/${f.filename} b/${f.filename}\n--- a/${f.filename}\n+++ b/${f.filename}\n${f.patch || ''}`).join('\n');
       }
-    });
+    }
 
     core.info(`📦 Received diff payload (${Buffer.byteLength(String(diffData))} bytes). Parsing AST...`);
 
