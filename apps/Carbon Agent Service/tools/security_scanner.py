@@ -57,7 +57,7 @@ OWASP_PATTERNS = [
         "id": "VULN-002",
         "title": "Dangerous Dynamic Code Execution (eval / exec)",
         "severity": "CRITICAL",
-        "regex": r"(?<!\w)(?:eval|exec|Function)\s*\(\s*(?:req\.|params|body|[a-zA-Z0-9_$]+)",
+        "regex": r"(?<![\w.])(?:eval|exec|Function)\s*\(\s*(?:req\.|params|body|[a-zA-Z0-9_$]+)",
         "remediation": "Avoid eval() and exec(). Use safe structured parsers like JSON.parse() or dedicated AST validators."
     },
     {

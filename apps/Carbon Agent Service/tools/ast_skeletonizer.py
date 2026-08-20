@@ -7,7 +7,7 @@ from typing import Dict, Tuple
 
 # Ignore patterns for deterministic AST sieve
 IGNORE_DIR_PATTERNS = [
-    r'node_modules', r'\.git', r'dist', r'build', r'out', r'\.next', r'coverage',
+    r'node_modules', r'\.git', r'dist', r'build', r'out', r'\.next', r'\.vercel', r'coverage',
     r'__pycache__', r'\.pytest_cache', r'venv', r'\.venv', r'target', r'vendor',
     r'public[/\\]assets', r'static[/\\]media', r'__tests__', r'tests[/\\]fixtures'
 ]
