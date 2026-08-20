@@ -57,15 +57,16 @@ async function analyzeWorkspaceCommand() {
         return;
     }
     // Support single-root or first folder in multi-root workspaces
-    const workspaceFolder = workspaceFolders[0];
+    const rootFolder = workspaceFolders[0];
+    const workspaceName = rootFolder.name;
     try {
         const result = await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: `Carbon: Analyzing ${workspaceFolder.name}…`,
+            title: `Carbon: Analyzing ${rootFolder.name}…`,
             cancellable: false,
         }, async (progress) => {
             // Step 1: Collect safe files locally
-            const payload = await (0, workspaceCollector_1.collectWorkspaceFiles)(workspaceFolder, (msg) => {
+            const payload = await (0, workspaceCollector_1.collectWorkspaceFiles)(rootFolder, (msg) => {
                 progress.report({ message: msg });
             });
             if (payload.files.length === 0) {
@@ -76,7 +77,7 @@ async function analyzeWorkspaceCommand() {
                 progress.report({ message: describeProgress(event.status) });
             });
         });
-        showResultsPanel(workspaceFolder.name, result);
+        showResultsPanel(rootFolder.name, result);
     }
     catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -134,7 +135,7 @@ function showResultsPanel(workspaceName, result) {
             await vscode.env.openExternal(vscode.Uri.parse('https://gamma.app/new'));
         }
     });
-    activePanel.webview.html = buildResultsHtml(workspaceName, result);
+    activePanel.webview.html = buildResultsHtml(workspaceName, result, (0, carbonClient_1.getBackendBaseUrl)());
 }
 /**
  * Searches the active workspace for a matching file/module and opens it in the editor.
@@ -169,7 +170,7 @@ async function jumpToWorkspaceFile(targetQuery) {
         triggerSearch: true
     });
 }
-function buildResultsHtml(workspaceName, result) {
+function buildResultsHtml(workspaceName, result, backendUrl) {
     const architecture = asRecord(result.architecture);
     const apiDocs = asRecord(result.api_docs);
     const businessLogic = asRecord(result.business_logic);
@@ -524,6 +525,55 @@ function buildResultsHtml(workspaceName, result) {
     let timer = null;
     let elapsed = 0;
     const totalSecs = 120;
+    let currentAudio = null;
+    const backendApiUrl = '${escapeHtml(backendUrl || 'https://carbon-backend-a1sg.onrender.com')}';
+
+    async function playNarration(speechText) {
+      if (isMuted) return;
+      stopNarration();
+
+      // 1. Try ElevenLabs AI audio from Carbon Backend
+      try {
+        const res = await fetch(backendApiUrl + '/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: speechText, voice: 'adam' })
+        });
+        const data = await res.json();
+        if (data.success && data.audioUrl) {
+          currentAudio = new Audio(data.audioUrl);
+          await currentAudio.play();
+          return;
+        }
+      } catch (e) {
+        console.warn('Backend TTS error, falling back to browser neural voice:', e);
+      }
+
+      // 2. Fallback to Web Speech API
+      if (window.speechSynthesis) {
+        try {
+          window.speechSynthesis.cancel();
+          const ut = new SpeechSynthesisUtterance(speechText);
+          const voices = window.speechSynthesis.getVoices();
+          const preferred = voices.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.lang.startsWith('en'));
+          if (preferred) ut.voice = preferred;
+          window.speechSynthesis.speak(ut);
+        } catch (e) {}
+      }
+    }
+
+    function stopNarration() {
+      if (currentAudio) {
+        try {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        } catch (e) {}
+        currentAudio = null;
+      }
+      if (window.speechSynthesis) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+    }
 
     function renderStage(idx) {
       const ch = chapters[idx];
@@ -533,10 +583,8 @@ function buildResultsHtml(workspaceName, result) {
       stageDesc.textContent = ch.desc;
       chapterBadge.textContent = 'Chapter ' + (idx + 1) + ' of ' + chapters.length;
 
-      if (!isMuted && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        const ut = new SpeechSynthesisUtterance(ch.speech);
-        window.speechSynthesis.speak(ut);
+      if (!isMuted) {
+        playNarration(ch.speech);
       }
     }
 
@@ -545,7 +593,7 @@ function buildResultsHtml(workspaceName, result) {
       if (cinemaContainer.style.display === 'block') {
         renderStage(0);
       } else {
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        stopNarration();
         isPlaying = false;
         clearInterval(timer);
         cinemaPlayBtn.textContent = '▶ Play';
@@ -554,7 +602,7 @@ function buildResultsHtml(workspaceName, result) {
 
     cinemaCloseBtn.addEventListener('click', () => {
       cinemaContainer.style.display = 'none';
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      stopNarration();
       isPlaying = false;
       clearInterval(timer);
       cinemaPlayBtn.textContent = '▶ Play';
@@ -565,7 +613,7 @@ function buildResultsHtml(workspaceName, result) {
         isPlaying = false;
         clearInterval(timer);
         cinemaPlayBtn.textContent = '▶ Play';
-        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        stopNarration();
       } else {
         isPlaying = true;
         cinemaPlayBtn.textContent = '⏸ Pause';
@@ -597,7 +645,8 @@ function buildResultsHtml(workspaceName, result) {
     cinemaMuteBtn.addEventListener('click', () => {
       isMuted = !isMuted;
       cinemaMuteBtn.textContent = isMuted ? '🔇 Muted' : '🔊 Voice';
-      if (isMuted && window.speechSynthesis) window.speechSynthesis.cancel();
+      if (isMuted) stopNarration();
+      else if (isPlaying) playNarration(chapters[currentChapter]?.speech || '');
     });
 
     // ── 2. Gamma AI & Slide Deck Generator ────────────────────

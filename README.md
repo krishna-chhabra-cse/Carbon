@@ -2,10 +2,6 @@
 
 # ⚡ CARBON AI — Multi-Agent Codebase Intelligence & DevSecOps Engine
 
-<p align="center">
-  <img src="docs/assets/hero_banner.jpg" alt="Carbon AI Hero Banner" width="100%" style="border-radius: 10px; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
-</p>
-
 ### *Turn complex codebases into interactive architecture flowcharts, DevSecOps security audits, Scrimba video explanations, and GraphRAG impact reasoning.*
 
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-v1.1.0-blue?logo=visual-studio-code&logoColor=white)](Baby/vscode-extension/)
@@ -18,12 +14,13 @@
 
 ---
 
-[Key Features](#-key-features) • [System Architecture](#-system-architecture) • [VS Code Extension](#-vs-code-extension) • [GitHub Action CI Bot](#-github-action-ci-bot) • [Token Optimization Engine](#-ast-token-optimization-engine) • [DevSecOps Scanner](#-devsecops-vulnerability-scanner) • [GraphRAG Impact Q&A](#-graphrag-codebase-qa--blast-radius) • [Quickstart](#-quickstart)
+[Overview](#overview) • [Key Features](#key-features) • [System Architecture](#system-architecture) • [Token Optimization](#token-optimization) • [DevSecOps Scanner](#devsecops-scanner) • [GraphRAG Impact Q&A](#graphrag-qa) • [GitHub Action CI Bot](#github-action) • [VS Code Extension](#vscode-extension) • [Quickstart](#quickstart)
 
 ---
 
 </div>
 
+<a id="overview"></a>
 ## 🌟 Overview
 
 **Carbon AI** is an enterprise-grade developer intelligence ecosystem designed to demystify complex software architectures. It unifies full-stack static analysis, AST code skeletonization, LangGraph multi-agent orchestration, and dual-engine inference (Google Gemini + local air-gapped Ollama) into a single unified developer workflow.
@@ -32,6 +29,7 @@ Whether exploring legacy multi-repo monoliths in VS Code or reviewing complex PR
 
 ---
 
+<a id="key-features"></a>
 ## ✨ Key Features
 
 <table>
@@ -79,6 +77,7 @@ Whether exploring legacy multi-repo monoliths in VS Code or reviewing complex PR
 
 ---
 
+<a id="system-architecture"></a>
 ## 🏗️ System Architecture
 
 ```mermaid
@@ -144,6 +143,7 @@ flowchart TD
 
 ---
 
+<a id="token-optimization"></a>
 ## ⚡ AST Token Optimization Engine
 
 Large repositories (500+ files, 100k+ LOC) often exhaust LLM context windows and burn hundreds of thousands of tokens per run. Carbon includes a **Deterministic AST Sieve and Code Skeletonizer**:
@@ -163,6 +163,7 @@ Large repositories (500+ files, 100k+ LOC) often exhaust LLM context windows and
 
 ---
 
+<a id="devsecops-scanner"></a>
 ## 🛡️ DevSecOps Vulnerability Scanner
 
 Carbon audits every file using static regex taint analysis and AST pattern matching to safeguard against hardcoded secrets and dangerous code patterns:
@@ -174,6 +175,7 @@ Carbon audits every file using static regex taint analysis and AST pattern match
 
 ---
 
+<a id="graphrag-qa"></a>
 ## 🧠 GraphRAG Codebase Q&A & Blast Radius
 
 Carbon builds an in-memory directed dependency graph across all modules, models, routes, and services:
@@ -190,6 +192,7 @@ The **GraphRAG Engine** traverses the directed graph, determines the exact **Bla
 
 ---
 
+<a id="github-action"></a>
 ## 🤖 GitHub Action CI Bot
 
 Carbon provides an automated pull request reviewer that runs on GitHub Actions on every `pull_request` event:
@@ -222,6 +225,7 @@ jobs:
 
 ---
 
+<a id="video-walkthrough"></a>
 ## 🎬 AI Video Walkthrough Engine
 
 Carbon compiles full-stack repository architectures into chapter-based video lectures with synchronized narration and interactive timelines:
@@ -232,6 +236,7 @@ Carbon compiles full-stack repository architectures into chapter-based video lec
 
 ---
 
+<a id="dashboard-visualization"></a>
 ## 📸 Interactive Dashboard & Multi-Agent Visualization
 
 <p align="center">
@@ -241,6 +246,7 @@ Carbon compiles full-stack repository architectures into chapter-based video lec
 
 ---
 
+<a id="vscode-extension"></a>
 ## 🔌 VS Code Extension (v1.1.0)
 
 Install `carbon-ai-1.1.0.vsix` directly into VS Code or Cursor:
@@ -258,6 +264,7 @@ Install `carbon-ai-1.1.0.vsix` directly into VS Code or Cursor:
 
 ---
 
+<a id="quickstart"></a>
 ## 🚀 Quickstart
 
 ### Option 1: Docker Compose (Recommended)
@@ -300,6 +307,7 @@ npx @vscode/vsce package --no-dependencies
 
 ---
 
+<a id="automated-tests"></a>
 ## 🧪 Automated Test Suites
 
 All components are rigorously tested with dedicated test runners:
@@ -317,6 +325,7 @@ python "Baby/Carbon Agent Service/test_graphrag_chat.py"
 
 ---
 
+<a id="repository-structure"></a>
 ## 📂 Repository Structure
 
 ```
@@ -337,6 +346,7 @@ Carbon/
 
 ---
 
+<a id="license"></a>
 ## 📄 License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
