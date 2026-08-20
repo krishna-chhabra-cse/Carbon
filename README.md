@@ -85,7 +85,7 @@ flowchart TD
     subgraph Clients ["Developer Clients"]
         VSC["VS Code Extension\n(krishcarbon.carbon-ai v1.1.0)"]
         GHA["GitHub Action CI Bot\n(carbon-pr-action)"]
-        WEB["Next.js Web Dashboard"]
+        WEB["React 19 + Vite Web Studio\n(apps/Carbon Frontend)"]
     end
 
     subgraph Gateway ["API Gateway (Node/Express :3002)"]
@@ -337,9 +337,10 @@ Carbon/
 │   │   ├── tools/               # AST Skeletonizer, Taint Scanner, Ollama/Gemini LLM
 │   │   └── main.py              # NDJSON Streaming Agent API
 │   ├── Carbon Backend/          # Node.js/Express API Gateway & Cache
+│   ├── Carbon Frontend/         # React 19 + Vite Interactive Web Studio & Cinema
 │   ├── carbon-pr-action/        # Zero-install GitHub Action PR Review Bot
-│   ├── vscode-extension/        # VS Code Extension (TypeScript + Webview)
-│   └── website/                 # Next.js Landing & Interactive Dashboard
+│   ├── chrome-extension/        # Chrome Manifest V3 Side Panel Companion
+│   └── vscode-extension/        # VS Code Extension (TypeScript + Webview)
 ├── docs/assets/                 # Architecture diagrams, banners, and screenshots
 └── docker-compose.yml           # Full-stack container orchestration
 ```
