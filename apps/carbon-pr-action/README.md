@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Carbon PR Reviewer
-        uses: ./Baby/carbon-pr-action
+        uses: ./apps/carbon-pr-action
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }} # (Optional: Or uses Carbon Cloud)
@@ -66,7 +66,7 @@ jobs:
 You can simulate PR analysis locally without pushing to GitHub:
 
 ```bash
-cd Baby/carbon-pr-action
+cd apps/carbon-pr-action
 npm install
 npm test
 ```

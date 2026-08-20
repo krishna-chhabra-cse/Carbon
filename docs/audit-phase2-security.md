@@ -34,7 +34,7 @@ All high-priority risks regarding secret containment, input validation, rate lim
 ## 3. Deep-Dive Security Audits
 
 ### 3.1 Secrets & Environment Variables
-- **Grep Inspection:** Full scan across `Baby/Carbon Frontend/dist`, `Baby/chrome-extension`, and `Baby/vscode-extension` confirmed **zero secret keys, service-role tokens, or credentials**.
+- **Grep Inspection:** Full scan across `apps/Carbon Frontend/dist`, `apps/chrome-extension`, and `apps/vscode-extension` confirmed **zero secret keys, service-role tokens, or credentials**.
 - **Packaging Rules:** `.vscodeignore` strictly excludes `.env*`, `.git/**`, source maps, and development files from the VSIX package.
 
 ### 3.2 Database & Data Isolation

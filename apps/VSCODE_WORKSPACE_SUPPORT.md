@@ -42,7 +42,7 @@ pipeline.
 ## 1. Start Carbon Agent Service (Python)
 
 ```
-cd "Baby/Carbon Agent Service"
+cd "apps/Carbon Agent Service"
 # (create/activate your virtualenv as usual)
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
@@ -51,7 +51,7 @@ uvicorn main:app --reload --port 8000
 ## 2. Start Carbon Backend (Node)
 
 ```
-cd "Baby/Carbon Backend"
+cd "apps/Carbon Backend"
 npm install
 npm start
 ```
@@ -59,7 +59,7 @@ npm start
 ## 3. Start Carbon Frontend (React)
 
 ```
-cd "Baby/Carbon Frontend"
+cd "apps/Carbon Frontend"
 npm install
 npm run dev
 ```

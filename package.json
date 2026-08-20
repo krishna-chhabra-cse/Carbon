@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.2",
   "scripts": {
-    "dev": "npm --prefix \"Baby/Carbon Frontend\" run dev",
-    "build": "npm --prefix \"Baby/Carbon Frontend\" install && npm --prefix \"Baby/Carbon Frontend\" run build",
-    "preview": "npm --prefix \"Baby/Carbon Frontend\" run preview"
+    "dev": "npm --prefix \"apps/Carbon Frontend\" run dev",
+    "build": "npm --prefix \"apps/Carbon Frontend\" install && npm --prefix \"apps/Carbon Frontend\" run build",
+    "preview": "npm --prefix \"apps/Carbon Frontend\" run preview"
   }
 }

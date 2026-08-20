@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd \"Baby/Carbon Frontend\" && npm install && npm run build",
-  "outputDirectory": "Baby/Carbon Frontend/dist",
+  "buildCommand": "cd \"apps/Carbon Frontend\" && npm install && npm run build",
+  "outputDirectory": "apps/Carbon Frontend/dist",
   "rewrites": [
     {
       "source": "/(.*)",

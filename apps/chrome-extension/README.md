@@ -32,7 +32,7 @@ Carbon is an AI-powered learning companion for the web. Whenever you encounter c
 3. Click **"Load unpacked"** (top-left button).
 4. Select this directory:
    ```
-   Baby/chrome-extension
+   apps/chrome-extension
    ```
 5. Pin **Carbon** to your browser toolbar!
 

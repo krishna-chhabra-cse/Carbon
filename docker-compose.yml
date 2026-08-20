@@ -4,7 +4,7 @@ services:
   # ── 1. Python Agent Service (FastAPI + LangGraph + Gemini) ────
   agent-service:
     build:
-      context: ./"Baby/Carbon Agent Service"
+      context: ./"apps/Carbon Agent Service"
       dockerfile: Dockerfile
     container_name: carbon-agent-service
     ports:
@@ -22,7 +22,7 @@ services:
   # ── 2. Node.js Backend Proxy (Express + Video Explainer Engine)
   backend:
     build:
-      context: ./"Baby/Carbon Backend"
+      context: ./"apps/Carbon Backend"
       dockerfile: Dockerfile
     container_name: carbon-backend
     ports:
@@ -38,7 +38,7 @@ services:
   # ── 3. React Frontend Studio (SPA + NGINX) ────────────────────
   frontend:
     build:
-      context: ./"Baby/Carbon Frontend"
+      context: ./"apps/Carbon Frontend"
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=http://localhost:3002
@@ -48,4 +48,3 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-

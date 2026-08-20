@@ -4,12 +4,12 @@
 
 ### *Turn complex codebases into interactive architecture flowcharts, DevSecOps security audits, Scrimba video explanations, and GraphRAG impact reasoning.*
 
-[![VS Code Extension](https://img.shields.io/badge/VS%20Code-v1.1.0-blue?logo=visual-studio-code&logoColor=white)](Baby/vscode-extension/)
+[![VS Code Extension](https://img.shields.io/badge/VS%20Code-v1.1.0-blue?logo=visual-studio-code&logoColor=white)](apps/vscode-extension/)
 [![GitHub Action](https://img.shields.io/badge/GitHub%20Action-Verified-2088FF?logo=githubactions&logoColor=white)](.github/workflows/carbon-pr-review.yml)
-[![LangGraph](https://img.shields.io/badge/Orchestrator-LangGraph%20Agents-FF6F00?logo=python&logoColor=white)](Baby/Carbon%20Agent%20Service/agents/graph.py)
-[![Security Grade](https://img.shields.io/badge/DevSecOps%20Grade-A%2B%20Shield-10B981?logo=security&logoColor=white)](Baby/Carbon%20Agent%20Service/tools/security_scanner.py)
-[![Local LLM](https://img.shields.io/badge/Local%20AI-Ollama%20Offline-7C3AED?logo=ollama&logoColor=white)](Baby/Carbon%20Agent%20Service/tools/llm_client.py)
-[![Token Optimization](https://img.shields.io/badge/Token%20Reduction-98.8%25%20AST%20Sieve-00E5FF)](Baby/Carbon%20Agent%20Service/tools/ast_skeletonizer.py)
+[![LangGraph](https://img.shields.io/badge/Orchestrator-LangGraph%20Agents-FF6F00?logo=python&logoColor=white)](apps/Carbon%20Agent%20Service/agents/graph.py)
+[![Security Grade](https://img.shields.io/badge/DevSecOps%20Grade-A%2B%20Shield-10B981?logo=security&logoColor=white)](apps/Carbon%20Agent%20Service/tools/security_scanner.py)
+[![Local LLM](https://img.shields.io/badge/Local%20AI-Ollama%20Offline-7C3AED?logo=ollama&logoColor=white)](apps/Carbon%20Agent%20Service/tools/llm_client.py)
+[![Token Optimization](https://img.shields.io/badge/Token%20Reduction-98.8%25%20AST%20Sieve-00E5FF)](apps/Carbon%20Agent%20Service/tools/ast_skeletonizer.py)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -217,7 +217,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: krishna-chhabra-cse/Carbon/Baby/carbon-pr-action@main
+      - uses: krishna-chhabra-cse/Carbon/apps/carbon-pr-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
@@ -284,21 +284,21 @@ docker-compose up --build
 
 #### 1. Python Agent Service (FastAPI & LangGraph)
 ```bash
-cd "Baby/Carbon Agent Service"
+cd "apps/Carbon Agent Service"
 pip install -r requirements.txt
 python -m uvicorn main:app --reload --port 8000
 ```
 
 #### 2. Backend Gateway (Node / Express)
 ```bash
-cd "Baby/Carbon Backend"
+cd "apps/Carbon Backend"
 npm install
 npm run dev
 ```
 
 #### 3. VS Code Extension
 ```bash
-cd "Baby/vscode-extension"
+cd "apps/vscode-extension"
 npm install
 npm run compile
 # Package the VSIX
@@ -314,13 +314,13 @@ All components are rigorously tested with dedicated test runners:
 
 ```bash
 # Test 1: DevSecOps Vulnerability Scanner & AST Token Optimizer
-python "Baby/Carbon Agent Service/test_security_scanner.py"
+python "apps/Carbon Agent Service/test_security_scanner.py"
 
 # Test 2: Local Air-Gapped Ollama & Dual-Engine Fallback
-python "Baby/Carbon Agent Service/test_ollama_mode.py"
+python "apps/Carbon Agent Service/test_ollama_mode.py"
 
 # Test 3: GraphRAG Knowledge Graph & Blast Radius Traversal
-python "Baby/Carbon Agent Service/test_graphrag_chat.py"
+python "apps/Carbon Agent Service/test_graphrag_chat.py"
 ```
 
 ---
@@ -331,7 +331,7 @@ python "Baby/Carbon Agent Service/test_graphrag_chat.py"
 ```
 Carbon/
 ├── .github/workflows/           # GitHub Actions CI Review Workflows
-├── Baby/
+├── apps/
 │   ├── Carbon Agent Service/    # FastAPI + LangGraph Multi-Agent Orchestrator
 │   │   ├── agents/              # Architecture, API, Security, BizLogic, GraphRAG
 │   │   ├── tools/               # AST Skeletonizer, Taint Scanner, Ollama/Gemini LLM

@@ -23,10 +23,10 @@ jobs:
           node-version: 20
 
       - name: Install Action Dependencies
-        run: npm --prefix "Baby/carbon-pr-action" install
+        run: npm --prefix "apps/carbon-pr-action" install
 
       - name: Run Carbon PR Reviewer
-        uses: ./Baby/carbon-pr-action
+        uses: ./apps/carbon-pr-action
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}

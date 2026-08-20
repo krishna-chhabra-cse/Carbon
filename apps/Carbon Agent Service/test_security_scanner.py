@@ -10,7 +10,8 @@ if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
 from dotenv import load_dotenv
-load_dotenv('Baby/Carbon Agent Service/.env')
+env_path = 'apps/Carbon Agent Service/.env' if os.path.exists('apps/Carbon Agent Service/.env') else '.env'
+load_dotenv(env_path)
 
 from tools.ast_skeletonizer import skeletonize_js_ts, skeletonize_python, optimize_repo_files
 from tools.security_scanner import run_security_audit
