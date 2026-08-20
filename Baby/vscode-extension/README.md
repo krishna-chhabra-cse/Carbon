@@ -81,11 +81,10 @@ You can customize your Carbon backend endpoint in VS Code Settings (`Ctrl + ,` o
 
 ## 🌐 Links & Resources
 
-- **Official Website**: [https://carbons.codes](https://carbons.codes)
-- **GitHub Repository**: [https://github.com/carbon-dev/carbon](https://github.com/carbon-dev/carbon)
-- **Issues & Feedback**: [https://github.com/carbon-dev/carbon/issues](https://github.com/carbon-dev/carbon/issues)
-
----
+- **Official Website:** https://carbons.codes
+- **GitHub Repository:** https://github.com/krishna-chhabra-cse/Carbon
+- **VS Code Extension:** https://marketplace.visualstudio.com/items?itemName=krishcarbon.carbon-ai
+- **Issues & Feedback:** https://github.com/krishna-chhabra-cse/Carbon/issues
 
 ## 📄 License
 
