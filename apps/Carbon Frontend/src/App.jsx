@@ -2,6 +2,8 @@
 //  src/App.jsx — Carbon Deep-Space Developer Learning Platform
 // ============================================================
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -38,7 +40,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 
-export default function App() {
+function AnalyzerApp() {
   const [activeTab, setActiveTab] = useState('analyzer'); // 'analyzer' | 'explore' | 'quiz' | 'dashboard'
   const [repoUrl, setRepoUrl] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -413,5 +415,16 @@ export default function App() {
       <Analytics />
       <SpeedInsights />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/app" element={<AnalyzerApp />} />
+      </Routes>
+    </Router>
   );
 }

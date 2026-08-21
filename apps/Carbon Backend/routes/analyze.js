@@ -90,6 +90,20 @@ router.post('/analyze', async (req, res) => {
       res.setHeader('Connection', 'keep-alive');
       
       pythonResponse.data.pipe(res);
+
+      // Fire telemetry event (best-effort, non-blocking — never breaks main flow)
+      try {
+        const Database = require('better-sqlite3');
+        const path = require('path');
+        const fs = require('fs');
+        const dbPath = path.join(__dirname, '..', 'db', 'events.db');
+        if (fs.existsSync(dbPath)) {
+          const db = new Database(dbPath);
+          db.prepare('INSERT INTO events (event, repo_url, source) VALUES (?, ?, ?)')
+            .run('repo_analyzed', repoUrl || workspaceName || null, repoUrl ? 'github' : 'vscode');
+        }
+      } catch (_) {} // telemetry must never break the analysis
+
       return; // success — exit retry loop
 
     } catch (error) {
