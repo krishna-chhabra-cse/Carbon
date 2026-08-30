@@ -232,6 +232,22 @@ Install `carbon-ai-1.1.0.vsix` directly into VS Code or Cursor for local workspa
 
 ---
 
+<a id="chrome-extension"></a>
+## 🌐 Chrome Extension (Companion Panel)
+
+Use Carbon's multi-agent intelligence natively in your browser while reviewing GitHub repositories online.
+
+📥 [Download Chrome Extension (`carbon-chrome-extension.zip`)](carbon-chrome-extension.zip)
+
+**Installation (Developer Mode):**
+1. Download and extract the `.zip` file.
+2. Open Chrome and navigate to `chrome://extensions/`.
+3. Enable **Developer mode** (top right corner).
+4. Click **Load unpacked** and select the extracted folder.
+5. Pin the extension and open the side panel on any GitHub repo!
+
+---
+
 <a id="quickstart"></a>
 ## 🚀 Quickstart
 
