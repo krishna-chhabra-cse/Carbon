@@ -2,16 +2,16 @@
   "name": "carbon-ai",
   "displayName": "Carbon — AI Architecture & Codebase Intelligence",
   "description": "Instant codebase intelligence in VS Code: interactive architecture flowcharts, component breakdown, and AI video explanations.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "krishcarbon",
   "pricing": "Free",
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/carbon-dev/carbon"
+    "url": "https://github.com/krishna-chhabra-cse/Carbon"
   },
   "bugs": {
-    "url": "https://github.com/carbon-dev/carbon/issues"
+    "url": "https://github.com/krishna-chhabra-cse/Carbon/issues"
   },
   "homepage": "https://carbons.codes",
   "keywords": [
