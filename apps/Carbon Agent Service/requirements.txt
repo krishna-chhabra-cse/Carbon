@@ -8,3 +8,25 @@ gitpython        # Lets Python clone GitHub repos programmatically
 python-dotenv    # Reads our .env file in Python
 pydantic         # Data validation — makes sure inputs are correct format
 langgraph        # State machine framework for AI agents
+
+# AST Parsing (real parser, not regex)
+tree-sitter>=0.23
+tree-sitter-javascript>=0.23
+tree-sitter-typescript>=0.23
+tree-sitter-python>=0.23
+
+# Persistence
+redis>=5.0
+sqlalchemy[asyncio]>=2.0
+aiosqlite>=0.20
+alembic>=1.13
+
+# Auth & Security
+slowapi>=0.1
+
+# Graph Data Structures
+networkx>=3.0
+
+# Presentations & Media
+python-pptx>=0.6.21
+gTTS>=2.3.2

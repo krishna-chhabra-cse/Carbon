@@ -70,7 +70,7 @@ export default function Chatbox({ repoUrl }) {
     setLoading(true);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+      const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) ? import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '') : (import.meta.env.DEV ? 'http://localhost:3002' : 'https://carbon-backend-a1sg.onrender.com');
       const response = await axios.post(`${apiUrl}/api/chat`, {
         repoUrl: repoUrl,
         query: userQuery

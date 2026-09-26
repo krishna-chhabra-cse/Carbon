@@ -42,21 +42,20 @@ def run(folder_structure: str, files_content: dict, architecture_info: dict = No
     print("[BIZ AGENT] Business Logic Agent starting...")
 
     # Step 1: Set up Gemini client
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in .env file!")
-
-    client = genai.Client(api_key=api_key)
 
     # Same reliable model we use across all agents
     MODEL = "gemini-3.1-flash-lite"
 
-    # Step 2: Format files for the prompt
-    files_text = ""
-    for filepath, content in list(files_content.items())[:30]:
-        files_text += f"\n\n--- FILE: {filepath} ---\n"
-        files_text += content[:4000]
+    # Step 2: Use GraphRAG for intelligent context assembly
+    from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
+    graph = build_codebase_graph(files_content)
+    
+    # We query the graph using architectural hints to pull the most central business logic
+    query = "routes business logic services models controllers"
+    if architecture_info and 'summary' in architecture_info:
+        query += " " + architecture_info['summary']
         
+    files_text = retrieve_graphrag_context(graph, files_content, query, max_chars=18000)
     peer_context = ""
     if architecture_info or api_info:
         peer_context = "\nHere is what your fellow AI agents have discovered about this codebase:\n"
@@ -77,31 +76,38 @@ Here are the key source files:
 {files_text}
 
 Your task:
-1. Understand the overall purpose of this application
-2. Identify every major business feature or user flow
-3. For each feature, break it down into clear sequential steps explaining what the code does
+1. Understand the overall purpose of this application.
+2. Identify the core business workflows.
+3. For each workflow, generate a Mermaid sequence diagram (`sequenceDiagram`) representing the component interactions over time.
+4. For each workflow, break down the logic into clear sequential steps, and trace EACH step to the EXACT source file, function name, and a tiny code snippet that executes it.
 
 Return your response as a valid JSON object with EXACTLY this structure:
 {{
-    "app_purpose": "A clear 2-3 sentence description of what this application does and who it is for",
+    "app_purpose": "A clear 2-3 sentence description of what this application does",
     "business_flows": [
         {{
-            "feature": "Short name of the feature like User Authentication or Order Placement",
+            "feature": "Name of the feature (e.g., User Authentication)",
+            "complexity_score": "Simple", // 'Simple', 'Medium', or 'Complex' based on files touched
+            "blast_radius": "Modifying this breaks X, Y, Z flows", // A short warning about what depends on this
+            "test_coverage_status": true, // true if tests exist for the main files in this flow, false otherwise
+            "sequence_diagram": "sequenceDiagram\\n Client->>Router: POST /login\\n Router->>AuthService: validate()\\n AuthService->>Database: queryUser()",
             "steps": [
-                "Step 1: What happens first in plain English",
-                "Step 2: What happens next",
-                "Step 3: Continue until the flow is complete"
+                {{
+                    "description": "Client sends login request, router intercepts it",
+                    "file": "routes/auth.js",
+                    "function": "loginUser",
+                    "code_snippet": "router.post('/login', loginUser);"
+                }}
             ]
         }}
     ]
 }}
 
 IMPORTANT:
-- Return ONLY the JSON, no extra text before or after
-- Include at least 3-5 business flows if the codebase has them
-- Each flow should have 3-7 clear steps
-- Write steps in plain English that a beginner can understand
-- Focus on WHAT the code does, not HOW it is written
+- Return ONLY the JSON, no markdown formatting outside the JSON values.
+- Include 3-5 business flows.
+- Each flow must have a valid Mermaid sequenceDiagram string (use \\n for line breaks). Do NOT use markdown code blocks inside the string.
+- Each step must trace back to a specific file, function, and short code snippet (1-3 lines max).
 """
 
     # Step 4: Send to Gemini with resilient failover

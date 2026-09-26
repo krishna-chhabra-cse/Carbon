@@ -38,7 +38,7 @@ export default function PresentationDeck({ result }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const deckRef = useRef(null);
 
-  if (!result || !result.architecture) return null;
+  
 
   const { architecture, api_docs, business_logic, repo_url, workspace_name, security } = result;
   const projectName = workspace_name || (repo_url ? repo_url.replace(/^https?:\/\/github\.com\//i, '') : 'Codebase Architecture');
@@ -220,7 +220,7 @@ export default function PresentationDeck({ result }) {
         });
       } else if (slide.type === 'flows') {
         slide.flows.forEach(fl => {
-          md += `### ⚡ ${fl.flow_name}\n${fl.description}\n- Steps: ${fl.steps?.join(' ➔ ') || 'N/A'}\n\n`;
+          md += `### ⚡ ${fl.feature}\n${fl.steps?.[0]?.description || ""}\n- Steps: ${fl.steps?.join(' ➔ ') || 'N/A'}\n\n`;
         });
       } else if (slide.type === 'security') {
         md += `### 🛡️ Overall Security Grade: ${slide.grade}\n`;
@@ -504,8 +504,8 @@ export default function PresentationDeck({ result }) {
               <div className="slide-flows-grid">
                 {activeSlideData.flows.map((fl, idx) => (
                   <div key={idx} className="slide-flow-card">
-                    <div className="slide-flow-title">⚡ {fl.flow_name}</div>
-                    <p className="slide-flow-desc">{fl.description}</p>
+                    <div className="slide-flow-title">⚡ {fl.feature}</div>
+                    <p className="slide-flow-desc">{fl.steps?.[0]?.description || ""}</p>
                     {fl.steps && (
                       <div className="slide-flow-steps">
                         {fl.steps.map((st, sIdx) => (

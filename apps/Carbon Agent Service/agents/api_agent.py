@@ -35,12 +35,6 @@ def run(folder_structure: str, files_content: dict) -> dict:
 
     print("[API AGENT] API Agent starting...")
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in .env file!")
-
-    client = genai.Client(api_key=api_key)
-
     # Use the same powerful and fast model
     MODEL = "gemini-3.1-flash-lite"
 

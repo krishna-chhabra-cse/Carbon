@@ -65,6 +65,11 @@ function sanitizeMermaid(raw) {
   chart = chart.replace(/```\s*$/i, '');
   chart = chart.replace(/\\n/g, '\n');
 
+  // Bypass custom node-splitting logic if it's a sequence diagram
+  if (chart.toLowerCase().startsWith('sequencediagram')) {
+      return chart;
+  }
+
   let flat = chart.split('\n').map(l => l.trim()).filter(l => l.length > 0).join(' ');
   flat = flat.replace(/\s+(subgraph\s)/gi, '\n$1');
   flat = flat.replace(/\s+(end)\b/gi, '\n$1');

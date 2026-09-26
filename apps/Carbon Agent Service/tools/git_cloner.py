@@ -31,7 +31,23 @@ def clone_repo(repo_url: str) -> dict:
         - "error": error message if something went wrong
     """
 
+    
+    # SSRF & Injection Protection
+    if not repo_url.startswith("https://github.com/"):
+        return {
+            "success": False,
+            "repo_path": None,
+            "error": "Security Policy: Only https://github.com/ URLs are allowed."
+        }
+    if ";" in repo_url or "&" in repo_url or "|" in repo_url or "$" in repo_url or "--" in repo_url:
+        return {
+            "success": False,
+            "repo_path": None,
+            "error": "Security Policy: Invalid characters in URL."
+        }
+    
     # Step 1: Create a unique temporary directory
+
     # tempfile.mkdtemp() creates a folder like: C:\Users\...\AppData\Local\Temp\tmpXXXXXX
     temp_dir = tempfile.mkdtemp(prefix="carbon_")
 

@@ -173,7 +173,19 @@ def skeletonize_python(content: str) -> str:
 def skeletonize_code(file_path: str, content: str) -> str:
     """
     Dispatcher: Skeletonizes code based on file extension.
+    Uses real AST parsing (tree-sitter / Python ast) when available,
+    falls back to regex-based extraction for other languages.
     """
+    ext = file_path.lower().split('.')[-1] if '.' in file_path else ''
+
+    if ext in ['py', 'pyw', 'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']:
+        try:
+            from tools.ast_parser import skeletonize_with_ast
+            return skeletonize_with_ast(file_path, content)
+        except ImportError:
+            pass
+
+    # Fallback: original regex-based logic
     ext = file_path.lower().split('.')[-1] if '.' in file_path else ''
 
     if ext in ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']:

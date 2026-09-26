@@ -2,6 +2,8 @@
 //  src/App.jsx — Carbon Deep-Space Developer Learning Platform
 // ============================================================
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -26,8 +28,6 @@ import CosmicCanvas from './components/CosmicCanvas';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import CommandCenter from './components/CommandCenter';
-import VideoGallery from './components/VideoGallery';
-import SpaceQuiz from './components/SpaceQuiz';
 import CarbonPlayer from './components/CarbonPlayer';
 import ArchitectureDiagram from './components/ArchitectureDiagram';
 import ApiEndpoints from './components/ApiEndpoints';
@@ -38,7 +38,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 
-export default function App() {
+function AnalyzerApp() {
   const [activeTab, setActiveTab] = useState('analyzer'); // 'analyzer' | 'explore' | 'quiz' | 'dashboard'
   const [repoUrl, setRepoUrl] = useState('');
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -59,9 +59,10 @@ export default function App() {
     videoUrl: null
   });
 
+  const isDev = import.meta.env.DEV;
   const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) 
     ? import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '') 
-    : 'https://carbon-backend-a1sg.onrender.com';
+    : (isDev ? 'http://localhost:3002' : 'https://carbon-backend-a1sg.onrender.com');
 
   // Pre-warm Render backend & Python service on page load
   useEffect(() => {
@@ -200,13 +201,31 @@ export default function App() {
     setVideoError('');
 
     try {
-      // Launch Native Carbon Cinema (Zero login wall!)
+      // 1. Hit the new Python media generation endpoint
+      const pyUrl = isDev ? 'http://localhost:8000' : 'https://carbon-agent-service.onrender.com';
+      const response = await fetch(`${pyUrl}/api/generate-media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repo_name: result.workspace_name || 'Codebase',
+          architecture_info: result.architecture || {},
+          security_info: result.security || {},
+          business_info: result.business_logic || {}
+        })
+      });
+      const mediaData = await response.json();
+      if (mediaData.status !== 'success') {
+        throw new Error(mediaData.message || 'Media engine failed.');
+      }
+      
+      // 2. Launch Native Carbon Cinema (Zero login wall!)
       const projectName = result.workspace_name || (result.repo_url ? result.repo_url.replace(/^https?:\/\/github\.com\//i, '') : 'Codebase');
       setVideoUrl('native_cinema');
       setCinemaDetails({
         title: `${projectName} • AI Architectural Walkthrough`,
         subtitle: 'Synthesized In-App Video Walkthrough',
-        videoUrl: 'native_cinema'
+        videoUrl: 'native_cinema',
+        notes: `PPT saved to: ${mediaData.ppt_file}`
       });
       setCinemaOpen(true);
     } catch (err) {
@@ -413,5 +432,16 @@ export default function App() {
       <Analytics />
       <SpeedInsights />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/app" element={<AnalyzerApp />} />
+      </Routes>
+    </Router>
   );
 }

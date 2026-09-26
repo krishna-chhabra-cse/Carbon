@@ -1,0 +1,72 @@
+name: Carbon CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Python Agent Service Tests ──────────────────────────────
+  python-tests:
+    runs-on: ubuntu-latest
+    name: Python Tests & Coverage
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r "apps/Carbon Agent Service/requirements.txt"
+          pip install -r "apps/Carbon Agent Service/requirements-dev.txt"
+
+      - name: Run Linter (ruff)
+        run: ruff check "apps/Carbon Agent Service/" --config pyproject.toml
+
+      - name: Run Type Checker (mypy)
+        run: mypy "apps/Carbon Agent Service/" --ignore-missing-imports
+        continue-on-error: true
+
+      - name: Run Unit Tests with Coverage
+        env:
+          LLM_PROVIDER: "gemini"
+          GEMINI_API_KEY: "test-key-not-real"
+        run: |
+          pytest tests/unit/ \
+            --cov="apps/Carbon Agent Service" \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            -v
+
+      - name: Run Integration Tests
+        env:
+          LLM_PROVIDER: "gemini"
+          GEMINI_API_KEY: "test-key-not-real"
+        run: pytest tests/integration/ -v
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          flags: python
+          fail_ci_if_error: false
+
+  # ── Security Scanner (SARIF) ────────────────────────────────
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan (Dogfood)
+    needs: python-tests
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r "apps/Carbon Agent Service/requirements.txt"
+      - name: Run Dogfood Security Scan
+        run: python benchmarks/dogfood_security_scan.py

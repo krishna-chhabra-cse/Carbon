@@ -182,8 +182,15 @@ export default function CarbonPlayer({
           const audio = new Audio(clientAudioCache.current.get(cacheKey));
           audio.playbackRate = playbackSpeed;
           audioRef.current = audio;
-          await audio.play();
-          return;
+            audio.onended = () => {
+              if (isPlaying && activeChapterIndex < chapters.length - 1) {
+                jumpToChapter(activeChapterIndex + 1);
+              } else if (activeChapterIndex >= chapters.length - 1) {
+                setIsPlaying(false);
+              }
+            };
+            await audio.play();
+            return;
         } catch (e) {
           console.warn('Cached audio playback error:', e);
         }
@@ -219,6 +226,13 @@ export default function CarbonPlayer({
             const audio = new Audio(blobUrl);
             audio.playbackRate = playbackSpeed;
             audioRef.current = audio;
+            audio.onended = () => {
+              if (isPlaying && activeChapterIndex < chapters.length - 1) {
+                jumpToChapter(activeChapterIndex + 1);
+              } else if (activeChapterIndex >= chapters.length - 1) {
+                setIsPlaying(false);
+              }
+            };
             await audio.play();
             return;
           } else {
@@ -249,8 +263,15 @@ export default function CarbonPlayer({
           const audio = new Audio(data.audioUrl);
           audio.playbackRate = playbackSpeed;
           audioRef.current = audio;
-          await audio.play();
-          return;
+            audio.onended = () => {
+              if (isPlaying && activeChapterIndex < chapters.length - 1) {
+                jumpToChapter(activeChapterIndex + 1);
+              } else if (activeChapterIndex >= chapters.length - 1) {
+                setIsPlaying(false);
+              }
+            };
+            await audio.play();
+            return;
         }
       } catch (err) {
         console.warn('Backend ElevenLabs stream unavailable, using natural browser engine:', err);
@@ -276,6 +297,13 @@ export default function CarbonPlayer({
         if (preferredVoice) utterance.voice = preferredVoice;
 
         utterance.onerror = () => {};
+        utterance.onend = () => {
+          if (isPlaying && activeChapterIndex < chapters.length - 1) {
+            jumpToChapter(activeChapterIndex + 1);
+          } else if (activeChapterIndex >= chapters.length - 1) {
+            setIsPlaying(false);
+          }
+        };
         window.speechSynthesis.speak(utterance);
       } catch {}
     }
@@ -331,22 +359,10 @@ export default function CarbonPlayer({
     return () => clearInterval(interval);
   }, [isPlaying, playbackSpeed, totalDuration, isYouTube]);
 
-  // Sync active chapter based on currentTime
-  useEffect(() => {
-    if (isYouTube) return;
-    let accumulated = 0;
-    for (let i = 0; i < chapters.length; i++) {
-      const dur = chapters[i].duration || 25;
-      if (currentTime >= accumulated && currentTime < accumulated + dur) {
-        if (activeChapterIndex !== i) {
-          setActiveChapterIndex(i);
-          if (isPlaying) speakChapterNarration(i);
-        }
-        break;
-      }
-      accumulated += dur;
-    }
-  }, [currentTime, chapters, isPlaying, isYouTube, activeChapterIndex]);
+  // Sync active chapter based on currentTime (DISABLED - now driven by audio onend)
+    useEffect(() => {
+       // We no longer forcefully change chapters based on time to allow natural audio length
+    }, []);
 
   const handleTogglePlay = () => {
     if (isPlaying) {

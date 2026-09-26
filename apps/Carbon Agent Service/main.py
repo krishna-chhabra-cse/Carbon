@@ -41,12 +41,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow all origins
+# CORS: Explicit origins for production, permissive for local development
+ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[o.strip() for o in ALLOWED_ORIGINS],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 
@@ -301,4 +303,84 @@ async def generate_explainer_opml(request: ExplainerOPMLRequest):
         print(f"[ERROR] OPML generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+# ============================================================
+#  NEW MEDIA ENDPOINTS (PPT & Video Gen)
+# ============================================================
+
+class MediaRequest(BaseModel):
+    repo_name: str
+    architecture_info: dict
+    security_info: dict
+    business_info: dict
+
+@app.post('/api/generate-media')
+async def generate_media(req: MediaRequest):
+    "Triggers the DevRel Engine to build PPT and Video Storyboard."
+    try:
+        from tools.ppt_generator import generate_executive_briefing
+        from tools.video_storyboard import generate_video_storyboard
+        
+        ppt_path = generate_executive_briefing(
+            repo_name=req.repo_name,
+            architecture_info=req.architecture_info,
+            security_info=req.security_info,
+            business_info=req.business_info,
+            output_filepath=f"{req.repo_name.replace(' ', '_')}_Briefing.pptx"
+        )
+        
+        video_json = generate_video_storyboard(
+            repo_name=req.repo_name,
+            architecture_info=req.architecture_info,
+            business_info=req.business_info,
+            output_dir=f"{req.repo_name.replace(' ', '_')}_video_assets"
+        )
+        
+        return {
+            "status": "success",
+            "ppt_file": ppt_path,
+            "video_storyboard": video_json
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+# ============================================================
+#  VIRAL FEATURE: ROAST MY CODEBASE
+# ============================================================
+
+class RoastRequest(BaseModel):
+    repo_url: str
+    architecture_info: dict
+    security_info: dict
+
+@app.post('/api/roast')
+async def roast_codebase(req: RoastRequest):
+    "Generates a highly shareable, humorous roast of the codebase."
+    try:
+        repo_name = req.repo_url.split('/')[-1].replace('.git', '')
+        clone_result = clone_repo(req.repo_url)
+        if not clone_result.get("success"):
+            raise Exception(f"Failed to clone repository: {clone_result.get('error')}")
+            
+        repo_path = clone_result["repo_path"]
+        files_dict = read_files_for_analysis(repo_path)
+        
+        from agents.roast_agent import run as run_roast_agent
+        roast_data = run_roast_agent(
+            files_dict=files_dict,
+            architecture_info=req.architecture_info,
+            security_info=req.security_info
+        )
+        
+        cleanup_repo(repo_path)
+        
+        return {
+            "status": "success",
+            "repo_name": repo_name,
+            "roast": roast_data
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 

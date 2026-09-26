@@ -23,12 +23,6 @@ def run(query: str, mode: str = "explain", context: dict = None) -> dict:
     Handles Explain, Simplify, Example, Teach Me, Summarize, Page Explain, and Lesson Discovery.
     """
     print(f"\n[COMPANION AGENT] Mode: '{mode}' | Query: '{query[:80]}...'")
-
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in environment!")
-
-    client = genai.Client(api_key=api_key)
     MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
     context = context or {}

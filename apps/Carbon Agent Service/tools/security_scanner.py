@@ -83,43 +83,150 @@ OWASP_PATTERNS = [
     }
 ]
 
+# ── Extended Security Rules (CWE-mapped) ──────────────────────
+
+INJECTION_PATTERNS = [
+    {
+        "id": "VULN-006", "title": "Command Injection (child_process with user input)",
+        "severity": "CRITICAL", "cwe": "CWE-78",
+        "regex": r"(?:exec|execSync|spawn|spawnSync)\s*\(\s*(?:req\.|params|query|body|`)",
+        "remediation": "Use parameterized commands or a safe wrapper. Never pass user input directly to shell commands."
+    },
+    {
+        "id": "VULN-007", "title": "Server-Side Template Injection (SSTI)",
+        "severity": "HIGH", "cwe": "CWE-1336",
+        "regex": r"(?:render|template|Jinja2|nunjucks|handlebars)\s*\(.*(?:req\.|params|query|body)",
+        "remediation": "Use auto-escaping templates and never pass raw user input into template strings."
+    },
+    {
+        "id": "VULN-008", "title": "NoSQL Operator Injection ($gt, $ne, $regex)",
+        "severity": "HIGH", "cwe": "CWE-943",
+        "regex": r"(?:find|findOne|aggregate|updateOne)\s*\(\s*\{[^}]*(?:req\.body|req\.query|req\.params)",
+        "remediation": "Validate and sanitize MongoDB query parameters. Use mongo-sanitize or explicit field extraction."
+    },
+    {
+        "id": "VULN-009", "title": "Log Injection (unsanitized user input in logs)",
+        "severity": "MEDIUM", "cwe": "CWE-117",
+        "regex": r"(?:console\.log|logger\.info|logger\.error|logging\.info)\s*\(.*(?:req\.|params|query|body)",
+        "remediation": "Sanitize log inputs by stripping newlines and control characters before logging."
+    },
+]
+
+AUTH_PATTERNS = [
+    {
+        "id": "AUTH-001", "title": "Weak JWT Algorithm (none/HS256 without key rotation)",
+        "severity": "HIGH", "cwe": "CWE-327",
+        "regex": r"jwt\.sign\s*\([^)]*algorithm\s*:\s*['\"](?:none|HS256)['\"]",
+        "remediation": "Use RS256 or ES256 with rotating keys. Never use 'none' algorithm."
+    },
+    {
+        "id": "AUTH-002", "title": "Missing Token Expiration",
+        "severity": "MEDIUM", "cwe": "CWE-613",
+        "regex": r"jwt\.sign\s*\([^)]*\)\s*(?!.*(?:expiresIn|exp))",
+        "remediation": "Always set expiresIn (e.g., '1h') when signing JWT tokens."
+    },
+    {
+        "id": "AUTH-003", "title": "Password in URL Parameters",
+        "severity": "HIGH", "cwe": "CWE-598",
+        "regex": r"(?:req\.query\.password|req\.params\.password|\?.*password=)",
+        "remediation": "Never transmit passwords via URL parameters. Use POST request body over HTTPS."
+    },
+    {
+        "id": "AUTH-004", "title": "Default Admin Credentials",
+        "severity": "CRITICAL", "cwe": "CWE-798",
+        "regex": r"(?:admin|root|administrator)\s*[:=]\s*['\"](?:admin|password|123456|root)['\"]",
+        "remediation": "Remove default credentials. Require secure password setup on first run."
+    },
+]
+
+CONFIG_PATTERNS = [
+    {
+        "id": "CFG-001", "title": "Debug Mode Enabled in Production Code",
+        "severity": "MEDIUM", "cwe": "CWE-489",
+        "regex": r"(?:DEBUG\s*=\s*True|NODE_ENV\s*[:=]\s*['\"]development['\"]|app\.debug\s*=\s*True)",
+        "remediation": "Ensure DEBUG/development mode is disabled in production configuration."
+    },
+    {
+        "id": "CFG-002", "title": "Stack Trace Exposed in Error Response",
+        "severity": "MEDIUM", "cwe": "CWE-209",
+        "regex": r"res\.(?:json|send)\s*\(\s*(?:err|error)\.(?:stack|message)\s*\)",
+        "remediation": "Log errors server-side but return generic error messages to clients."
+    },
+    {
+        "id": "CFG-003", "title": "Missing Security Headers (Helmet)",
+        "severity": "LOW", "cwe": "CWE-693",
+        "regex": r"app\.use\((?!.*helmet).*(?:express\.static|cors)\)",
+        "remediation": "Add app.use(helmet()) before other middleware for security headers."
+    },
+    {
+        "id": "CFG-004", "title": "Exposed .env or Credentials File in Static Serving",
+        "severity": "CRITICAL", "cwe": "CWE-552",
+        "regex": r"express\.static\s*\(\s*['\"]\./?['\"]|serveStatic\s*\(\s*['\"]\./?['\"]",
+        "remediation": "Never serve the project root as static files. Use a specific public/ directory."
+    },
+]
+
+CRYPTO_PATTERNS = [
+    {
+        "id": "CRYPTO-001", "title": "Weak Hashing Algorithm (MD5/SHA1 for passwords)",
+        "severity": "HIGH", "cwe": "CWE-328",
+        "regex": r"(?:md5|sha1|SHA1|MD5)\s*\(|createHash\s*\(\s*['\"](?:md5|sha1)['\"]",
+        "remediation": "Use bcrypt, scrypt, or Argon2 for password hashing. Use SHA-256+ for integrity checks."
+    },
+    {
+        "id": "CRYPTO-002", "title": "Math.random() Used for Security-Sensitive Operations",
+        "severity": "MEDIUM", "cwe": "CWE-330",
+        "regex": r"Math\.random\s*\(\s*\).*(?:token|secret|key|password|session|nonce|csrf)",
+        "remediation": "Use crypto.randomBytes() or crypto.randomUUID() for security-sensitive random values."
+    },
+]
+
+DATA_PATTERNS = [
+    {
+        "id": "DATA-001", "title": "Potential PII in Logs (Email/SSN patterns)",
+        "severity": "MEDIUM", "cwe": "CWE-532",
+        "regex": r"(?:console\.log|logger)\s*\(.*(?:email|ssn|social_security|credit_card|password)",
+        "remediation": "Redact or mask PII fields before logging. Use structured logging with field-level redaction."
+    },
+    {
+        "id": "DATA-002", "title": "Sensitive Data in URL Query Parameters",
+        "severity": "MEDIUM", "cwe": "CWE-598",
+        "regex": r"\?(?:.*&)?(?:token|api_key|secret|password|ssn)=",
+        "remediation": "Send sensitive data in request body or headers, never in URL query strings."
+    },
+]
+
 def scan_file_for_vulnerabilities(file_path: str, content: str) -> List[Dict[str, Any]]:
     """Scans a single file's content against security rules."""
     findings = []
     lines = content.split('\n')
 
-    # 1. Scan for Secrets
-    for rule in SECRET_PATTERNS:
-        for idx, line in enumerate(lines):
-            match = re.search(rule["regex"], line, re.IGNORECASE)
-            if match:
-                findings.append({
-                    "ruleId": rule["id"],
-                    "title": rule["title"],
-                    "severity": rule["severity"],
-                    "filePath": file_path,
-                    "lineNumber": idx + 1,
-                    "snippet": line.strip()[:100],
-                    "remediation": rule["remediation"],
-                    "category": "Secret Leakage"
-                })
+    ALL_RULES = [
+        (SECRET_PATTERNS, "Secret Leakage"),
+        (OWASP_PATTERNS, "OWASP Vulnerability"),
+        (INJECTION_PATTERNS, "Injection"),
+        (AUTH_PATTERNS, "Authentication"),
+        (CONFIG_PATTERNS, "Configuration"),
+        (CRYPTO_PATTERNS, "Cryptography"),
+        (DATA_PATTERNS, "Data Exposure"),
+    ]
 
-    # 2. Scan for OWASP Vulnerabilities
-    for rule in OWASP_PATTERNS:
-        for idx, line in enumerate(lines):
-            match = re.search(rule["regex"], line, re.IGNORECASE)
-            if match:
-                findings.append({
-                    "ruleId": rule["id"],
-                    "title": rule["title"],
-                    "severity": rule["severity"],
-                    "filePath": file_path,
-                    "lineNumber": idx + 1,
-                    "snippet": line.strip()[:100],
-                    "remediation": rule["remediation"],
-                    "category": "OWASP Vulnerability"
-                })
-
+    for rule_set, category in ALL_RULES:
+        for rule in rule_set:
+            for idx, line in enumerate(lines):
+                match = re.search(rule["regex"], line, re.IGNORECASE)
+                if match:
+                    findings.append({
+                        "ruleId": rule["id"],
+                        "title": rule["title"],
+                        "severity": rule["severity"],
+                        "cwe": rule.get("cwe", ""),
+                        "filePath": file_path,
+                        "lineNumber": idx + 1,
+                        "snippet": line.strip()[:100],
+                        "remediation": rule["remediation"],
+                        "category": category,
+                    })
     return findings
 
 def calculate_security_grade(findings: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -181,4 +288,49 @@ def run_security_audit(files_dict: Dict[str, str]) -> Dict[str, Any]:
         "scorecard": scorecard,
         "findings": all_findings,
         "totalScannedFiles": len(files_dict)
+    }
+
+def export_sarif(findings: list, tool_version: str = "2.0.0") -> dict:
+    """Exports findings in SARIF v2.1.0 format for GitHub Security tab."""
+    severity_map = {"CRITICAL": "error", "HIGH": "error", "MEDIUM": "warning", "LOW": "note"}
+
+    rules = {}
+    results = []
+
+    for f in findings:
+        rule_id = f["ruleId"]
+        if rule_id not in rules:
+            rules[rule_id] = {
+                "id": rule_id,
+                "name": f["title"].replace(" ", ""),
+                "shortDescription": {"text": f["title"]},
+                "helpUri": f"https://cwe.mitre.org/data/definitions/{f.get('cwe', '').replace('CWE-', '')}.html" if f.get("cwe") else "",
+                "properties": {"tags": [f.get("cwe", ""), f["category"]]}
+            }
+
+        results.append({
+            "ruleId": rule_id,
+            "level": severity_map.get(f["severity"], "note"),
+            "message": {"text": f"{f['title']}: {f['remediation']}"},
+            "locations": [{
+                "physicalLocation": {
+                    "artifactLocation": {"uri": f["filePath"]},
+                    "region": {"startLine": f["lineNumber"]}
+                }
+            }]
+        })
+
+    return {
+        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [{
+            "tool": {
+                "driver": {
+                    "name": "Carbon Security Scanner",
+                    "version": tool_version,
+                    "rules": list(rules.values())
+                }
+            },
+            "results": results
+        }]
     }

@@ -24,3 +24,7 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+Codebase_*
+*_video_assets/
+*_Briefing.pptx

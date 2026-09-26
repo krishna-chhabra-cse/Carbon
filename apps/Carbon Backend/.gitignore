@@ -16,3 +16,7 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# SQLite telemetry database (auto-created at runtime, never commit)
+db/
+*.db

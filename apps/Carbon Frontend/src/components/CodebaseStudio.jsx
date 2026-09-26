@@ -36,6 +36,7 @@ import {
   Presentation
 } from 'lucide-react';
 import ArchitectureDiagram from './ArchitectureDiagram';
+import GalaxyDiagram from './GalaxyDiagram';
 import Chatbox from './Chatbox';
 import PresentationDeck from './PresentationDeck';
 
@@ -53,6 +54,37 @@ export default function CodebaseStudio({
   const [endpointSearch, setEndpointSearch] = useState('');
   const [activeFlowIndex, setActiveFlowIndex] = useState(0);
   const [copiedEndpointIdx, setCopiedEndpointIdx] = useState(null);
+  
+  const [is3DView, setIs3DView] = useState(false);
+
+  const [roastData, setRoastData] = useState(null);
+  const [roastLoading, setRoastLoading] = useState(false);
+  
+  const generateRoast = async () => {
+    setRoastLoading(true);
+    try {
+      const pyUrl = import.meta.env.DEV ? 'http://localhost:8000' : 'https://carbon-agent-service.onrender.com';
+      const response = await fetch(`${pyUrl}/api/roast`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repo_url: result.repo_url || 'Unknown',
+          architecture_info: result.architecture || {},
+          security_info: result.security || {}
+        })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setRoastData(data.roast);
+      } else {
+        alert(data.message || 'Failed to roast');
+      }
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setRoastLoading(false);
+    }
+  };
 
   if (!result || !result.architecture) return null;
 
@@ -261,6 +293,15 @@ export default function CodebaseStudio({
           <MessageSquare size={16} />
           <span>AI Carbon</span>
         </button>
+
+        <button
+          type="button"
+          className={`studio-tab-btn ${activeStudioTab === 'roast' ? 'active' : ''}`}
+          onClick={() => setActiveStudioTab('roast')}
+          style={{marginLeft: 'auto', border: '1px solid rgba(239, 68, 68, 0.3)', background: activeStudioTab === 'roast' ? 'rgba(239, 68, 68, 0.2)' : 'transparent', color: activeStudioTab === 'roast' ? '#fca5a5' : '#ef4444'}}
+        >
+          <span>🌶️ Roast Mode</span>
+        </button>
       </div>
 
       {/* ── 4. STUDIO CONTENT PANELS ── */}
@@ -359,14 +400,43 @@ export default function CodebaseStudio({
           <div className="panel-header-row">
             <div>
               <h3 className="studio-panel-title">
-                <Server size={18} color="#38bdf8" /> Interactive Architectural Flowchart
+                <Server size={18} color="#38bdf8" /> {is3DView ? 'Codebase Galaxy (3D)' : 'Interactive Architectural Flowchart'}
               </h3>
               <p className="panel-sub-desc">
                 Visual communication channels, service boundaries, and request-response pathways synthesized from AST graph.
               </p>
             </div>
+            
+            <button 
+              onClick={() => setIs3DView(!is3DView)}
+              style={{
+                background: is3DView ? 'rgba(56, 189, 248, 0.2)' : '#1e293b',
+                color: is3DView ? '#38bdf8' : '#e2e8f0',
+                border: '1px solid #334155',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Sparkles size={16} /> {is3DView ? 'Switch to 2D Blueprint' : 'View as 3D Galaxy'}
+            </button>
           </div>
-          <ArchitectureDiagram chart={architecture.diagram} />
+          
+          {is3DView ? (
+            <div className="animate-fade-in">
+              <GalaxyDiagram chart={architecture.diagram} />
+            </div>
+          ) : (
+            <div className="animate-fade-in">
+              <ArchitectureDiagram chart={architecture.diagram} />
+            </div>
+          )}
         </div>
       )}
 
@@ -505,13 +575,59 @@ export default function CodebaseStudio({
                   <div className="flow-index-tag">Workflow #{activeFlowIndex + 1}</div>
                   <h2 className="active-flow-title">{activeFlow.feature}</h2>
                   <p className="active-flow-subtitle">
-                    Step-by-step transaction execution journey through codebase layers.
+                    Interactive Step-by-step transaction execution journey.
                   </p>
+                  
+                  {/* ── NEW METRIC BADGES ── */}
+                  <div style={{display: 'flex', gap: '15px', marginTop: '15px', flexWrap: 'wrap'}}>
+                    {activeFlow.complexity_score && (
+                      <div style={{
+                        background: activeFlow.complexity_score === 'Complex' ? 'rgba(239, 68, 68, 0.15)' : 
+                                    activeFlow.complexity_score === 'Medium' ? 'rgba(234, 179, 8, 0.15)' : 
+                                    'rgba(34, 197, 94, 0.15)',
+                        color: activeFlow.complexity_score === 'Complex' ? '#ef4444' : 
+                               activeFlow.complexity_score === 'Medium' ? '#eab308' : 
+                               '#22c55e',
+                        padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid currentColor'
+                      }}>
+                        <span>●</span> {activeFlow.complexity_score} Complexity
+                      </div>
+                    )}
+                    
+                    {activeFlow.test_coverage_status !== undefined && (
+                      <div style={{
+                        background: activeFlow.test_coverage_status ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                        color: activeFlow.test_coverage_status ? '#22c55e' : '#ef4444',
+                        padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid currentColor'
+                      }}>
+                        {activeFlow.test_coverage_status ? '✅ Test Coverage Found' : '⚠️ Missing Tests'}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {activeFlow.blast_radius && (
+                    <div style={{marginTop: '15px', padding: '10px 15px', background: 'rgba(249, 115, 22, 0.1)', borderLeft: '4px solid #f97316', borderRadius: '4px', color: '#fed7aa', fontSize: '13px'}}>
+                      <strong>⚡ Blast Radius Impact:</strong> {activeFlow.blast_radius}
+                    </div>
+                  )}
                 </div>
+                
+                {/* ── Auto-Generated Sequence Diagram ── */}
+                {activeFlow.sequence_diagram && (
+                  <div style={{marginBottom: '30px', marginTop: '20px', border: '1px solid #334155', borderRadius: '8px', overflow: 'hidden'}}>
+                    <div style={{background: '#1e293b', padding: '8px 15px', fontSize: '12px', fontWeight: 'bold', color: '#94a3b8'}}>MERMAID SEQUENCE DIAGRAM</div>
+                    <ArchitectureDiagram chart={activeFlow.sequence_diagram} />
+                  </div>
+                )}
 
                 <div className="flow-timeline-steps">
-                  {activeFlow.steps?.map((step, sIdx) => {
+                  {activeFlow.steps?.map((stepObj, sIdx) => {
                     const isLast = sIdx === (activeFlow.steps.length - 1);
+                    // Support legacy string format or new object format
+                    const desc = typeof stepObj === 'string' ? stepObj : stepObj.description;
+                    const file = stepObj.file;
+                    const func = stepObj.function;
+                    const code = stepObj.code_snippet;
 
                     return (
                       <div key={sIdx} className="timeline-step-row">
@@ -522,9 +638,30 @@ export default function CodebaseStudio({
                           {!isLast && <div className="timeline-step-line" />}
                         </div>
 
-                        <div className="timeline-step-body">
+                        <div className="timeline-step-body" style={{width: '100%'}}>
                           <div className="step-number-tag">Stage {sIdx + 1} of {activeFlow.steps.length}</div>
-                          <p className="step-explanation-text">{step}</p>
+                          <p className="step-explanation-text" style={{fontSize: '15px'}}>{desc}</p>
+                          
+                          {(file || func) && (
+                            <div style={{display: 'flex', gap: '10px', marginTop: '10px', flexWrap: 'wrap'}}>
+                              {file && (
+                                <span style={{background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                  <Folder size={12} /> {file}
+                                </span>
+                              )}
+                              {func && (
+                                <span style={{background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                  <Code2 size={12} /> {func}()
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          
+                          {code && (
+                            <pre style={{background: '#0f172a', padding: '12px', borderRadius: '6px', fontSize: '12px', color: '#e2e8f0', marginTop: '10px', overflowX: 'auto', border: '1px solid #1e293b'}}>
+                              <code>{code}</code>
+                            </pre>
+                          )}
                         </div>
                       </div>
                     );
@@ -551,6 +688,69 @@ export default function CodebaseStudio({
       {activeStudioTab === 'chat' && (
         <div className="studio-single-panel animate-fade-in">
           <Chatbox repoUrl={repo_url} />
+        </div>
+      )}
+
+      {/* ── TAB: ROAST MODE ── */}
+      {activeStudioTab === 'roast' && (
+        <div className="studio-single-panel animate-fade-in" style={{textAlign: 'center', padding: '40px'}}>
+          <h2 style={{fontSize: '32px', marginBottom: '10px', color: '#ef4444'}}>🌶️ Roast My Codebase</h2>
+          <p style={{color: '#94a3b8', marginBottom: '30px'}}>Let the AI Gordon Ramsay brutally analyze your architecture and security flaws.</p>
+          
+          {!roastData && (
+            <button 
+              onClick={generateRoast} 
+              disabled={roastLoading}
+              style={{
+                padding: '12px 24px', 
+                fontSize: '18px', 
+                background: roastLoading ? '#333' : '#ef4444', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: roastLoading ? 'not-allowed' : 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {roastLoading ? 'Generating Roast (This might hurt)...' : 'Roast Me Now 🌶️'}
+            </button>
+          )}
+
+          {roastData && (
+            <div className="glass-panel" style={{maxWidth: '800px', margin: '0 auto', textAlign: 'left', border: '2px solid #ef4444'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155', paddingBottom: '20px', marginBottom: '20px'}}>
+                <h3 style={{fontSize: '24px', margin: 0, color: 'white'}}>Spaghetti Rating: <span style={{color: '#ef4444'}}>{roastData.spaghetti_rating}/100</span></h3>
+                <button onClick={() => setRoastData(null)} style={{background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px'}}>Reset</button>
+              </div>
+              
+              <h4 style={{color: '#fca5a5', marginTop: 0}}>The Brutal Summary</h4>
+              <p style={{fontSize: '18px', lineHeight: '1.6', color: '#e2e8f0', fontStyle: 'italic'}}>"{roastData.brutal_summary}"</p>
+              
+              <h4 style={{color: '#fca5a5', marginTop: '30px'}}>Top Developer Sins</h4>
+              <ul style={{color: '#cbd5e1', lineHeight: '1.8', fontSize: '15px'}}>
+                {roastData.top_sins?.map((sin, idx) => (
+                  <li key={idx}>🚩 {sin}</li>
+                ))}
+              </ul>
+              
+              <div style={{marginTop: '40px', padding: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px'}}>
+                <h4 style={{color: '#38bdf8', marginTop: 0, marginBottom: '15px'}}>🐦 Share your shame on Twitter</h4>
+                {roastData.twitter_quotes?.map((quote, idx) => (
+                  <div key={idx} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f172a', padding: '10px 15px', borderRadius: '6px', marginBottom: '10px'}}>
+                    <span style={{fontSize: '14px', color: '#94a3b8', fontStyle: 'italic'}}>"{quote}"</span>
+                    <a 
+                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(quote + '\n\nRoasted by @CarbonAI 🌶️')}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      style={{background: '#1d9bf0', color: 'white', padding: '6px 12px', borderRadius: '4px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold'}}
+                    >
+                      Tweet
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

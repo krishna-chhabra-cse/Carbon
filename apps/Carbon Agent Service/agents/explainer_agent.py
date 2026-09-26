@@ -22,12 +22,6 @@ def run(architecture: dict, api_docs: dict, business_logic: dict) -> str:
     a rich, Scrimba-compliant OPML fragment for a video slideshow explanation.
     """
     print("[EXPLAINER AGENT] Starting OPML generation...")
-
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in .env file!")
-
-    client = genai.Client(api_key=api_key)
     MODEL = "gemini-3.1-flash-lite"
 
     # Extract mermaid diagram if present in architecture analysis

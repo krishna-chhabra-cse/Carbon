@@ -43,11 +43,6 @@ def run(folder_structure: str, files_content: dict) -> dict:
 
     # Step 1: Set up Gemini client with our API key
     # The new SDK uses a Client object — cleaner than the old configure() approach
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in .env file!")
-
-    client = genai.Client(api_key=api_key)
 
     # Step 2: Choose the Gemini model
     # gemini-3.1-flash-lite — confirmed working and available
