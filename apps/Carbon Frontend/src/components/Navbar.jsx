@@ -36,9 +36,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenPalette }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Cpu },
     { id: 'analyzer', label: 'Analyzer', icon: Terminal },
-    { id: 'explore', label: 'Explore', icon: Film },
-    { id: 'quiz', label: 'Space Quiz', icon: Sparkles },
-  ];
+          ];
 
   const handleNavClick = (id) => {
     setActiveTab(id);
