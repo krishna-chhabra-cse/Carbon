@@ -30,7 +30,7 @@ class TestSecretDetection:
         assert any(f["ruleId"] == "SEC-003" for f in findings), "Should detect database URI with creds"
 
     def test_detects_stripe_key(self):
-        content = "const key = 'sk_test_fake1234567890abcdef';"
+        content = "const key = 'sk_test_fake1234567890abcdef1234567890';"
         findings = scan_file_for_vulnerabilities("payments.js", content)
         assert any(f["ruleId"] == "SEC-004" for f in findings), "Should detect Stripe secret key"
 

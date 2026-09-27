@@ -189,7 +189,10 @@ def generate_with_retry(prompt: str, system_instruction: str = None) -> str:
     provider = os.getenv("LLM_PROVIDER", "auto").lower().strip()
 
     if provider == "ollama":
-        return generate_with_ollama(prompt)
+        if is_ollama_available():
+            return generate_with_ollama(prompt)
+        else:
+            raise ConnectionError(f"Ollama server is not running at {DEFAULT_OLLAMA_ENDPOINT}.")
     elif provider == "gemini":
         return generate_with_gemini(prompt)
     elif provider == "groq":
