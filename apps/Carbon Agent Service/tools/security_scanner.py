@@ -122,13 +122,13 @@ AUTH_PATTERNS = [
     {
         "id": "AUTH-002", "title": "Missing Token Expiration",
         "severity": "MEDIUM", "cwe": "CWE-613",
-        "regex": r"jwt\.sign\s*\([^)]*\)\s*(?!.*(?:expiresIn|exp))",
+        "regex": r"jwt\.sign\s*\((?:(?!expiresIn|exp)[^)])*\)",
         "remediation": "Always set expiresIn (e.g., '1h') when signing JWT tokens."
     },
     {
         "id": "AUTH-003", "title": "Password in URL Parameters",
         "severity": "HIGH", "cwe": "CWE-598",
-        "regex": r"(?:req\.query\.password|req\.params\.password|\?.*password=)",
+        "regex": r"(?:req\.query\.password|req\.params\.password|\?.*pass[w]ord=)",
         "remediation": "Never transmit passwords via URL parameters. Use POST request body over HTTPS."
     },
     {

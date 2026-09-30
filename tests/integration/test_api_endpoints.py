@@ -5,6 +5,7 @@ All LLM calls are mocked — these test the HTTP layer and request validation.
 
 import pytest
 from unittest.mock import patch, MagicMock
+from main import REPO_CACHE
 
 
 @pytest.fixture
@@ -29,6 +30,37 @@ class TestHealthEndpoint:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
+
+
+class TestLLMStatusEndpoint:
+    """Tests for GET /llm-status (engine detection & air-gapped status)."""
+
+    @pytest.mark.asyncio
+    @patch.dict("os.environ", {"LLM_PROVIDER": "auto"})
+    @patch("tools.llm_client.is_ollama_available", return_value=False)
+    async def test_llm_status_default_gemini(self, mock_ollama, api_client):
+        response = await api_client.get("/llm-status")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ok"
+        assert data["activeEngine"] == "gemini"
+        assert data["ollamaOnline"] is False
+        assert data["airGappedMode"] is False
+        assert data["cloudProvider"] == "Google Gemini"
+
+    @pytest.mark.asyncio
+    @patch.dict("os.environ", {"LLM_PROVIDER": "ollama"})
+    @patch("tools.llm_client.is_ollama_available", return_value=True)
+    @patch("tools.llm_client.get_installed_ollama_models", return_value=["codellama:7b", "llama3:8b"])
+    async def test_llm_status_ollama_airgapped(self, mock_models, mock_ollama, api_client):
+        response = await api_client.get("/llm-status")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ok"
+        assert data["activeEngine"] == "ollama"
+        assert data["ollamaOnline"] is True
+        assert data["airGappedMode"] is True
+        assert data["installedOllamaModels"] == ["codellama:7b", "llama3:8b"]
 
 
 class TestRunAgentsEndpoint:
@@ -67,3 +99,92 @@ class TestChatEndpoint:
             "query": "How does auth work?"
         })
         assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["answer"] == "Mock answer"
+
+    @pytest.mark.asyncio
+    @patch("agents.graphrag_agent.run_graphrag_chat")
+    async def test_chat_cached_repo_uses_graphrag(self, mock_graphrag, api_client):
+        test_repo = "https://github.com/test/cached-repo"
+        REPO_CACHE[test_repo] = {
+            "folder_structure": "[FILE] src/index.js",
+            "files_content": {"src/index.js": "console.log('hello');"}
+        }
+        mock_graphrag.return_value = {
+            "success": True,
+            "query": "Where is the entry point?",
+            "answer": "The entry point is src/index.js",
+            "retrievedNodesCount": 1
+        }
+
+        try:
+            response = await api_client.post("/chat", json={
+                "repo_url": test_repo,
+                "query": "Where is the entry point?"
+            })
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert data["retrievedNodesCount"] == 1
+            assert data["answer"] == "The entry point is src/index.js"
+            mock_graphrag.assert_called_once_with(
+                files_dict={"src/index.js": "console.log('hello');"},
+                query="Where is the entry point?",
+                folder_structure="[FILE] src/index.js"
+            )
+        finally:
+            REPO_CACHE.pop(test_repo, None)
+
+    @pytest.mark.asyncio
+    @patch("agents.graphrag_agent.run_graphrag_chat", side_effect=RuntimeError("GraphRAG engine failure"))
+    @patch("agents.companion_agent.run", return_value={"answer": "Fallback answer"})
+    async def test_chat_graphrag_failure_falls_back_to_companion(self, mock_companion, mock_graphrag, api_client):
+        test_repo = "https://github.com/test/failing-cached-repo"
+        REPO_CACHE[test_repo] = {
+            "folder_structure": "[FILE] src/index.js",
+            "files_content": {"src/index.js": "console.log('hello');"}
+        }
+
+        try:
+            response = await api_client.post("/chat", json={
+                "repo_url": test_repo,
+                "query": "Where is the entry point?"
+            })
+            assert response.status_code == 200
+            data = response.json()
+            assert data["success"] is True
+            assert data["answer"] == "Fallback answer"
+            mock_companion.assert_called_once_with(
+                query="Where is the entry point?",
+                mode="explain",
+                context={"url": test_repo}
+            )
+        finally:
+            REPO_CACHE.pop(test_repo, None)
+
+
+class TestCompanionEndpoint:
+    """Tests for POST /companion (Chrome Extension Web Companion)."""
+
+    @pytest.mark.asyncio
+    async def test_companion_requires_query(self, api_client):
+        response = await api_client.post("/companion", json={})
+        assert response.status_code == 422
+
+    @pytest.mark.asyncio
+    @patch("agents.companion_agent.run", return_value={"answer": "Detailed explanation of CORS."})
+    async def test_companion_success(self, mock_companion, api_client):
+        response = await api_client.post("/companion", json={
+            "query": "Explain CORS",
+            "mode": "explain",
+            "context": {"url": "https://developer.mozilla.org"}
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert data["answer"] == "Detailed explanation of CORS."
+        mock_companion.assert_called_once_with(
+            query="Explain CORS",
+            mode="explain",
+            context={"url": "https://developer.mozilla.org"}
+        )

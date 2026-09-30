@@ -46,9 +46,10 @@ async function run() {
     } catch (apiErr) {
       core.info(`⚠️ GitHub pulls.get diff API returned: ${apiErr.message}. Engaging local git diff fallback...`);
       try {
-        const { execSync } = require('child_process');
-        const baseBranch = pr.base?.ref || 'main';
-        diffData = execSync(`git diff origin/${baseBranch}...HEAD`, { encoding: 'utf-8', maxBuffer: 20 * 1024 * 1024 });
+        const { execFileSync } = require('child_process');
+        const rawBranch = pr.base?.ref || 'main';
+        const safeBranch = String(rawBranch).replace(/[^a-zA-Z0-9_\-./]/g, '') || 'main';
+        diffData = execFileSync('git', ['diff', `origin/${safeBranch}...HEAD`], { encoding: 'utf-8', maxBuffer: 20 * 1024 * 1024 });
       } catch (gitErr) {
         core.info(`⚠️ Local git diff fallback returned: ${gitErr.message}. Engaging paginated listFiles API fallback...`);
         const filesList = await octokit.paginate(octokit.rest.pulls.listFiles, {

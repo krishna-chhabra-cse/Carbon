@@ -142,7 +142,8 @@ router.post('/chat', async (req, res) => {
     return res.status(400).json({ error: 'Query is required.' });
   }
 
-  console.log(`💬 Received chat query for: ${repoUrl || 'General Web Context'}`);
+  const safeTarget = String(repoUrl || 'General Web Context').replace(/[\r\n\x00-\x1F]/g, '').slice(0, 100);
+  console.log(`💬 Received chat request for: ${safeTarget}`);
 
   try {
     const pythonResponse = await axios.post(
@@ -178,7 +179,8 @@ router.post('/companion', async (req, res) => {
     return res.status(400).json({ error: 'Query is required for Carbon Companion.' });
   }
 
-  console.log(`🧠 [COMPANION] mode=${mode || 'explain'} query="${(query || '').slice(0, 60)}..."`);
+  const safePrompt = String(query || '').replace(/[\r\n\x00-\x1F]/g, '').slice(0, 60);
+  console.log(`🧠 [COMPANION] mode=${mode || 'explain'} prompt="${safePrompt}..."`);
 
   try {
     const pythonResponse = await axios.post(

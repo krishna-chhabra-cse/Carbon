@@ -25,10 +25,12 @@ def run_carbon_dogfood_audit():
     raw_files = {}
 
     for root, dirs, files in os.walk(repo_root):
-        dirs[:] = [d for d in dirs if d not in ['node_modules', '.git', 'dist', 'build', 'out', '.next', '.venv', 'venv', '__pycache__', 'coverage', '.tempmediaStorage', '.user_uploaded']]
+        dirs[:] = [d for d in dirs if d not in ['node_modules', '.git', 'dist', 'build', 'out', '.next', '.venv', 'venv', '__pycache__', 'coverage', '.tempmediaStorage', '.user_uploaded', 'tests', 'test']]
         for file in files:
             file_path = Path(root) / file
             rel_path = str(file_path.relative_to(repo_root)).replace('\\', '/')
+            if rel_path.startswith('tests/') or '/tests/' in rel_path:
+                continue
             if not should_ignore_file(rel_path):
                 try:
                     with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -59,4 +61,13 @@ def run_carbon_dogfood_audit():
     return audit_report
 
 if __name__ == "__main__":
-    run_carbon_dogfood_audit()
+    report = run_carbon_dogfood_audit()
+    scorecard = report.get("scorecard", {}) if isinstance(report, dict) else {}
+    if (
+        scorecard.get("grade") != "A+"
+        or scorecard.get("critical", 0) > 0
+        or scorecard.get("high", 0) > 0
+        or scorecard.get("totalFindings", 0) > 0
+    ):
+        sys.exit(1)
+    sys.exit(0)

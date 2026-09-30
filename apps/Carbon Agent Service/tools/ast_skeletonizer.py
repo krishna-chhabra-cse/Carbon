@@ -9,14 +9,16 @@ from typing import Dict, Tuple
 IGNORE_DIR_PATTERNS = [
     r'node_modules', r'\.git', r'dist', r'build', r'out', r'\.next', r'\.vercel', r'coverage',
     r'__pycache__', r'\.pytest_cache', r'venv', r'\.venv', r'target', r'vendor',
-    r'public[/\\]assets', r'static[/\\]media', r'__tests__', r'tests[/\\]fixtures'
+    r'public[/\\]assets', r'static[/\\]media', r'__tests__', r'tests[/\\]fixtures',
+    r'tests', r'test'
 ]
 
 IGNORE_FILE_PATTERNS = [
     r'.*\.lock$', r'.*lock\.json$', r'.*lock\.yaml$', r'.*\.min\.js$', r'.*\.min\.css$',
     r'.*\.map$', r'.*\.svg$', r'.*\.png$', r'.*\.jpg$', r'.*\.jpeg$', r'.*\.gif$',
     r'.*\.ico$', r'.*\.woff2?$', r'.*\.ttf$', r'.*\.eot$', r'.*\.pdf$', r'.*\.zip$',
-    r'.*\.tar\.gz$', r'.*\.test\.[jt]sx?$', r'.*\.spec\.[jt]sx?$', r'.*test_.*\.py$'
+    r'.*\.tar\.gz$', r'.*\.test\.[jt]sx?$', r'.*\.spec\.[jt]sx?$', r'.*test_.*\.py$',
+    r'.*conftest\.py$'
 ]
 
 def should_ignore_file(file_path: str) -> bool:

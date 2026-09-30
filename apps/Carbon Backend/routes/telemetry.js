@@ -17,23 +17,25 @@ if (!fs.existsSync(dbDir)) {
 }
 
 // Open / create the SQLite database (lazy singleton)
+const INIT_SCHEMA_SQL = `
+  CREATE TABLE IF NOT EXISTS events (
+    id         INTEGER  PRIMARY KEY AUTOINCREMENT,
+    event      TEXT     NOT NULL,
+    repo_url   TEXT,
+    source     TEXT,
+    metadata   TEXT,
+    ip         TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_events_event ON events (event);
+  CREATE INDEX IF NOT EXISTS idx_events_created ON events (created_at);
+`;
+
 let _db = null;
 function getDb() {
   if (!_db) {
     _db = new Database(path.join(dbDir, 'events.db'));
-    _db.exec(`
-      CREATE TABLE IF NOT EXISTS events (
-        id         INTEGER  PRIMARY KEY AUTOINCREMENT,
-        event      TEXT     NOT NULL,
-        repo_url   TEXT,
-        source     TEXT,
-        metadata   TEXT,
-        ip         TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-      CREATE INDEX IF NOT EXISTS idx_events_event ON events (event);
-      CREATE INDEX IF NOT EXISTS idx_events_created ON events (created_at);
-    `);
+    _db.exec(INIT_SCHEMA_SQL);
   }
   return _db;
 }
