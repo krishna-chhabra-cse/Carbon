@@ -198,25 +198,6 @@ export default function RoastPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
-                <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', padding: '20px' }}>
-                  <div style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>FILES</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{r.stats.files.toLocaleString()}</div>
-                </div>
-                <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', padding: '20px' }}>
-                  <div style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>LINES OF CODE</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{r.stats.loc.toLocaleString()}</div>
-                </div>
-                <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', padding: '20px' }}>
-                  <div style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>TESTS</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{r.stats.tests.toLocaleString()}</div>
-                </div>
-                <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', padding: '20px' }}>
-                  <div style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>AVG COMPLEXITY</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{r.stats.avg_complexity}</div>
-                </div>
-              </div>
-
               {r.top_crimes?.length > 0 && (
                 <>
                   <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: colors.textMuted }}>OTHER CRIMES</h4>
@@ -237,8 +218,8 @@ export default function RoastPage() {
                     <div key={idx} style={{ marginBottom: '16px', display: 'flex', gap: '12px' }}>
                       <CheckCircle2 size={20} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
                       <div>
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{fix.problem}</div>
-                        <div style={{ color: colors.textMuted, fontSize: '14px' }}>{fix.recommendation}</div>
+                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>[{fix.priority}] {fix.title}</div>
+                        <div style={{ color: colors.textMuted, fontSize: '14px' }}>{fix.action} ({fix.file})</div>
                       </div>
                     </div>
                   ))}
