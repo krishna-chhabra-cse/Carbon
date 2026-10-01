@@ -91,11 +91,17 @@ async function activate(context) {
     // Fire activation event (only if opted in)
     fireEvent(context, 'extension_activated');
     // Wrap the analyze command to also fire a telemetry event
-    const disposable = vscode.commands.registerCommand('carbon.explainWorkspace', async (...args) => {
+    const analyzeDisposable = vscode.commands.registerCommand('carbon.explainWorkspace', async (...args) => {
         fireEvent(context, 'workspace_analysis_started');
         return analyzeWorkspace_1.analyzeWorkspaceCommand(...args);
     });
-    context.subscriptions.push(disposable);
+    // Register the Roast command
+    const roastDisposable = vscode.commands.registerCommand('carbon.roastWorkspace', async (...args) => {
+        fireEvent(context, 'workspace_roast_started');
+        const { roastWorkspaceCommand } = await Promise.resolve().then(() => __importStar(require('./commands/roastWorkspace')));
+        return roastWorkspaceCommand(...args);
+    });
+    context.subscriptions.push(analyzeDisposable, roastDisposable);
 }
 function deactivate() {
     // Nothing to clean up yet.

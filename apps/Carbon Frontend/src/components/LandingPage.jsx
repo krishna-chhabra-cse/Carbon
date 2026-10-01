@@ -96,6 +96,11 @@ export default function LandingPage() {
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '60px' }}>
           <Link to="/app" style={styles.buttonPrimary}>Analyze Your Repo →</Link>
+          <Link to="/roast" style={{
+            ...styles.buttonPrimary,
+            backgroundColor: '#ef4444',
+            boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)'
+          }}>🔥 Roast My Codebase</Link>
           <a href="https://github.com/krishna-chhabra-cse/Carbon" target="_blank" rel="noreferrer" style={styles.buttonSecondary}>
             View on GitHub
           </a>

@@ -351,22 +351,37 @@ async def generate_media(req: MediaRequest):
 # ============================================================
 
 class RoastRequest(BaseModel):
-    repo_url: str
-    architecture_info: dict
-    security_info: dict
+    repo_url: Optional[str] = None
+    workspace_name: Optional[str] = None
+    files: Optional[List[FilePayload]] = None
+    folder_structure: Optional[str] = None
+    architecture_info: Optional[dict] = None
+    security_info: Optional[dict] = None
 
 @app.post('/api/roast')
 async def roast_codebase(req: RoastRequest):
     "Generates a highly shareable, humorous roast of the codebase."
     try:
-        repo_name = req.repo_url.split('/')[-1].replace('.git', '')
-        clone_result = clone_repo(req.repo_url)
-        if not clone_result.get("success"):
-            raise Exception(f"Failed to clone repository: {clone_result.get('error')}")
+        repo_path = None
+        is_uploaded = bool(req.files and len(req.files) > 0)
+        repo_name = req.workspace_name or "Local Workspace"
+        files_dict = {}
+
+        if is_uploaded:
+            raw_uploaded = { item.path: item.content for item in req.files }
+            from tools.ast_skeletonizer import optimize_repo_files
+            files_dict, _ = optimize_repo_files(raw_uploaded, max_total_chars=40000)
+        else:
+            if not req.repo_url:
+                raise Exception("Either repo_url or files must be provided")
+            repo_name = req.repo_url.split('/')[-1].replace('.git', '')
+            clone_result = clone_repo(req.repo_url)
+            if not clone_result.get("success"):
+                raise Exception(f"Failed to clone repository: {clone_result.get('error')}")
             
-        repo_path = clone_result["repo_path"]
-        files_dict = read_files_for_analysis(repo_path)
-        
+            repo_path = clone_result["repo_path"]
+            files_dict = read_files_for_analysis(repo_path)
+            
         from agents.roast_agent import run as run_roast_agent
         roast_data = run_roast_agent(
             files_dict=files_dict,
@@ -374,8 +389,9 @@ async def roast_codebase(req: RoastRequest):
             security_info=req.security_info
         )
         
-        cleanup_repo(repo_path)
-        
+        if repo_path and not is_uploaded:
+            cleanup_repo(repo_path)
+            
         return {
             "status": "success",
             "repo_name": repo_name,

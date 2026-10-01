@@ -34,7 +34,8 @@
     "Visualization"
   ],
   "activationEvents": [
-    "onCommand:carbon.explainWorkspace"
+    "onCommand:carbon.explainWorkspace",
+    "onCommand:carbon.roastWorkspace"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -42,6 +43,11 @@
       {
         "command": "carbon.explainWorkspace",
         "title": "Carbon: Explain Current Workspace",
+        "category": "Carbon"
+      },
+      {
+        "command": "carbon.roastWorkspace",
+        "title": "Carbon: Roast My Codebase 🔥",
         "category": "Carbon"
       }
     ],

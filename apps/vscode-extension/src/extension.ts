@@ -77,7 +77,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   fireEvent(context, 'extension_activated');
 
   // Wrap the analyze command to also fire a telemetry event
-  const disposable = vscode.commands.registerCommand(
+  const analyzeDisposable = vscode.commands.registerCommand(
     'carbon.explainWorkspace',
     async (...args: unknown[]) => {
       fireEvent(context, 'workspace_analysis_started');
@@ -85,7 +85,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   );
 
-  context.subscriptions.push(disposable);
+  // Register the Roast command
+  const roastDisposable = vscode.commands.registerCommand(
+    'carbon.roastWorkspace',
+    async (...args: unknown[]) => {
+      fireEvent(context, 'workspace_roast_started');
+      const { roastWorkspaceCommand } = await import('./commands/roastWorkspace');
+      return (roastWorkspaceCommand as (...a: unknown[]) => unknown)(...args);
+    }
+  );
+
+  context.subscriptions.push(analyzeDisposable, roastDisposable);
 }
 
 export function deactivate(): void {

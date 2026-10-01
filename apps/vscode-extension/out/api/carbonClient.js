@@ -49,6 +49,7 @@ exports.getBackendBaseUrl = getBackendBaseUrl;
 exports.analyzeWorkspacePayload = analyzeWorkspacePayload;
 exports.explainWithVideo = explainWithVideo;
 exports.askCodebaseChat = askCodebaseChat;
+exports.roastWorkspacePayload = roastWorkspacePayload;
 const http = __importStar(require("http"));
 const https = __importStar(require("https"));
 const url_1 = require("url");
@@ -301,6 +302,68 @@ function askCodebaseChat(repoUrl, query) {
             });
         });
         req.on('error', err => reject(err));
+        req.write(bodyData);
+        req.end();
+    });
+}
+function roastWorkspacePayload(payload) {
+    return new Promise((resolve, reject) => {
+        const baseUrl = getBackendBaseUrl();
+        const endpoint = `${baseUrl}/api/roast`;
+        let target;
+        try {
+            target = new url_1.URL(endpoint);
+        }
+        catch (err) {
+            reject(new CarbonApiError(`Invalid backend URL: ${endpoint}`));
+            return;
+        }
+        const bodyData = JSON.stringify({
+            workspace_name: payload.workspaceName,
+            files: payload.files,
+            folder_structure: payload.folderStructure,
+            architecture_info: {},
+            security_info: {}
+        });
+        const transport = target.protocol === 'https:' ? https : http;
+        const req = transport.request({
+            hostname: target.hostname,
+            port: target.port,
+            path: target.pathname,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(bodyData),
+            },
+        }, (res) => {
+            let buffer = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk) => {
+                buffer += chunk;
+            });
+            res.on('end', () => {
+                if (res.statusCode && res.statusCode >= 400) {
+                    try {
+                        const errData = JSON.parse(buffer);
+                        reject(new CarbonApiError(errData.error || errData.message || `HTTP ${res.statusCode}`));
+                    }
+                    catch {
+                        reject(new CarbonApiError(`HTTP error ${res.statusCode}: ${buffer.slice(0, 100)}`));
+                    }
+                    return;
+                }
+                try {
+                    const data = JSON.parse(buffer);
+                    resolve(data);
+                }
+                catch {
+                    reject(new CarbonApiError('Failed to parse roast API response.'));
+                }
+            });
+        });
+        req.on('error', (err) => {
+            reject(new CarbonApiError(`Network error communicating with Carbon: ${err.message}`));
+        });
         req.write(bodyData);
         req.end();
     });
