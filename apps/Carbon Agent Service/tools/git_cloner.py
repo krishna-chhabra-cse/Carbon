@@ -222,7 +222,7 @@ def clone_repo(repo_url: str) -> dict:
             normalized_url,
             temp_dir,
             depth=1,
-            kill_after_timeout=CLONE_TIMEOUT_SECONDS
+            
         )
 
         # 4. Enforce 75MB disk budget
