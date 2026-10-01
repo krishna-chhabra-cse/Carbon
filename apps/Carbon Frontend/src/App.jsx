@@ -248,11 +248,129 @@ function AnalyzerApp() {
 
   return (
     <div className="carbon-root">
-      
+      {/* ── 60 FPS PROCEDURAL STARFIELD BACKGROUND ── */}
+      <CosmicCanvas />
 
-        {/* ── TAB 3: SPACE QUIZ ── */}
-        {activeTab === 'quiz' && (
-          <SpaceQuiz />
+      {/* ── NAVIGATION BAR ── */}
+      <Navbar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onOpenPalette={() => setPaletteOpen(true)}
+      />
+
+      {/* ── MAIN CONTENT CONTAINER ── */}
+      <main className="app-container">
+
+        {/* ── HERO SECTION ── */}
+        <HeroSection 
+          onAnalyzeClick={() => {
+            setActiveTab('analyzer');
+            const inputEl = document.getElementById('repo-url-input');
+            inputEl?.focus();
+          }}
+          onExploreClick={() => setActiveTab('explore')}
+          onSelectSample={(sampleUrl) => {
+            setRepoUrl(sampleUrl);
+            setActiveTab('analyzer');
+          }}
+          onOpenPalette={() => setPaletteOpen(true)}
+        />
+
+        {/* ── TAB 1: WORKSPACE & REPOSITORY ANALYZER ── */}
+        {activeTab === 'analyzer' && (
+          <div className="animate-fade-in">
+            
+            {/* Input & Search Box */}
+            <div className="glass-panel" style={{ marginBottom: '32px' }}>
+              <form onSubmit={handleAnalyze} style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 320px', position: 'relative' }}>
+                  <GitBranch style={{ position: 'absolute', left: '16px', top: '18px', color: '#94a3b8' }} size={20} />
+                  <input 
+                    id="repo-url-input"
+                    type="url"
+                    placeholder="https://github.com/expressjs/express"
+                    value={repoUrl}
+                    onChange={(e) => setRepoUrl(e.target.value)}
+                    style={{ paddingLeft: '48px' }}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+                <button type="submit" disabled={loading || !repoUrl.trim()} className="btn-primary-cosmic">
+                  {loading ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
+                  {loading ? statusMessage : 'Analyze Codebase'}
+                </button>
+              </form>
+
+              {/* Orbital Progress Stepper */}
+              {loading && (
+                <div className="progress-stepper animate-fade-in">
+                  <div className={`step-card ${currentStep === 1 ? 'active' : currentStep > 1 ? 'completed' : ''}`}>
+                    {currentStep > 1 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} className={currentStep === 1 ? "animate-spin" : ""} color="#38bdf8" />}
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>1. Download</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Clone repository</div>
+                    </div>
+                  </div>
+
+                  <div className={`step-card ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : ''}`}>
+                    {currentStep > 2 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} className={currentStep === 2 ? "animate-spin" : ""} color="#38bdf8" />}
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>2. Read Files</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Scan project structure</div>
+                    </div>
+                  </div>
+
+                  <div className={`step-card ${currentStep === 3 ? 'active' : currentStep > 3 ? 'completed' : ''}`}>
+                    {currentStep > 3 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} className={currentStep === 3 ? "animate-spin" : ""} color="#38bdf8" />}
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>3. AI Analysis</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Powered by AI</div>
+                    </div>
+                  </div>
+
+                  <div className={`step-card ${currentStep >= 4 ? 'completed' : ''}`}>
+                    {currentStep >= 4 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} color="#64748b" />}
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>4. Results</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Flowcharts & insights</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="glass-panel animate-fade-in" style={{ borderLeft: '4px solid #ef4444', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <AlertCircle size={24} color="#ef4444" style={{ flexShrink: 0 }} />
+                <div>
+                  <h3 style={{ color: '#ef4444', margin: 0, fontSize: '16px' }}>Something went wrong</h3>
+                  <p style={{ marginTop: '4px', fontSize: '14px', margin: 0 }}>{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Next-Gen Interactive Codebase Intelligence Studio */}
+            {result && result.architecture && (
+              <CodebaseStudio
+                result={result}
+                videoUrl={videoUrl}
+                videoLoading={videoLoading}
+                videoError={videoError}
+                onGenerateVideo={handleGenerateVideo}
+                onOpenCinema={() => {
+                  setCinemaDetails({
+                    title: `${result.workspace_name || 'Codebase'} • AI Architectural Walkthrough`,
+                    subtitle: 'Synthesized In-App Video Walkthrough',
+                    videoUrl: videoUrl
+                  });
+                  setCinemaOpen(true);
+                }}
+              />
+            )}
+
+          </div>
         )}
 
         {/* ── TAB 4: COMMAND CENTER DASHBOARD ── */}
@@ -307,16 +425,12 @@ function AnalyzerApp() {
   );
 }
 
-import RoastPage from './components/RoastPage';
-
 export default function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/app" element={<AnalyzerApp />} />
-        <Route path="/roast" element={<RoastPage />} />
-        <Route path="/roast/:id" element={<RoastPage />} />
       </Routes>
     </Router>
   );
