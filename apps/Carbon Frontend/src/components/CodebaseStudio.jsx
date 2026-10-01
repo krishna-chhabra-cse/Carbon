@@ -719,23 +719,23 @@ export default function CodebaseStudio({
           {roastData && (
             <div className="glass-panel" style={{maxWidth: '800px', margin: '0 auto', textAlign: 'left', border: '2px solid #ef4444'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155', paddingBottom: '20px', marginBottom: '20px'}}>
-                <h3 style={{fontSize: '24px', margin: 0, color: 'white'}}>Spaghetti Rating: <span style={{color: '#ef4444'}}>{roastData.spaghetti_rating}/100</span></h3>
+                <h3 style={{fontSize: '24px', margin: 0, color: 'white'}}>Spaghetti Rating: <span style={{color: '#ef4444'}}>{roastData.overall_score}/100</span></h3>
                 <button onClick={() => setRoastData(null)} style={{background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px'}}>Reset</button>
               </div>
               
               <h4 style={{color: '#fca5a5', marginTop: 0}}>The Brutal Summary</h4>
-              <p style={{fontSize: '18px', lineHeight: '1.6', color: '#e2e8f0', fontStyle: 'italic'}}>"{roastData.brutal_summary}"</p>
+              <p style={{fontSize: '18px', lineHeight: '1.6', color: '#e2e8f0', fontStyle: 'italic'}}>"{roastData.roast}"</p>
               
               <h4 style={{color: '#fca5a5', marginTop: '30px'}}>Top Developer Sins</h4>
               <ul style={{color: '#cbd5e1', lineHeight: '1.8', fontSize: '15px'}}>
-                {roastData.top_sins?.map((sin, idx) => (
+                {roastData.top_crimes?.map((sin, idx) => (
                   <li key={idx}>🚩 {sin}</li>
                 ))}
               </ul>
               
               <div style={{marginTop: '40px', padding: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px'}}>
                 <h4 style={{color: '#38bdf8', marginTop: 0, marginBottom: '15px'}}>🐦 Share your shame on Twitter</h4>
-                {roastData.twitter_quotes?.map((quote, idx) => (
+                {roastData.share_text ? [roastData.share_text] : []?.map((quote, idx) => (
                   <div key={idx} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f172a', padding: '10px 15px', borderRadius: '6px', marginBottom: '10px'}}>
                     <span style={{fontSize: '14px', color: '#94a3b8', fontStyle: 'italic'}}>"{quote}"</span>
                     <a 

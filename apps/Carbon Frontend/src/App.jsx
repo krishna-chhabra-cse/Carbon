@@ -4,6 +4,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
+import RoastPage from './components/RoastPage';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
@@ -431,6 +432,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/app" element={<AnalyzerApp />} />
+          <Route path="/roast" element={<RoastPage />} />
+          <Route path="/roast/:id" element={<RoastPage />} />
       </Routes>
     </Router>
   );
