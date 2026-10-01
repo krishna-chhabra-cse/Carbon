@@ -729,7 +729,7 @@ export default function CodebaseStudio({
               <h4 style={{color: '#fca5a5', marginTop: '30px'}}>Top Developer Sins</h4>
               <ul style={{color: '#cbd5e1', lineHeight: '1.8', fontSize: '15px'}}>
                 {roastData.top_crimes?.map((sin, idx) => (
-                  <li key={idx}>🚩 {sin}</li>
+                  <li key={idx}>🚩 {sin.title || sin.crime || "Coding Sin"}</li>
                 ))}
               </ul>
               

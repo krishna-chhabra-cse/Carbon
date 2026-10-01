@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Flame, GitBranch, Share2, Code, Shield, Box, Terminal, Copy, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle2, Flame, GitBranch, Share2, Code, Shield, Box, Terminal, Copy, ArrowRight, Loader2 } from 'lucide-react';
 
 const isDev = import.meta.env.DEV;
 const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) 
@@ -203,7 +203,7 @@ export default function RoastPage() {
                   <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: colors.textMuted }}>OTHER CRIMES</h4>
                   {r.top_crimes.map((crime, idx) => (
                     <div key={idx} style={{ marginBottom: '24px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{crime.title}</div>
+                      <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{crime.title || crime.crime || "Coding Sin"}</div>
                       <div style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '4px' }}>{crime.evidence}</div>
                       <div style={{ color: '#f87171', fontSize: '14px', fontStyle: 'italic' }}>"{crime.roast}"</div>
                     </div>
