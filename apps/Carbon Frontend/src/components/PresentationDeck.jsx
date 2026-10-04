@@ -36,6 +36,7 @@ export default function PresentationDeck({ result }) {
   const [copiedMd, setCopiedMd] = useState(false);
   const [isExportingPptx, setIsExportingPptx] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [pptError, setPptError] = useState('');
   const deckRef = useRef(null);
 
   
@@ -262,6 +263,7 @@ export default function PresentationDeck({ result }) {
   // ── Real .pptx PowerPoint Generator (pptxgenjs) ──────────────
   const handleExportPptx = async () => {
     setIsExportingPptx(true);
+    setPptError('');
     try {
       const pres = new pptxgen();
       pres.layout = 'LAYOUT_16x9';
@@ -343,7 +345,7 @@ export default function PresentationDeck({ result }) {
       await pres.writeFile({ fileName: `${projectName}-Architecture-Deck.pptx` });
     } catch (err) {
       console.error('Failed to generate PPTX:', err);
-      alert('Error generating PowerPoint file: ' + err.message);
+      setPptError('Error generating PowerPoint file: ' + err.message);
     } finally {
       setIsExportingPptx(false);
     }
@@ -367,12 +369,14 @@ export default function PresentationDeck({ result }) {
         </div>
 
         <div className="deck-toolbar-right">
+          {pptError && <div style={{ color: '#ef4444', fontSize: '13px', marginRight: '10px', alignSelf: 'center' }}>{pptError}</div>}
           {/* 1-Click Gamma AI Generator */}
           <button 
             type="button" 
             onClick={handleCopyGammaPrompt}
             className="btn-gamma-ai"
             title="Copies formatted presentation prompt & opens Gamma AI to generate presentation"
+            aria-label="Create in Gamma AI"
           >
             <Sparkles size={15} />
             <span>{copiedGamma ? 'Copied! Opening Gamma...' : '🚀 Create in Gamma AI'}</span>
@@ -385,6 +389,7 @@ export default function PresentationDeck({ result }) {
             disabled={isExportingPptx}
             className="btn-deck-secondary"
             title="Download true PowerPoint .pptx presentation"
+            aria-label="Download PowerPoint presentation"
           >
             <Download size={15} />
             <span>{isExportingPptx ? 'Generating PPTX...' : 'Download .pptx'}</span>
@@ -396,6 +401,7 @@ export default function PresentationDeck({ result }) {
             onClick={handleCopyMarkdown}
             className="btn-deck-icon"
             title="Copy Raw Slide Deck Markdown"
+            aria-label="Copy Markdown"
           >
             {copiedMd ? <Check size={15} color="#10b981" /> : <Copy size={15} />}
           </button>
@@ -406,6 +412,7 @@ export default function PresentationDeck({ result }) {
             onClick={toggleFullscreen}
             className="btn-deck-icon"
             title="Toggle Fullscreen Presentation Mode (F)"
+            aria-label="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
           </button>
@@ -572,6 +579,7 @@ export default function PresentationDeck({ result }) {
           onClick={() => setCurrentSlide(prev => Math.max(prev - 1, 0))}
           disabled={currentSlide === 0}
           className="btn-slide-nav"
+          aria-label="Previous Slide"
         >
           <ChevronLeft size={18} />
           <span>Previous</span>
@@ -586,6 +594,7 @@ export default function PresentationDeck({ result }) {
               className={`slide-dot-btn ${currentSlide === idx ? 'active' : ''}`}
               onClick={() => setCurrentSlide(idx)}
               title={`Slide ${idx + 1}: ${s.title}`}
+              aria-label={`Go to Slide ${idx + 1}`}
             >
               <span>{idx + 1}</span>
             </button>
@@ -597,6 +606,7 @@ export default function PresentationDeck({ result }) {
           onClick={() => setCurrentSlide(prev => Math.min(prev + 1, slides.length - 1))}
           disabled={currentSlide === slides.length - 1}
           className="btn-slide-nav"
+          aria-label="Next Slide"
         >
           <span>Next</span>
           <ChevronRight size={18} />

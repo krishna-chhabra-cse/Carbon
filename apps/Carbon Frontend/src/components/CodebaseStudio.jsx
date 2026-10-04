@@ -7,7 +7,7 @@
 //  and AI Co-Pilot with real-time filters and video cinema integration.
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Layers, 
   Server, 
@@ -59,9 +59,30 @@ export default function CodebaseStudio({
 
   const [roastData, setRoastData] = useState(null);
   const [roastLoading, setRoastLoading] = useState(false);
-  
+  const [roastError, setRoastError] = useState('');
+  const [roastLoadingStep, setRoastLoadingStep] = useState(0);
+
+  const roastLoadingMessages = [
+    'Preparing the grill...',
+    'Analyzing architecture for spaghetti...',
+    'Checking security vulnerabilities...',
+    'Judging your coding skills...',
+    'Synthesizing brutal feedback...'
+  ];
+
+  useEffect(() => {
+    if (roastLoading) {
+      setRoastLoadingStep(0);
+      const interval = setInterval(() => {
+        setRoastLoadingStep(s => Math.min(s + 1, roastLoadingMessages.length - 1));
+      }, 2500);
+      return () => clearInterval(interval);
+    }
+  }, [roastLoading]);
+
   const generateRoast = async () => {
     setRoastLoading(true);
+    setRoastError('');
     try {
       const pyUrl = import.meta.env.DEV ? 'http://localhost:8000' : 'https://carbon-agent-service.onrender.com';
       const response = await fetch(`${pyUrl}/api/roast`, {
@@ -77,10 +98,10 @@ export default function CodebaseStudio({
       if (data.status === 'success') {
         setRoastData(data.roast);
       } else {
-        alert(data.message || 'Failed to roast');
+        setRoastError(data.message || 'Failed to roast');
       }
     } catch (e) {
-      alert(e.message);
+      setRoastError(e.message);
     } finally {
       setRoastLoading(false);
     }
@@ -697,10 +718,14 @@ export default function CodebaseStudio({
           <h2 style={{fontSize: '32px', marginBottom: '10px', color: '#ef4444'}}>🌶️ Roast My Codebase</h2>
           <p style={{color: '#94a3b8', marginBottom: '30px'}}>Let the AI Gordon Ramsay brutally analyze your architecture and security flaws.</p>
           
+          {roastError && (
+            <div style={{color: '#ef4444', marginBottom: '15px', fontWeight: 'bold'}}>{roastError}</div>
+          )}
           {!roastData && (
             <button 
               onClick={generateRoast} 
               disabled={roastLoading}
+              aria-label="Generate Codebase Roast"
               style={{
                 padding: '12px 24px', 
                 fontSize: '18px', 
@@ -709,10 +734,16 @@ export default function CodebaseStudio({
                 border: 'none', 
                 borderRadius: '8px', 
                 cursor: roastLoading ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                margin: '0 auto',
+                gap: '8px'
               }}
             >
-              {roastLoading ? 'Generating Roast (This might hurt)...' : 'Roast Me Now 🌶️'}
+              <span>{roastLoading ? 'Generating Roast...' : 'Roast Me Now 🌶️'}</span>
+              {roastLoading && <span style={{fontSize: '14px', color: '#94a3b8'}}>{roastLoadingMessages[roastLoadingStep]}</span>}
             </button>
           )}
 

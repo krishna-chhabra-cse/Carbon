@@ -3,6 +3,8 @@
 // ============================================================
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import LandingPage from './components/LandingPage';
 import RoastPage from './components/RoastPage';
 import { useState, useEffect } from 'react';
@@ -279,7 +281,7 @@ function AnalyzerApp() {
 
         {/* ── TAB 1: WORKSPACE & REPOSITORY ANALYZER ── */}
         {activeTab === 'analyzer' && (
-          <div className="animate-fade-in">
+          <div className="animate-fade-in" style={{ minHeight: '80vh' }}>
             
             {/* Input & Search Box */}
             <div className="glass-panel" style={{ marginBottom: '32px' }}>
@@ -289,6 +291,7 @@ function AnalyzerApp() {
                   <input 
                     id="repo-url-input"
                     type="url"
+                    aria-label="Repository URL"
                     placeholder="https://github.com/expressjs/express"
                     value={repoUrl}
                     onChange={(e) => setRepoUrl(e.target.value)}
@@ -297,48 +300,14 @@ function AnalyzerApp() {
                     required
                   />
                 </div>
-                <button type="submit" disabled={loading || !repoUrl.trim()} className="btn-primary-cosmic">
+                <button type="submit" disabled={loading || !repoUrl.trim()} className="btn-primary-cosmic" aria-label="Analyze Codebase">
                   {loading ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
                   {loading ? statusMessage : 'Analyze Codebase'}
                 </button>
               </form>
 
-              {/* Orbital Progress Stepper */}
-              {loading && (
-                <div className="progress-stepper animate-fade-in">
-                  <div className={`step-card ${currentStep === 1 ? 'active' : currentStep > 1 ? 'completed' : ''}`}>
-                    {currentStep > 1 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} className={currentStep === 1 ? "animate-spin" : ""} color="#38bdf8" />}
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>1. Download</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Clone repository</div>
-                    </div>
-                  </div>
-
-                  <div className={`step-card ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : ''}`}>
-                    {currentStep > 2 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} className={currentStep === 2 ? "animate-spin" : ""} color="#38bdf8" />}
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>2. Read Files</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Scan project structure</div>
-                    </div>
-                  </div>
-
-                  <div className={`step-card ${currentStep === 3 ? 'active' : currentStep > 3 ? 'completed' : ''}`}>
-                    {currentStep > 3 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} className={currentStep === 3 ? "animate-spin" : ""} color="#38bdf8" />}
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>3. AI Analysis</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Powered by AI</div>
-                    </div>
-                  </div>
-
-                  <div className={`step-card ${currentStep >= 4 ? 'completed' : ''}`}>
-                    {currentStep >= 4 ? <CheckCircle2 size={18} color="#10b981" /> : <Loader2 size={18} color="#64748b" />}
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>4. Results</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Flowcharts & insights</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Premium Orbital Loading Skeleton */}
+              {loading && <LoadingSkeleton message={statusMessage} />}
             </div>
 
             {/* Error Display */}
@@ -428,13 +397,15 @@ function AnalyzerApp() {
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/app" element={<AnalyzerApp />} />
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/app" element={<AnalyzerApp />} />
           <Route path="/roast" element={<RoastPage />} />
           <Route path="/roast/:id" element={<RoastPage />} />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }

@@ -83,18 +83,18 @@ export default function LandingPage() {
   return (
     <div style={styles.container}>
       {/* 1. HERO */}
-      <section style={{ ...styles.section, textAlign: 'center', paddingTop: '120px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
+      <header style={{ ...styles.section, textAlign: 'center', paddingTop: '120px' }} role="banner">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '32px' }}>🛡️</span>
           <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 'bold' }}>Carbon AI</h1>
         </div>
-        <h2 style={{ fontSize: '48px', fontWeight: '800', margin: '0 0 24px 0', lineHeight: 1.2 }}>
+        <h2 style={{ fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: '800', margin: '0 0 24px 0', lineHeight: 1.2 }}>
           Catch what's leaking before it ships.
         </h2>
         <p style={{ fontSize: '20px', color: colors.textMuted, maxWidth: '800px', margin: '0 auto 40px auto', lineHeight: 1.6 }}>
-          Multi-agent DevSecOps intelligence — security scorecards, architecture maps, and blast-radius Q&A for any codebase. Works offline.
+          Multi-agent DevSecOps intelligence — automated security scorecards, AST-based architecture maps, and GraphRAG blast-radius Q&A for any codebase. Works offline.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '60px' }}>
+        <nav role="navigation" style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '60px', flexWrap: 'wrap' }}>
           <Link to="/app" style={styles.buttonPrimary}>Analyze Your Repo →</Link>
           <Link to="/roast" style={{
             ...styles.buttonPrimary,
@@ -104,7 +104,7 @@ export default function LandingPage() {
           <a href="https://github.com/krishna-chhabra-cse/Carbon" target="_blank" rel="noreferrer" style={styles.buttonSecondary}>
             View on GitHub
           </a>
-        </div>
+        </nav>
 
         {/* Terminal Window */}
         <div style={{
@@ -128,170 +128,150 @@ export default function LandingPage() {
             <div style={{ display: 'inline-block', width: '8px', height: '16px', backgroundColor: colors.primary, animation: 'blink 1s step-end infinite', marginTop: '4px' }} />
           </div>
         </div>
-      </section>
+      </header>
 
-      {/* 2. STATS BAR */}
-      <div style={{ borderTop: `1px solid ${colors.border}`, borderBottom: `1px solid ${colors.border}`, backgroundColor: colors.cardBg }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
-          {[
-            "99% Token Reduction",
-            "Grade A+",
-            "< 40ms Scan",
-            "100% Offline Mode"
-          ].map((stat, i) => (
-            <div key={i} style={{ fontSize: '18px', fontWeight: 'bold', color: colors.textMain }}>{stat}</div>
-          ))}
-        </div>
-      </div>
-
-      {/* 3. PROBLEM */}
-      <section style={styles.section}>
-        <h2 style={{ fontSize: '36px', textAlign: 'center', marginBottom: '48px' }}>
-          Your codebase is a black box. And it might be leaking.
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-          {[
-            { icon: '🔑', text: 'A hardcoded AWS key committed at 2am survives 47 commits before anyone notices.' },
-            { icon: '🤯', text: 'New engineers spend weeks reverse-engineering architecture that should take hours.' },
-            { icon: '🔄', text: 'Every code review misses blast-radius — until production breaks.' }
-          ].map((item, i) => (
-            <div key={i} style={styles.card(false)}>
-              <div style={{ fontSize: '32px', marginBottom: '16px' }}>{item.icon}</div>
-              <p style={{ fontSize: '16px', lineHeight: 1.5, margin: 0 }}>{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 4. FEATURES */}
-      <section style={styles.section}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px' }}>
-          {[
-            { icon: '🛡️', title: 'DevSecOps Security Scanner', text: 'Static taint analysis catches leaked AWS/JWT/Stripe secrets and OWASP Top 10 vulnerabilities before they merge. Outputs a Grade A+ to F scorecard with 1-click remediation diffs.' },
-            { icon: '⚡', title: 'AST Token Sieve', text: 'Deterministic code skeletonizer reduces LLM context by 99% (1.15M → 11K tokens) while preserving 100% of architectural signatures. Runs in 39.78ms.' },
-            { icon: '🧠', title: 'GraphRAG Blast Radius Q&A', text: "In-memory dependency graph answers 'If I rename the User schema, what routes break?' with citation-backed impact maps." },
-            { icon: '🔒', title: 'Air-Gapped Offline Mode', text: 'Run 100% private security audits with Ollama (Qwen2.5/DeepSeek-Coder). Zero internet, zero token cost, enterprise-ready.' }
-          ].map((item, i) => (
-            <div 
-              key={i} 
-              style={styles.card(hoveredCard === `feat-${i}`)}
-              onMouseEnter={() => setHoveredCard(`feat-${i}`)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '24px' }}>{item.icon}</span>
-                <h3 style={{ margin: 0, fontSize: '20px' }}>{item.title}</h3>
-              </div>
-              <p style={{ color: colors.textMuted, lineHeight: 1.6, margin: 0 }}>{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. HOW IT WORKS */}
-      <section style={styles.section}>
-        <h2 style={{ fontSize: '36px', textAlign: 'center', marginBottom: '48px' }}>How it works</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '800px', margin: '0 auto' }}>
-          {[
-            { num: '1', icon: '🔗', title: 'Connect', text: 'Paste any GitHub URL or point to a local workspace. Carbon clones and indexes in seconds.' },
-            { num: '2', icon: '🤖', title: 'Scan', text: 'LangGraph multi-agent mesh runs Security Auditor, Architecture Mapper, API Analyzer, and Business Logic agents in parallel.' },
-            { num: '3', icon: '🛡️', title: 'Fix', text: 'Get your Security Scorecard, interactive architecture diagram, and unified remediation diffs — all in one report.' }
-          ].map((step, i) => (
-            <div key={i} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: colors.cardBg, border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 'bold', flexShrink: 0 }}>
-                {step.num}
-              </div>
-              <div>
-                <h3 style={{ fontSize: '24px', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {step.icon} {step.title}
-                </h3>
-                <p style={{ color: colors.textMuted, fontSize: '18px', lineHeight: 1.6, margin: 0 }}>{step.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 6. INTEGRATIONS */}
-      <section style={{ ...styles.section, textAlign: 'center' }}>
-        <h2 style={{ fontSize: '36px', marginBottom: '48px' }}>Works where your team already works</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
-          {[
-            { title: 'VS Code Extension', text: 'v1.1.0 available now', cta: 'Install' },
-            { title: 'GitHub Action', text: 'Zero-install PR reviewer', cta: 'Add to Workflow' },
-            { title: 'Chrome Extension', text: 'Side panel intelligence', cta: 'Install' }
-          ].map((item, i) => (
-            <div key={i} style={{ ...styles.card(false), display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '20px' }}>{item.title}</h3>
-              <p style={{ color: colors.textMuted, margin: '0 0 24px 0' }}>{item.text}</p>
-              <button style={styles.buttonSecondary}>{item.cta}</button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 7. PRICING */}
-      <section style={styles.section}>
-        <h2 style={{ fontSize: '36px', textAlign: 'center', marginBottom: '48px' }}>Pricing</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', alignItems: 'flex-start' }}>
-          
-          {/* Free Tier */}
-          <div style={styles.card(hoveredCard === 'price-free')} onMouseEnter={() => setHoveredCard('price-free')} onMouseLeave={() => setHoveredCard(null)}>
-            <h3 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Free</h3>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '16px' }}>$0<span style={{ fontSize: '16px', color: colors.textMuted }}>/mo</span></div>
-            <p style={{ color: colors.textMuted, marginBottom: '24px', minHeight: '60px' }}>Local offline scanning with Ollama. Unlimited repos. VS Code extension. Community support.</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <li>✅ Ollama offline mode</li>
-              <li>✅ VS Code extension</li>
-              <li>✅ Security scanner</li>
-              <li>✅ Architecture maps</li>
-              <li style={{ opacity: 0.5 }}>❌ Cloud AI fleet</li>
-              <li style={{ opacity: 0.5 }}>❌ Priority support</li>
-            </ul>
-            <button style={{ ...styles.buttonSecondary, width: '100%', boxSizing: 'border-box' }}>Start Free</button>
+      <main>
+        {/* 2. STATS BAR */}
+        <section style={{ borderTop: `1px solid ${colors.border}`, borderBottom: `1px solid ${colors.border}`, backgroundColor: colors.cardBg }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
+            {[
+              "26 Security Rules",
+              "16 CWEs Covered",
+              "< 40ms Parse",
+              "100% Offline Mode"
+            ].map((stat, i) => (
+              <div key={i} style={{ fontSize: '18px', fontWeight: 'bold', color: colors.textMain }}>{stat}</div>
+            ))}
           </div>
+        </section>
 
-          {/* Pro Tier */}
-          <div style={{ ...styles.card(true), border: `2px solid ${colors.primary}` }}>
-            <div style={{ backgroundColor: colors.primary, color: '#000', fontSize: '12px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '12px', display: 'inline-block', marginBottom: '16px' }}>MOST POPULAR</div>
-            <h3 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Pro</h3>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '16px' }}>$19<span style={{ fontSize: '16px', color: colors.textMuted }}>/mo</span></div>
-            <p style={{ color: colors.textMuted, marginBottom: '24px', minHeight: '60px' }}>Full cloud AI fleet with Gemini. Unlimited scans. Priority support.</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <li>✅ Everything in Free</li>
-              <li>✅ Cloud Gemini AI</li>
-              <li>✅ GraphRAG Q&A</li>
-              <li>✅ Cinema narration</li>
-              <li>✅ API access</li>
-              <li>✅ Priority support</li>
-            </ul>
-            <button style={{ ...styles.buttonPrimary, width: '100%', boxSizing: 'border-box' }}>Start Pro Trial</button>
+        {/* 3. PROBLEM */}
+        <section style={styles.section}>
+          <h2 style={{ fontSize: '36px', textAlign: 'center', marginBottom: '48px' }}>
+            Your codebase is a black box. And it might be leaking.
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+            {[
+              { icon: '🔑', text: 'A hardcoded AWS key committed at 2am survives 47 commits before anyone notices.' },
+              { icon: '🤯', text: 'New engineers spend weeks reverse-engineering architecture that should take hours.' },
+              { icon: '🔄', text: 'Every code review misses blast-radius — until production breaks.' }
+            ].map((item, i) => (
+              <div key={i} style={styles.card(false)}>
+                <div style={{ fontSize: '32px', marginBottom: '16px' }}>{item.icon}</div>
+                <p style={{ fontSize: '16px', lineHeight: 1.5, margin: 0 }}>{item.text}</p>
+              </div>
+            ))}
           </div>
+        </section>
 
-          {/* Enterprise Tier */}
-          <div style={styles.card(hoveredCard === 'price-ent')} onMouseEnter={() => setHoveredCard('price-ent')} onMouseLeave={() => setHoveredCard(null)}>
-            <h3 style={{ fontSize: '24px', margin: '0 0 8px 0' }}>Enterprise</h3>
-            <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '16px' }}>Custom</div>
-            <p style={{ color: colors.textMuted, marginBottom: '24px', minHeight: '60px' }}>Air-gapped deployment, SSO, audit logs, SLA.</p>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <li>✅ Everything in Pro</li>
-              <li>✅ Self-hosted deployment</li>
-              <li>✅ SSO & SAML</li>
-              <li>✅ Audit logging</li>
-              <li>✅ Dedicated SLA</li>
-              <li>✅ Custom integrations</li>
-            </ul>
-            <button style={{ ...styles.buttonSecondary, width: '100%', boxSizing: 'border-box' }}>Contact Us</button>
+        {/* 4. FEATURES */}
+        <section style={styles.section}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+            {[
+              { icon: '🛡️', title: 'DevSecOps Security Scanner', text: 'Static pattern analysis catches leaked AWS/JWT/Stripe secrets and common security anti-patterns before they merge. Outputs a Grade A+ to F scorecard with 1-click remediation diffs.' },
+              { icon: '⚡', title: 'AST Token Sieve', text: 'Deterministic code skeletonizer dramatically reduces LLM context while preserving 100% of architectural signatures. Runs in 39.78ms.' },
+              { icon: '🧠', title: 'GraphRAG Blast Radius Q&A', text: "In-memory dependency graph answers 'If I rename the User schema, what routes break?' with citation-backed impact maps." },
+              { icon: '🔒', title: 'Air-Gapped Offline Mode', text: 'Run 100% private security audits with Ollama (Qwen2.5/DeepSeek-Coder). Zero internet, zero token cost, enterprise-ready.' }
+            ].map((item, i) => (
+              <div 
+                key={i} 
+                style={styles.card(hoveredCard === `feat-${i}`)}
+                onMouseEnter={() => setHoveredCard(`feat-${i}`)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '24px' }}>{item.icon}</span>
+                  <h3 style={{ margin: 0, fontSize: '20px' }}>{item.title}</h3>
+                </div>
+                <p style={{ color: colors.textMuted, lineHeight: 1.6, margin: 0 }}>{item.text}</p>
+              </div>
+            ))}
           </div>
+        </section>
 
-        </div>
-      </section>
+        {/* 5. HOW IT WORKS */}
+        <section style={styles.section}>
+          <h2 style={{ fontSize: '36px', textAlign: 'center', marginBottom: '48px' }}>How it works</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '800px', margin: '0 auto' }}>
+            {[
+              { num: '1', icon: '🔗', title: 'Connect', text: 'Paste any GitHub URL or point to a local workspace. Carbon clones and indexes in seconds.' },
+              { num: '2', icon: '🤖', title: 'Scan', text: 'LangGraph multi-agent mesh runs Security Auditor, Architecture Mapper, API Analyzer, and Business Logic agents in parallel.' },
+              { num: '3', icon: '🛡️', title: 'Fix', text: 'Get your Security Scorecard, interactive architecture diagram, and unified remediation diffs — all in one report.' }
+            ].map((step, i) => (
+              <div key={i} style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: colors.cardBg, border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 'bold', flexShrink: 0 }}>
+                  {step.num}
+                </div>
+                <div style={{ flex: '1 1 250px' }}>
+                  <h3 style={{ fontSize: '24px', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {step.icon} {step.title}
+                  </h3>
+                  <p style={{ color: colors.textMuted, fontSize: '18px', lineHeight: 1.6, margin: 0 }}>{step.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      {/* 8. CTA STRIP */}
-      <section style={{ background: 'linear-gradient(to right, #064e3b, #065f46)', padding: '64px 20px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '36px', margin: '0 0 32px 0' }}>Ready to secure your codebase?</h2>
-        <Link to="/app" style={styles.buttonPrimary}>Analyze Your First Repo — Free →</Link>
-      </section>
+        {/* 6. INTEGRATIONS */}
+        <section style={{ ...styles.section, textAlign: 'center' }}>
+          <h2 style={{ fontSize: '36px', marginBottom: '48px' }}>Works where your team already works</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
+            {[
+              { title: 'VS Code Extension', text: 'v1.1.0 available now', cta: 'Install', link: 'https://marketplace.visualstudio.com/items?itemName=krishcarbon.carbon-ai' },
+              { title: 'GitHub Action', text: 'Zero-install PR reviewer', cta: 'Add to Workflow', link: 'https://github.com/krishna-chhabra-cse/Carbon#github-action' },
+              { title: 'Chrome Extension', text: 'Side panel intelligence', cta: 'Install', link: '/carbon-chrome-extension.zip', download: 'carbon-chrome-extension.zip' }
+            ].map((item, i) => (
+              <div 
+                key={i} 
+                style={{ ...styles.card(hoveredCard === `integ-${i}`), display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '36px 24px' }}
+                onMouseEnter={() => setHoveredCard(`integ-${i}`)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '22px', fontWeight: 'bold' }}>{item.title}</h3>
+                <p style={{ color: colors.textMuted, margin: '0 0 32px 0', fontSize: '15px' }}>{item.text}</p>
+                <a 
+                  href={item.link} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  download={item.download ? item.download : undefined}
+                  style={{ 
+                    background: hoveredCard === `integ-${i}` ? 'linear-gradient(90deg, #4f46e5, #9333ea)' : 'linear-gradient(90deg, #60a5fa, #c084fc)',
+                    color: '#fff',
+                    padding: '10px 32px',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    boxShadow: hoveredCard === `integ-${i}` ? '0 8px 24px rgba(168, 85, 247, 0.4)' : '0 4px 12px rgba(168, 85, 247, 0.2)',
+                    transition: 'all 0.3s ease',
+                    transform: hoveredCard === `integ-${i}` ? 'scale(1.05)' : 'scale(1)'
+                  }}
+                >
+                  {item.cta}
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 7. OPEN SOURCE */}
+        <section style={styles.section}>
+          <h2 style={{ fontSize: '36px', textAlign: 'center', marginBottom: '16px' }}>Open Source & Free</h2>
+          <p style={{ fontSize: '18px', color: colors.textMuted, textAlign: 'center', maxWidth: '600px', margin: '0 auto 40px auto' }}>
+            Carbon is MIT-licensed. Run it locally, contribute features, or fork it for your team.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <a href="https://github.com/krishna-chhabra-cse/Carbon" target="_blank" rel="noreferrer" style={styles.buttonPrimary}>⭐ Star on GitHub</a>
+            <a href="https://github.com/krishna-chhabra-cse/Carbon/issues" target="_blank" rel="noreferrer" style={styles.buttonSecondary}>Report an Issue</a>
+          </div>
+        </section>
+
+        {/* 8. CTA STRIP */}
+        <section style={{ background: 'linear-gradient(to right, #064e3b, #065f46)', padding: '64px 20px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '36px', margin: '0 0 32px 0' }}>Ready to secure your codebase?</h2>
+          <Link to="/app" style={styles.buttonPrimary}>Analyze Your First Repo — Free →</Link>
+        </section>
+      </main>
 
       {/* 9. FOOTER */}
       <footer style={{ borderTop: `1px solid ${colors.border}`, padding: '48px 20px 24px 20px', backgroundColor: colors.cardBg }}>
@@ -304,11 +284,11 @@ export default function LandingPage() {
             <div style={{ color: colors.textMuted }}>Built by Krishna Chhabra</div>
             <div style={{ color: colors.textMuted }}>MIT License 2026</div>
           </div>
-          <div style={{ display: 'flex', gap: '24px' }}>
-            <a href="#" style={{ color: colors.textMuted, textDecoration: 'none' }}>GitHub</a>
-            <a href="#" style={{ color: colors.textMuted, textDecoration: 'none' }}>VS Code Marketplace</a>
-            <a href="#" style={{ color: colors.textMuted, textDecoration: 'none' }}>LinkedIn</a>
-          </div>
+          <nav role="navigation" style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+            <a href="https://github.com/krishna-chhabra-cse/Carbon" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>GitHub</a>
+            <a href="https://marketplace.visualstudio.com/items?itemName=krishcarbon.carbon-ai" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>VS Code Marketplace</a>
+            <a href="https://linkedin.com/in/krishna-chhabra" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>LinkedIn</a>
+          </nav>
         </div>
         <div style={{ textAlign: 'center', color: colors.textMuted, fontSize: '14px', paddingTop: '24px', borderTop: `1px solid ${colors.border}` }}>
           Carbon AI — Multi-Agent DevSecOps & Codebase Intelligence Platform

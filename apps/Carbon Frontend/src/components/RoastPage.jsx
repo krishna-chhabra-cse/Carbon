@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { CheckCircle2, Flame, GitBranch, Share2, Code, Shield, Box, Terminal, Copy, ArrowRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, Flame, GitBranch, Share2, Code, Shield, Box, Terminal, Copy, ArrowLeft, Loader2, Info } from 'lucide-react';
 
 const isDev = import.meta.env.DEV;
 const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) 
@@ -17,14 +18,15 @@ export default function RoastPage() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [roastData, setRoastData] = useState(null);
   const [error, setError] = useState('');
+  const [toastMessage, setToastMessage] = useState('');
 
   const loadingMessages = [
-    'Cloning repository... hope it\'s not 10GB.',
-    'Building AST Skeleton... cracking some bones.',
-    'Mapping architecture... looking for spaghetti.',
-    'Scanning for secrets... checking under the rug.',
-    'Analyzing code smells... sniffing around.',
-    'Warming up the grill... preparing the roast.'
+    'Cloning repository...',
+    'Building AST Skeleton...',
+    'Mapping architecture...',
+    'Scanning for secrets...',
+    'Analyzing code smells...',
+    'Warming up the grill...'
   ];
 
   useEffect(() => {
@@ -37,7 +39,7 @@ export default function RoastPage() {
     if (loading) {
       const interval = setInterval(() => {
         setLoadingStep(s => Math.min(s + 1, loadingMessages.length - 1));
-      }, 3000);
+      }, 2000);
       return () => clearInterval(interval);
     }
   }, [loading]);
@@ -88,7 +90,8 @@ export default function RoastPage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert('Link copied to clipboard!');
+    setToastMessage('Link copied to clipboard!');
+    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const shareOnX = () => {
@@ -98,229 +101,270 @@ export default function RoastPage() {
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`, '_blank');
   };
 
-  // ── UI Helpers ──
-  const colors = {
-    bg: '#0a0a0a',
-    card: '#121212',
-    border: '#262626',
-    primary: '#ef4444', // Red-500 for flame
-    primaryHover: '#dc2626',
-    textMain: '#f5f5f5',
-    textMuted: '#a3a3a3'
-  };
-
   if (loading && !roastData) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: colors.bg, color: colors.textMain, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <Flame size={64} color={colors.primary} style={{ animation: 'pulse 1.5s infinite' }} />
-        <h2 style={{ marginTop: '24px', fontSize: '24px', fontWeight: 'bold' }}>
-          {loadingMessages[loadingStep]}
-        </h2>
-        <style>
-          {`
-            @keyframes pulse {
-              0% { transform: scale(1); opacity: 1; }
-              50% { transform: scale(1.2); opacity: 0.8; }
-              100% { transform: scale(1); opacity: 1; }
-            }
-          `}
-        </style>
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 font-sans">
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Flame size={64} className="text-orange-500" />
+        </motion.div>
+        <div className="mt-8 h-8 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.h2 
+              key={loadingStep}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              className="text-xl font-medium text-neutral-400 font-mono"
+            >
+              {'>'} {loadingMessages[loadingStep]}
+            </motion.h2>
+          </AnimatePresence>
+        </div>
       </div>
     );
   }
 
   if (roastData) {
     const r = roastData.roast;
+    const getScoreColor = (score) => {
+      if (score > 80) return 'text-emerald-400';
+      if (score > 50) return 'text-amber-400';
+      return 'text-red-500';
+    };
+
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: colors.bg, color: colors.textMain, padding: '40px 20px', fontFamily: 'system-ui, sans-serif' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="min-h-screen bg-[#050505] text-neutral-200 p-6 md:p-12 font-sans selection:bg-orange-500/30">
+        <div className="max-w-4xl mx-auto">
           
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-            <Link to="/" style={{ color: colors.textMuted, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
-              <ArrowRight size={20} style={{ transform: 'rotate(180deg)' }} /> Back to Carbon
+          <header className="flex justify-between items-center mb-12">
+            <Link to="/" className="flex items-center gap-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors">
+              <ArrowLeft size={16} /> Back to Carbon
             </Link>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: colors.primary, fontWeight: '900', fontSize: '20px' }}>
-              <Flame size={24} /> ROAST MY CODEBASE
+            <div className="flex items-center gap-2 text-orange-500 font-bold tracking-widest text-sm">
+              <Flame size={16} /> ROAST MY CODEBASE
             </div>
-          </div>
+          </header>
 
-          {/* The Viral Card */}
-          <div style={{ 
-            backgroundColor: colors.card, 
-            border: `1px solid ${colors.border}`, 
-            borderRadius: '16px', 
-            overflow: 'hidden',
-            boxShadow: '0 20px 40px rgba(239, 68, 68, 0.1)'
-          }}>
-            <div style={{ padding: '40px', borderBottom: `1px solid ${colors.border}`, backgroundColor: '#171717' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 8px 0', color: colors.textMuted, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Codebase Autopsy • {roastData.repo_name}
-                  </h3>
-                  <h1 style={{ margin: 0, fontSize: '42px', fontWeight: '900', lineHeight: 1.1 }}>
+          {/* Main Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-[#0a0a0a] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-orange-900/10"
+          >
+            {/* Top Section */}
+            <div className="p-8 md:p-12 border-b border-white/5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-red-500 to-rose-600" />
+              
+              <div className="flex flex-col md:flex-row justify-between items-start gap-8">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="px-3 py-1 bg-neutral-900 border border-white/10 rounded-full text-xs font-mono text-neutral-400 uppercase tracking-wider">
+                      Codebase Autopsy
+                    </span>
+                    <span className="text-sm text-neutral-500 font-mono">{roastData.repo_name}</span>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight mb-2">
                     {r.title}
                   </h1>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '48px', fontWeight: '900', color: r.overall_score > 70 ? '#10b981' : r.overall_score > 40 ? '#f59e0b' : '#ef4444' }}>
+                
+                <div className="flex flex-col items-end shrink-0">
+                  <div className={`text-6xl md:text-7xl font-black tracking-tighter ${getScoreColor(r.overall_score)}`}>
                     {r.overall_score}
                   </div>
-                  <div style={{ color: colors.textMuted, fontSize: '14px', fontWeight: 'bold' }}>
+                  <div className="text-sm font-bold text-neutral-500 tracking-widest mt-1">
                     / 100 SCORE
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '32px', padding: '24px', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeft: `4px solid ${colors.primary}`, borderRadius: '0 8px 8px 0' }}>
-                <p style={{ margin: 0, fontSize: '20px', lineHeight: 1.5, fontStyle: 'italic', fontWeight: '500' }}>
+              {/* The Roast */}
+              <div className="mt-10 p-6 md:p-8 bg-gradient-to-br from-red-500/10 to-orange-500/5 border border-red-500/20 rounded-xl relative">
+                <div className="absolute -top-3 -left-3 text-red-500/20">
+                  <Flame size={48} />
+                </div>
+                <p className="relative text-xl md:text-2xl font-medium text-white/90 leading-relaxed italic z-10">
                   "{r.roast}"
                 </p>
-                <div style={{ marginTop: '12px', fontSize: '14px', color: colors.primary, fontWeight: 'bold' }}>
-                  GRADE: {r.grade} • {r.severity}
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-bold rounded uppercase tracking-wider">
+                    Grade: {r.grade}
+                  </span>
+                  <span className="px-3 py-1 bg-orange-500/20 text-orange-400 text-xs font-bold rounded uppercase tracking-wider">
+                    {r.severity}
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: '40px' }}>
-              
-              <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: colors.textMuted }}>THE WORST OFFENDER</h4>
-              <div style={{ border: `1px solid ${colors.border}`, borderRadius: '8px', padding: '20px', marginBottom: '40px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', color: '#f87171', marginBottom: '8px' }}>
-                  <Terminal size={18} /> {r.worst_offender.file}
-                </div>
-                <div style={{ color: colors.textMain, fontSize: '16px', marginBottom: '4px' }}>
-                  {r.worst_offender.reason}
-                </div>
-                <div style={{ color: colors.textMuted, fontSize: '14px' }}>
-                  Evidence: {r.worst_offender.metric}
+            {/* Evidence Section */}
+            <div className="p-8 md:p-12 bg-[#050505]">
+              <div className="mb-12">
+                <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <Terminal size={16} /> The Worst Offender
+                </h3>
+                <div className="bg-neutral-950 border border-white/10 rounded-xl p-6 hover:border-red-500/30 transition-colors">
+                  <div className="font-mono text-sm text-red-400 mb-3 break-all">
+                    {r.worst_offender.file}
+                  </div>
+                  <p className="text-white text-lg font-medium mb-2">{r.worst_offender.reason}</p>
+                  <p className="text-neutral-400 text-sm font-mono bg-white/5 p-2 rounded inline-block">
+                    Evidence: {r.worst_offender.metric}
+                  </p>
                 </div>
               </div>
 
               {r.top_crimes?.length > 0 && (
-                <>
-                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: colors.textMuted }}>OTHER CRIMES</h4>
-                  {r.top_crimes.map((crime, idx) => (
-                    <div key={idx} style={{ marginBottom: '24px' }}>
-                      <div style={{ fontWeight: 'bold', fontSize: '16px', marginBottom: '4px' }}>{crime.title || crime.crime || "Coding Sin"}</div>
-                      <div style={{ color: colors.textMuted, fontSize: '14px', marginBottom: '4px' }}>{crime.evidence}</div>
-                      <div style={{ color: '#f87171', fontSize: '14px', fontStyle: 'italic' }}>"{crime.roast}"</div>
-                    </div>
-                  ))}
-                </>
+                <div className="mb-12">
+                  <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-widest mb-6">
+                    Other Crimes
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {r.top_crimes.map((crime, idx) => (
+                      <div key={idx} className="bg-neutral-900/50 border border-white/5 rounded-xl p-5 hover:bg-neutral-900 transition-colors">
+                        <div className="font-bold text-white mb-2">{crime.title || crime.crime || "Coding Sin"}</div>
+                        <div className="text-xs font-mono text-neutral-400 mb-3 line-clamp-2">{crime.evidence}</div>
+                        <div className="text-sm text-orange-300/80 italic border-l-2 border-orange-500/30 pl-3">
+                          "{crime.roast}"
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {r.fixes?.length > 0 && (
-                <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: `1px solid ${colors.border}` }}>
-                  <h4 style={{ margin: '0 0 20px 0', fontSize: '18px', color: '#10b981' }}>HOW TO FIX IT</h4>
-                  {r.fixes.map((fix, idx) => (
-                    <div key={idx} style={{ marginBottom: '16px', display: 'flex', gap: '12px' }}>
-                      <CheckCircle2 size={20} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
-                      <div>
-                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>[{fix.priority}] {fix.title}</div>
-                        <div style={{ color: colors.textMuted, fontSize: '14px' }}>{fix.action} ({fix.file})</div>
+                <div className="border-t border-white/10 pt-12">
+                  <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <CheckCircle2 size={16} /> How to fix it
+                  </h3>
+                  <div className="space-y-4">
+                    {r.fixes.map((fix, idx) => (
+                      <div key={idx} className="flex gap-4 items-start bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-5">
+                        <div className="mt-1">
+                          <CheckCircle2 size={20} className="text-emerald-400" />
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium mb-1">
+                            {fix.priority && <span className="text-emerald-400 font-mono text-xs mr-2">[{fix.priority}]</span>}
+                            {fix.title}
+                          </h4>
+                          <p className="text-neutral-400 text-sm">{fix.action}</p>
+                          <p className="text-xs font-mono text-neutral-500 mt-2">{fix.file}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
-              
             </div>
-          </div>
+          </motion.div>
 
           {/* Share Actions */}
-          <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
-            <button onClick={shareOnX} style={{ flex: 1, backgroundColor: '#1da1f2', color: '#fff', border: 'none', padding: '16px', borderRadius: '8px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '16px' }}>
-              <Share2 size={20} /> Share on X
+          <div className="mt-8 flex flex-col md:flex-row gap-4">
+            <button 
+              onClick={shareOnX}
+              className="flex-1 bg-white hover:bg-neutral-200 text-black font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2 group"
+            >
+              <Share2 size={18} className="group-hover:scale-110 transition-transform" /> 
+              Share on X
             </button>
-            <button onClick={copyToClipboard} style={{ flex: 1, backgroundColor: 'transparent', color: colors.textMain, border: `1px solid ${colors.border}`, padding: '16px', borderRadius: '8px', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '16px' }}>
-              <Copy size={20} /> Copy Link
+            <button 
+              onClick={copyToClipboard}
+              className="flex-1 bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-white font-medium py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              {toastMessage ? <CheckCircle2 size={18} className="text-emerald-400" /> : <Copy size={18} />}
+              {toastMessage ? 'Copied!' : 'Copy Link'}
             </button>
-          </div>
-          
-          <div style={{ marginTop: '48px', textAlign: 'center' }}>
-            <Link to="/roast" style={{ color: colors.textMuted, fontWeight: 'bold', textDecoration: 'none' }}>
-              Roast Another Repository →
-            </Link>
-          </div>
-          <div style={{ marginTop: '24px', textAlign: 'center' }}>
-            <Link to="/app" style={{ color: '#10b981', fontWeight: 'bold', textDecoration: 'none' }}>
-              Fix this with Carbon AI →
-            </Link>
           </div>
 
+          <div className="mt-12 text-center flex flex-col gap-4">
+            <Link to="/roast" className="text-neutral-500 hover:text-white text-sm font-medium transition-colors inline-flex items-center justify-center gap-2">
+              Roast Another Repository <ArrowLeft size={14} className="rotate-180" />
+            </Link>
+            <Link to="/app" className="text-orange-500 hover:text-orange-400 text-sm font-bold transition-colors inline-flex items-center justify-center gap-2">
+              Fix this with Carbon AI <ArrowLeft size={14} className="rotate-180" />
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: colors.bg, color: colors.textMain, padding: '40px 20px', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ maxWidth: '600px', margin: '80px auto', textAlign: 'center' }}>
-        
-        <Flame size={64} color={colors.primary} style={{ margin: '0 auto 24px auto' }} />
-        <h1 style={{ fontSize: '48px', fontWeight: '900', margin: '0 0 16px 0' }}>
-          ROAST MY CODEBASE
-        </h1>
-        <p style={{ fontSize: '20px', color: colors.textMuted, margin: '0 0 48px 0', lineHeight: 1.5 }}>
-          Think your code is clean? Prove it. We'll analyze your repository and tell you how bad it really is.
-        </p>
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 font-sans selection:bg-orange-500/30">
+      <div className="w-full max-w-xl mx-auto text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12"
+        >
+          <div className="inline-flex items-center justify-center p-4 bg-orange-500/10 rounded-full mb-6 text-orange-500">
+            <Flame size={40} />
+          </div>
+          <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-6">
+            ROAST MY CODEBASE
+          </h1>
+          <p className="text-lg text-neutral-400 leading-relaxed">
+            Think your code is clean? Prove it. We'll analyze your repository and tell you how bad it really is.
+          </p>
+        </motion.div>
 
-        <form onSubmit={handleRoast} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <input 
-            type="text" 
-            placeholder="Paste GitHub Repository URL (e.g. https://github.com/user/repo)"
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            required
-            style={{ 
-              width: '100%', 
-              padding: '20px', 
-              fontSize: '18px', 
-              backgroundColor: colors.card, 
-              border: `2px solid ${colors.border}`, 
-              borderRadius: '12px', 
-              color: '#fff',
-              outline: 'none'
-            }}
-          />
-          {error && <div style={{ color: colors.primary, fontWeight: 'bold' }}>{error}</div>}
+        <motion.form 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          onSubmit={handleRoast} 
+          className="space-y-4"
+        >
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <GitBranch size={20} className="text-neutral-500 group-focus-within:text-white transition-colors" />
+            </div>
+            <input 
+              type="url" 
+              placeholder="https://github.com/user/repo"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              required
+              className="w-full pl-12 pr-4 py-4 bg-neutral-900 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all font-mono"
+            />
+          </div>
+          
+          {error && (
+            <div className="flex items-center justify-center gap-2 text-red-500 text-sm font-medium bg-red-500/10 py-3 rounded-xl border border-red-500/20">
+              <Info size={16} /> {error}
+            </div>
+          )}
+
           <button 
             type="submit" 
-            style={{ 
-              backgroundColor: colors.primary, 
-              color: '#fff', 
-              border: 'none', 
-              padding: '20px', 
-              fontSize: '20px', 
-              fontWeight: 'bold', 
-              borderRadius: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '12px'
-            }}
+            disabled={loading}
+            className="w-full bg-white hover:bg-neutral-200 text-black disabled:opacity-50 disabled:cursor-not-allowed font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-lg group"
           >
-            Roast It 🔥
+            {loading ? <Loader2 size={24} className="animate-spin text-black" /> : 'Roast It'}
+            {!loading && <Flame size={20} className="text-orange-500 group-hover:scale-125 transition-transform" />}
           </button>
-        </form>
+        </motion.form>
 
-        <div style={{ marginTop: '48px', color: colors.textMuted, fontSize: '14px' }}>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-12 text-sm text-neutral-600"
+        >
           By roasting your codebase, you agree to let Carbon AI judge your life choices.
-        </div>
-        
-        <div style={{ marginTop: '32px' }}>
-          <Link to="/" style={{ color: colors.textMuted, textDecoration: 'none' }}>
-            ← Back to Carbon
-          </Link>
-        </div>
-
+          <div className="mt-8">
+            <Link to="/" className="text-neutral-500 hover:text-white transition-colors inline-flex items-center gap-2">
+              <ArrowLeft size={16} /> Back to Carbon
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
 }
-
-// Need to define a small dummy CheckCircle2 component in lucide-react if missing, 
-// but it should exist. If it throws, we can replace it later.
