@@ -14,6 +14,9 @@ AGENT_SERVICE_DIR = str(Path(__file__).resolve().parent.parent / "apps" / "Carbo
 if AGENT_SERVICE_DIR not in sys.path:
     sys.path.insert(0, AGENT_SERVICE_DIR)
 
+# Disable API auth during tests
+os.environ["CARBON_AUTH_DISABLED"] = "true"
+
 
 # ── Sample Codebase Fixtures ──────────────────────────────────
 

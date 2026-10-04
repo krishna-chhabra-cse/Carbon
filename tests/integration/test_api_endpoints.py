@@ -107,10 +107,10 @@ class TestChatEndpoint:
     @patch("agents.graphrag_agent.run_graphrag_chat")
     async def test_chat_cached_repo_uses_graphrag(self, mock_graphrag, api_client):
         test_repo = "https://github.com/test/cached-repo"
-        REPO_CACHE[test_repo] = {
+        REPO_CACHE.set(test_repo, {
             "folder_structure": "[FILE] src/index.js",
             "files_content": {"src/index.js": "console.log('hello');"}
-        }
+        })
         mock_graphrag.return_value = {
             "success": True,
             "query": "Where is the entry point?",
@@ -141,10 +141,10 @@ class TestChatEndpoint:
     @patch("agents.companion_agent.run", return_value={"answer": "Fallback answer"})
     async def test_chat_graphrag_failure_falls_back_to_companion(self, mock_companion, mock_graphrag, api_client):
         test_repo = "https://github.com/test/failing-cached-repo"
-        REPO_CACHE[test_repo] = {
+        REPO_CACHE.set(test_repo, {
             "folder_structure": "[FILE] src/index.js",
             "files_content": {"src/index.js": "console.log('hello');"}
-        }
+        })
 
         try:
             response = await api_client.post("/chat", json={
