@@ -7,3 +7,29 @@ node_modules/
 .vercel
 
 node_modules/
+
+# Binaries
+*.vsix
+*.zip
+*.db
+*.sqlite
+*.pptx
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

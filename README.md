@@ -4,8 +4,8 @@
 
 ### *Catch leaked secrets and OWASP vulnerabilities before you ship — with automated architecture maps, blast-radius GraphRAG, and an offline local AI mode.*
 
-[![Security Grade](https://img.shields.io/badge/DevSecOps%20Grade-A%2B%20Shield-10B981?logo=security&logoColor=white)](apps/Carbon%20Agent%20Service/tools/security_scanner.py)
-[![Token Optimization](https://img.shields.io/badge/Token%20Reduction-99.0%25%20AST%20Sieve-00E5FF)](benchmarks/token_reduction_bench.py)
+[![Security Scanner](https://img.shields.io/badge/Static%20Scanner-26%20Rules%20%C2%B7%2016%20CWEs-10B981?logo=security&logoColor=white)](apps/Carbon%20Agent%20Service/tools/security_scanner.py)
+[![Token Optimization](https://img.shields.io/badge/AST%20Token%20Sieve-Deterministic-00E5FF)](benchmarks/token_reduction_bench.py)
 [![VS Code Extension](https://img.shields.io/badge/VS%20Code-v1.1.0-blue?logo=visual-studio-code&logoColor=white)](apps/vscode-extension/)
 [![GitHub Action](https://img.shields.io/badge/GitHub%20Action-Verified-2088FF?logo=githubactions&logoColor=white)](.github/workflows/carbon-pr-review.yml)
 [![LangGraph](https://img.shields.io/badge/Orchestrator-LangGraph%20Agents-FF6F00?logo=python&logoColor=white)](apps/Carbon%20Agent%20Service/agents/graph.py)
@@ -22,19 +22,19 @@
 
 </div>
 
-## 🔥 Google Elevation Features (v2.0)
-Carbon has been dramatically upgraded from a prototype to a production-grade codebase intelligence engine:
-- **Real AST Parsing (Tree-Sitter & Python `ast`)**: Replaced naive regex truncation with semantic syntax trees. Slashes raw files down by **85-90% token reduction** while perfectly preserving routes, dependencies, classes, and logic. Latency: <20ms for 50 files.
-- **GraphRAG with NetworkX**: The file dictionary has been replaced with a mathematically sound Directed Dependency Graph. Carbon now intelligently queries the graph to inject only relevant components into the context window.
-- **Blast Radius BFS**: Graph traversal precisely calculates the impact radius of any component change up to N degrees of depth.
-- **Enterprise DevSecOps (SARIF)**: Scaled from 10 to **50+ CWE-mapped security rules** (SQLi, SSTI, NoSQLi, Weak Crypto, JWT flaws). Automatically exports results to **SARIF v2.1.0** for native ingestion into the GitHub Advanced Security tab.
-- **Production Persistence**: Fully Dockerized with a Redis cache layer for instant re-analysis of previously scanned codebases, and a PostgreSQL database for audit tracking via SQLAlchemy models.
+## 🔥 Key Features (v2.0)
+Carbon has been upgraded from a prototype to a codebase intelligence engine:
+- **Real AST Parsing (Tree-Sitter & Python `ast`)**: Replaced naive regex truncation with semantic syntax trees. Strips function bodies while preserving routes, dependencies, classes, and signatures. Latency: <20ms for 50 files.
+- **GraphRAG with NetworkX**: In-memory Directed Dependency Graph with BFS traversal. Carbon queries the graph to inject only relevant components into the LLM context window.
+- **Blast Radius BFS**: Graph traversal calculates the impact radius of any component change up to N degrees of depth.
+- **Static Security Scanner**: 26 static analysis rules covering 16 CWEs across secret detection, injection patterns, weak crypto, and auth misconfigurations. Generates a Security Scorecard (A+ to F).
+- **Dockerized Deployment**: Full Docker Compose orchestration with in-memory caching for re-analysis.
 
-- **Multi-LLM Fallback Router**: Zero-downtime reliability with an automatic failover cascade from Google Gemini -> Groq Llama 3 -> Cerebras -> Local Ollama. 
-- **3D Galaxy Architecture**: WebGL-powered 3D force graphs replacing flat 2D maps, rendering complete microservice infrastructures in a massive interactive solar system.
-- **Automated DevRel Engine**: One-click generation of Gamma AI-ready Markdown presentation decks and native Web Speech API-driven video walkthroughs (zero dependency on ElevenLabs).
-- **API Key & JWT Auth**: Secured the FastAPI endpoints with `X-API-Key` headers and Bearer token auth middleware.
-- **🌶️ Viral "Roast My Codebase" Mode**: Developers love self-deprecating humor. Carbon analyzes your codebase stats (God objects, lack of tests, security flaws) and generates a brutal, highly-shareable "Gordon Ramsay" style roast for Twitter/X.
+- **Multi-LLM Fallback Router**: Automatic failover cascade across Google Gemini → Groq → Cerebras → Local Ollama for zero-downtime reliability.
+- **3D Galaxy Architecture**: WebGL-powered 3D force graphs rendering interactive microservice topology maps.
+- **Automated DevRel Engine**: One-click generation of Markdown presentation decks and Web Speech API-driven video walkthroughs.
+- **API Key Auth**: FastAPI endpoints secured with `X-API-Key` header authentication middleware.
+- **🌶️ Viral "Roast My Codebase" Mode**: Carbon analyzes your codebase stats (God objects, lack of tests, security flaws) and generates a brutal, shareable "Gordon Ramsay" style roast.
 
 ---
 
@@ -43,7 +43,7 @@ Carbon has been dramatically upgraded from a prototype to a production-grade cod
 
 Most codebase tools tell you what code *does*. **Carbon stops what code *leaks* before it merges into production.**
 
-Every repository scan executes automated static taint analysis, credential entropy checks, and OWASP rule evaluators to generate an actionable **DevSecOps Security Scorecard (A+ to F)**.
+Every repository scan executes automated static pattern analysis and OWASP-inspired rule evaluators to generate an actionable **DevSecOps Security Scorecard (A+ to F)**.
 
 <a id="dogfood-audit"></a>
 ## 🧪 Carbon, Scanned by Carbon (Dogfooding Results)
@@ -66,6 +66,8 @@ python benchmarks/dogfood_security_scan.py
 
 *(Note: Live keys and environment tokens are strictly confined to server-side `.env` files and never checked into source control or distributed in client extension bundles.)*
 
+> **Scope:** These results reflect Carbon's built-in 26-rule static scanner. For comprehensive security auditing, Carbon is designed to complement dedicated tools like Semgrep and gitleaks.
+
 ---
 
 <a id="token-optimization"></a>
@@ -75,19 +77,18 @@ Feeding entire 100,000+ LOC repositories into LLM context windows causes context
 
 Carbon implements a **Deterministic AST Sieve and Code Skeletonizer** ([`apps/Carbon Agent Service/tools/ast_skeletonizer.py`](apps/Carbon%20Agent%20Service/tools/ast_skeletonizer.py)) that strips deep loop bodies and procedural noise while preserving 100% of classes, interfaces, route signatures, and database schemas.
 
-### 📊 Real Measured Benchmark Results:
+### 📊 Benchmark Results:
 
 The numbers below were **measured by executing [`benchmarks/token_reduction_bench.py`](benchmarks/token_reduction_bench.py)** against the real Carbon repository:
 
-| Benchmark Metric | Raw Codebase | With Carbon AST Skeletonizer | Measured Improvement |
+| Benchmark Metric | Raw Codebase | With Carbon AST Skeletonizer | Result |
 | :--- | :--- | :--- | :--- |
-| **Source Files Processed** | 197 files | 56 prioritized architectural files | **Targeted Sieve** |
-| **Total Token Consumption** | `1,153,159 tokens` | **`11,038 tokens`** | **🚀 -99.0% Token Reduction** |
-| **Payload Size** | `4,515.69 KB` | **`44.32 KB`** | **📦 -99.0% Compression** |
-| **AST Extraction Latency** | — | **`39.78 ms`** | **⚡ 4,952 files / sec** |
-| **Architectural Signature Fidelity** | 100% | **100%** | **Identical Topology** |
+| **Source Files Processed** | 197 files | 56 prioritized architectural files | **AST-aware selection** |
+| **Context Window Budget** | Uncapped | **45,000 character budget** | **Bounded & optimized** |
+| **AST Extraction Latency** | — | **< 40ms** | **Fast deterministic parsing** |
+| **Architectural Signatures** | 100% | **100% preserved** | **Classes, routes, schemas retained** |
 
-> 🔗 **Reproduce it yourself:** Run `python benchmarks/token_reduction_bench.py` to independently benchmark any repository.
+> 🔗 **Reproduce it yourself:** Run `python benchmarks/token_reduction_bench.py` to benchmark against any repository. The skeletonizer uses a fixed character budget with AST-aware file prioritization — it preserves all architectural signatures (class definitions, route handlers, database schemas) while stripping function body noise.
 
 ---
 
@@ -211,8 +212,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: krishna-chhabra-cse/Carbon/apps/carbon-pr-action@main
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 
 ---
@@ -344,11 +345,30 @@ Carbon/
 
 ---
 
+<a id="limitations"></a>
+## 🗺️ Limitations & Roadmap
+
+**Current Limitations:**
+- Security scanner uses regex-based pattern matching (26 rules). It complements, not replaces, tools like Semgrep/Bandit/gitleaks.
+- GraphRAG import resolution uses heuristic substring matching. Complex module resolution (tsconfig paths, Python namespace packages) is not yet supported.
+- Token optimization uses a fixed character budget with AST-aware prioritization rather than semantic compression.
+- Graph is rebuilt per-request (no persistent storage yet).
+
+**Planned:**
+- [ ] SARIF v2.1.0 export for GitHub Security tab integration
+- [ ] Redis-backed persistent caching
+- [ ] Embedding-based retrieval for GraphRAG (replacing substring matching)
+- [ ] Semgrep/gitleaks integration for comprehensive scanning
+- [ ] Job queue (Celery/RQ) for async analysis pipelines
+- [ ] OpenTelemetry tracing for observability
+
+---
+
 <a id="license"></a>
 ## 📄 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
 
 <div align="center">
-  <sub>Built with ❤️ by <b>Krishna Chhabra</b> for senior-level engineering & DevSecOps codebase intelligence.</sub>
+  <sub>Built with ❤️ by <b>Krishna Chhabra</b></sub>
 </div>
