@@ -15,12 +15,19 @@
 
 import json
 import os
+import asyncio
+import logging
+import time
+from collections import OrderedDict
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, model_validator
 from dotenv import load_dotenv
+from middleware.auth import verify_api_access
+
+logger = logging.getLogger(__name__)
 
 # Import our tools
 from tools.git_cloner import clone_repo, cleanup_repo
@@ -89,7 +96,74 @@ class ExplainerOPMLRequest(BaseModel):
 # -------------------------------------------------------
 # Cache to hold codebase state for chat queries.
 # -------------------------------------------------------
-REPO_CACHE = {}
+class TTLCache:
+    def __init__(self, maxsize=50, ttl_seconds=3600):
+        self.cache = OrderedDict()
+        self.maxsize = maxsize
+        self.ttl_seconds = ttl_seconds
+
+    def get(self, key):
+        if key not in self.cache:
+            return None
+        value, timestamp = self.cache[key]
+        if time.time() - timestamp > self.ttl_seconds:
+            self.pop(key)
+            return None
+        self.cache.move_to_end(key)
+        return value
+
+    def set(self, key, value):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = (value, time.time())
+        if len(self.cache) > self.maxsize:
+            self.cache.popitem(last=False)
+            
+    def pop(self, key, default=None):
+        return self.cache.pop(key, default)
+        
+    def __contains__(self, key):
+        return self.get(key) is not None
+
+class RedisCache:
+    def __init__(self, redis_url: str, ttl_seconds: int = 3600):
+        import redis
+        self.ttl = ttl_seconds
+        self.r = redis.Redis.from_url(redis_url, decode_responses=True)
+        # Test connection
+        self.r.ping()
+        
+    def get(self, key):
+        data = self.r.get(key)
+        if data:
+            import json
+            return json.loads(data)
+        return None
+        
+    def set(self, key, value):
+        import json
+        self.r.setex(key, self.ttl, json.dumps(value))
+        
+    def pop(self, key, default=None):
+        val = self.get(key)
+        if val is not None:
+            self.r.delete(key)
+            return val
+        return default
+        
+    def __contains__(self, key):
+        return self.r.exists(key) > 0
+
+def get_repo_cache():
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:
+            return RedisCache(redis_url)
+        except Exception as e:
+            logger.warning(f"Redis cache unavailable, falling back to TTLCache: {e}")
+    return TTLCache(maxsize=50, ttl_seconds=3600)
+
+REPO_CACHE = get_repo_cache()
 
 
 def get_cache_key(repo_url: Optional[str], workspace_name: Optional[str]) -> str:
@@ -134,7 +208,7 @@ def get_llm_status():
 # Body: { "repo_url": "https://github.com/..." }
 #   OR: { "workspace_name": "...", "files": [...], "folder_structure": "..." }
 # -------------------------------------------------------
-@app.post("/run-agents")
+@app.post("/run-agents", dependencies=[Depends(verify_api_access)])
 async def run_agents(request: AnalyzeRequest):
     async def event_generator():
         repo_path = None
@@ -152,13 +226,13 @@ async def run_agents(request: AnalyzeRequest):
                 print(f"\n[STEP 1] Processing {len(request.files)} uploaded workspace files...")
                 raw_uploaded = { item.path: item.content for item in request.files }
                 from tools.ast_skeletonizer import optimize_repo_files
-                files_content, _ = optimize_repo_files(raw_uploaded, max_total_chars=40000)
+                files_content, _ = await asyncio.to_thread(optimize_repo_files, raw_uploaded, 40000)
                 folder_structure = request.folder_structure or "\n".join(f"[FILE] {f.path}" for f in request.files)
             else:
                 yield json.dumps({"status": "cloning"}) + "\n"
 
                 print("\n[STEP 1] Cloning remote repository...")
-                clone_result = clone_repo(request.repo_url)
+                clone_result = await asyncio.to_thread(clone_repo, request.repo_url)
 
                 if not clone_result["success"]:
                     yield json.dumps({"status": "error", "message": f"Failed to clone repo: {clone_result['error']}"}) + "\n"
@@ -169,8 +243,8 @@ async def run_agents(request: AnalyzeRequest):
 
                 # STEP 2: Read file structure and contents
                 print("\n[STEP 2] Reading files...")
-                folder_structure = get_folder_structure(repo_path)
-                files_content = read_files_for_analysis(repo_path)
+                folder_structure = await asyncio.to_thread(get_folder_structure, repo_path)
+                files_content = await asyncio.to_thread(read_files_for_analysis, repo_path)
             
             yield json.dumps({"status": "analyzing"}) + "\n"
 
@@ -185,7 +259,8 @@ async def run_agents(request: AnalyzeRequest):
             
             # Stream the graph execution!
             final_state = {}
-            for event in agent_graph.stream(initial_state):
+            events = await asyncio.to_thread(list, agent_graph.stream(initial_state))
+            for event in events:
                 for node_name, partial_state in event.items():
                     print(f"[{node_name}] finished.")
                     yield json.dumps({"status": "node_finished", "node": node_name}) + "\n"
@@ -193,10 +268,10 @@ async def run_agents(request: AnalyzeRequest):
             
             # CACHE THE REPO DATA FOR CHAT
             cache_key = get_cache_key(request.repo_url, request.workspace_name)
-            REPO_CACHE[cache_key] = {
+            REPO_CACHE.set(cache_key, {
                 "folder_structure": folder_structure,
                 "files_content": files_content
-            }
+            })
 
             print("\n[DONE] All agents finished! Returning final results.")
 
@@ -213,14 +288,14 @@ async def run_agents(request: AnalyzeRequest):
             }) + "\n"
 
         except Exception as e:
-            print(f"[ERROR] Unexpected error: {e}")
-            yield json.dumps({"status": "error", "message": str(e)}) + "\n"
+            logger.exception(e)
+            yield json.dumps({"status": "error", "message": "Internal processing error"}) + "\n"
 
         finally:
             # IMPORTANT: only delete cloned temp repos.
             if repo_path and not is_uploaded_workspace:
                 print("\n[CLEANUP] Cleaning up cloned repo...")
-                cleanup_repo(repo_path)
+                await asyncio.to_thread(cleanup_repo, repo_path)
 
     return StreamingResponse(event_generator(), media_type="application/x-ndjson")
 
@@ -235,11 +310,11 @@ class CompanionRequest(BaseModel):
 # POST /chat
 # Body: { "repo_url": "...", "query": "..." }
 # -------------------------------------------------------
-@app.post("/chat")
+@app.post("/chat", dependencies=[Depends(verify_api_access)])
 async def chat(request: ChatRequest):
     # If repo is cached, answer with GraphRAG codebase context & blast radius!
-    if request.repo_url in REPO_CACHE:
-        cached_data = REPO_CACHE[request.repo_url]
+    cached_data = REPO_CACHE.get(request.repo_url)
+    if cached_data:
         from agents.graphrag_agent import run_graphrag_chat
         try:
             res = run_graphrag_chat(
@@ -270,7 +345,7 @@ async def chat(request: ChatRequest):
 # POST /companion
 # Body: { "query": "...", "mode": "explain|simplify|teach|summarize|page_explain|lessons", "context": {...} }
 # -------------------------------------------------------
-@app.post("/companion")
+@app.post("/companion", dependencies=[Depends(verify_api_access)])
 async def companion(request: CompanionRequest):
     from agents.companion_agent import run as run_companion_agent
     try:
@@ -289,7 +364,7 @@ async def companion(request: CompanionRequest):
 # The Explainer OPML generation endpoint
 # POST /generate-explainer-opml
 # -------------------------------------------------------
-@app.post("/generate-explainer-opml")
+@app.post("/generate-explainer-opml", dependencies=[Depends(verify_api_access)])
 async def generate_explainer_opml(request: ExplainerOPMLRequest):
     try:
         from agents.explainer_agent import run as run_explainer_agent
@@ -315,26 +390,29 @@ class MediaRequest(BaseModel):
     security_info: dict
     business_info: dict
 
-@app.post('/api/generate-media')
+@app.post('/api/generate-media', dependencies=[Depends(verify_api_access)])
 async def generate_media(req: MediaRequest):
     "Triggers the DevRel Engine to build PPT and Video Storyboard."
     try:
         from tools.ppt_generator import generate_executive_briefing
         from tools.video_storyboard import generate_video_storyboard
+        import re
+        
+        safe_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', req.repo_name)
         
         ppt_path = generate_executive_briefing(
             repo_name=req.repo_name,
             architecture_info=req.architecture_info,
             security_info=req.security_info,
             business_info=req.business_info,
-            output_filepath=f"{req.repo_name.replace(' ', '_')}_Briefing.pptx"
+            output_filepath=f"{safe_name}_Briefing.pptx"
         )
         
         video_json = generate_video_storyboard(
             repo_name=req.repo_name,
             architecture_info=req.architecture_info,
             business_info=req.business_info,
-            output_dir=f"{req.repo_name.replace(' ', '_')}_video_assets"
+            output_dir=f"{safe_name}_video_assets"
         )
         
         return {
@@ -358,12 +436,12 @@ class RoastRequest(BaseModel):
     architecture_info: Optional[dict] = None
     security_info: Optional[dict] = None
 
-@app.post('/api/roast')
+@app.post('/api/roast', dependencies=[Depends(verify_api_access)])
 async def roast_codebase(req: RoastRequest):
     "Generates a highly shareable, humorous roast of the codebase."
+    repo_path = None
+    is_uploaded = bool(req.files and len(req.files) > 0)
     try:
-        repo_path = None
-        is_uploaded = bool(req.files and len(req.files) > 0)
         repo_name = req.workspace_name or "Local Workspace"
         files_dict = {}
 
@@ -389,14 +467,15 @@ async def roast_codebase(req: RoastRequest):
             security_info=req.security_info
         )
         
-        if repo_path and not is_uploaded:
-            cleanup_repo(repo_path)
-            
         return {
             "status": "success",
             "repo_name": repo_name,
             "roast": roast_data
         }
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        logger.exception("Error in /api/roast")
+        raise HTTPException(status_code=500, detail="Internal processing error")
+    finally:
+        if repo_path and not is_uploaded:
+            cleanup_repo(repo_path)
 
