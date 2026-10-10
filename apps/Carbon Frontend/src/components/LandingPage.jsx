@@ -287,7 +287,7 @@ export default function LandingPage() {
           <nav role="navigation" style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
             <a href="https://github.com/krishna-chhabra-cse/Carbon" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>GitHub</a>
             <a href="https://marketplace.visualstudio.com/items?itemName=krishcarbon.carbon-ai" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>VS Code Marketplace</a>
-            <a href="https://linkedin.com/in/krishna-chhabra" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>LinkedIn</a>
+            <a href="https://linkedin.com/in/krishna-chhabra-cse" target="_blank" rel="noreferrer" style={{ color: colors.textMuted, textDecoration: 'none' }}>LinkedIn</a>
           </nav>
         </div>
         <div style={{ textAlign: 'center', color: colors.textMuted, fontSize: '14px', paddingTop: '24px', borderTop: `1px solid ${colors.border}` }}>

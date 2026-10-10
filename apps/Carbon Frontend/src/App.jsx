@@ -127,7 +127,11 @@ function AnalyzerApp() {
         try {
           errData = await response.json();
         } catch {}
-        const detail = errData?.error || errData?.details || `HTTP ${response.status}: Failed to reach Carbon AI backend.`;
+        const detailPart1 = errData?.error || '';
+        const detailPart2 = errData?.details || '';
+        const detail = (detailPart1 && detailPart2) 
+          ? `${detailPart1}: ${detailPart2}`
+          : (detailPart1 || detailPart2 || `HTTP ${response.status}: Failed to reach Carbon AI backend.`);
         throw new Error(detail);
       }
 
@@ -148,7 +152,7 @@ function AnalyzerApp() {
             const data = JSON.parse(line);
             
             if (data.status === 'error') {
-              throw new Error(data.message || 'Analysis failed');
+              throw new Error(data.message || 'Analysis stream error (no message provided)');
             } else if (data.status === 'cloning') {
               setStatusMessage('Downloading the repository...');
               setCurrentStep(1);

@@ -1,0 +1,85 @@
+{
+  "sfx": {
+    "chime": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\chime.wav",
+      "gain": -13.0,
+      "source": "synth",
+      "prompt": "Bright positive two-note success chime, clean UI notification",
+      "len": 1.1
+    },
+    "click": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\click.wav",
+      "gain": -9.0,
+      "source": "synth",
+      "prompt": "Single crisp UI mouse click, clean and dry, close-mic, no reverb, no room",
+      "len": 0.09
+    },
+    "impact": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\impact.wav",
+      "gain": -10.0,
+      "source": "synth",
+      "prompt": "Deep clean modern cinematic hit with sub bass for a logo reveal, tight tail",
+      "len": 1.6
+    },
+    "pop": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\pop.wav",
+      "gain": -12.0,
+      "source": "synth",
+      "prompt": "Soft rounded UI pop for a card appearing, playful, short, clean",
+      "len": 0.16
+    },
+    "riser": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\riser.wav",
+      "gain": -15.0,
+      "source": "synth",
+      "prompt": "Short modern riser building anticipation, airy synth swell into a cut, no hit at the end",
+      "len": 1.536
+    },
+    "shimmer": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\shimmer.wav",
+      "gain": -17.0,
+      "source": "synth",
+      "prompt": "Light airy sparkle shimmer for a logo reveal, soft and magical",
+      "len": 1.355
+    },
+    "tick": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\tick.wav",
+      "gain": -15.0,
+      "source": "synth",
+      "prompt": "One very short soft UI tick, subtle and dry, minimal",
+      "len": 0.038
+    },
+    "type": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\type.wav",
+      "gain": -18.0,
+      "source": "synth",
+      "prompt": "One single soft laptop keyboard keystroke, dry, close-mic, no reverb",
+      "len": 0.07
+    },
+    "whoosh": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\whoosh.wav",
+      "gain": -13.0,
+      "source": "synth",
+      "prompt": "Fast airy swoosh for a motion graphics transition, clean, modern, no rumble",
+      "len": 0.674
+    },
+    "whoosh-soft": {
+      "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\sfx\\whoosh-soft.wav",
+      "gain": -17.0,
+      "source": "synth",
+      "prompt": "Gentle soft air swish, subtle smooth transition, very light",
+      "len": 0.732
+    }
+  },
+  "music": {
+    "file": "C:\\Users\\krish\\Desktop\\Project carbon\\Carbon\\carbon-reel\\build\\audio\\music.wav",
+    "source": "synth",
+    "gain": -15.0,
+    "analysis": {
+      "bpm": 120.0,
+      "beatOffset": 0.0,
+      "confidence": 1.0
+    }
+  },
+  "vo": []
+}

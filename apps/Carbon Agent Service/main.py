@@ -257,10 +257,9 @@ async def run_agents(request: AnalyzeRequest):
                 "files_content": files_content
             }
             
-            # Stream the graph execution!
+            # Stream the graph execution incrementally!
             final_state = {}
-            events = await asyncio.to_thread(list, agent_graph.stream(initial_state))
-            for event in events:
+            async for event in agent_graph.astream(initial_state):
                 for node_name, partial_state in event.items():
                     print(f"[{node_name}] finished.")
                     yield json.dumps({"status": "node_finished", "node": node_name}) + "\n"

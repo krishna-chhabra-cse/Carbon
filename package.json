@@ -3,8 +3,11 @@
   "private": true,
   "version": "1.0.2",
   "scripts": {
-    "dev": "npm --prefix \"apps/Carbon Frontend\" run dev",
+    "dev": "concurrently \"npm --prefix \\\"apps/Carbon Frontend\\\" run dev\" \"npm --prefix \\\"apps/Carbon Backend\\\" run dev\"",
     "build": "npm --prefix \"apps/Carbon Frontend\" install && npm --prefix \"apps/Carbon Frontend\" run build",
     "preview": "npm --prefix \"apps/Carbon Frontend\" run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
   }
 }

@@ -441,54 +441,6 @@ export default function CarbonPlayer({
     <div className={`carbon-player-overlay animate-fade-in ${isFullscreen ? 'cinema-fullscreen' : ''}`} ref={containerRef}>
       <div className="carbon-player-modal">
         
-        {/* ── TOP NAV BAR ── */}
-        <div className="carbon-player-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="carbon-badge-glow">
-              <Sparkles size={14} /> Carbon Cinema
-            </div>
-            <div>
-              <h2 style={{ fontSize: '16px', margin: 0, color: '#f8fafc', fontWeight: 600 }}>
-                {title}
-              </h2>
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                {subtitle}
-              </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* Voice Provider Badge */}
-            {!isYouTube && (
-              <div className="voice-status-badge">
-                <Mic size={13} color="#38bdf8" />
-                <span>{audioSourceType === 'elevenlabs' ? 'ElevenLabs AI' : 'Natural Neural'}</span>
-              </div>
-            )}
-
-            <button 
-              type="button" 
-              onClick={toggleFullscreen} 
-              className="btn-icon" 
-              title="Toggle Fullscreen (F)"
-            >
-              {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </button>
-            <button 
-              type="button" 
-              onClick={() => {
-                stopNarration();
-                onClose();
-              }} 
-              className="btn-icon" 
-              title="Close Cinema (Esc)"
-              aria-label="Close Player"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
         {/* ── MAIN CINEMA BODY ── */}
         <div className="carbon-player-content">
           
@@ -780,6 +732,54 @@ export default function CarbonPlayer({
 
           </div>
 
+        </div>
+
+        {/* ── TOP NAV BAR ── */}
+        <div className="carbon-player-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="carbon-badge-glow">
+              <Sparkles size={14} /> Carbon Cinema
+            </div>
+            <div>
+              <h2 style={{ fontSize: '16px', margin: 0, color: '#f8fafc', fontWeight: 600 }}>
+                {title}
+              </h2>
+              <span style={{ fontSize: '12px', color: '#94a3b8' }}>
+                {subtitle}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Voice Provider Badge */}
+            {!isYouTube && (
+              <div className="voice-status-badge">
+                <Mic size={13} color="#38bdf8" />
+                <span>{audioSourceType === 'elevenlabs' ? 'ElevenLabs AI' : 'Natural Neural'}</span>
+              </div>
+            )}
+
+            <button 
+              type="button" 
+              onClick={toggleFullscreen} 
+              className="btn-icon" 
+              title="Toggle Fullscreen (F)"
+            >
+              {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
+            <button 
+              type="button" 
+              onClick={() => {
+                stopNarration();
+                onClose();
+              }} 
+              className="btn-icon" 
+              title="Close Cinema (Esc)"
+              aria-label="Close Player"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* ── ELEVENLABS KEY MODAL ── */}

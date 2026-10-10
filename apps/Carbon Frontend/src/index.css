@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
 
 :root {
   /* Deep Space Color Palette */
@@ -62,7 +63,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Typography & Gradients ─────────────────────────────────── */
+/* â”€â”€ Typography & Gradients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cosmic-text-gradient {
   background: var(--gradient-cosmic-text);
   -webkit-background-clip: text;
@@ -87,7 +88,7 @@ p {
   color: var(--text-muted);
 }
 
-/* ── Universal Glass Panel ──────────────────────────────────── */
+/* â”€â”€ Universal Glass Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .glass-panel {
   background: var(--space-panel);
   backdrop-filter: blur(16px);
@@ -106,7 +107,7 @@ p {
   box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.7);
 }
 
-/* ── Space Navbar ───────────────────────────────────────────── */
+/* â”€â”€ Space Navbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .carbon-navbar {
   position: sticky;
   top: 0;
@@ -124,7 +125,7 @@ p {
 .carbon-navbar.scrolled {
   padding: 12px 24px;
   background: rgba(5, 7, 15, 0.9);
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
@@ -323,7 +324,7 @@ p {
   border-color: var(--stellar-cyan);
 }
 
-/* ── Hero Section ───────────────────────────────────────────── */
+/* â”€â”€ Hero Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .hero-section {
   position: relative;
   text-align: left;
@@ -364,18 +365,21 @@ p {
 }
 
 .hero-main-title {
-  font-size: 4rem;
+  font-size: 4.5rem;
   line-height: 1.1;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  line-height: 1.7;
-  max-width: 720px;
-  margin: 0 0 32px;
+  font-size: 1.25rem;
+  color: #cbd5e1; /* brighter text for readability */
+  line-height: 1.8;
+  max-width: 760px;
+  margin: 0 0 36px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 .hero-pills-row {
@@ -511,7 +515,7 @@ p {
   color: #94a3b8;
 }
 
-/* ── Application Container ──────────────────────────────────── */
+/* â”€â”€ Application Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .app-container {
   max-width: 1300px;
   margin: 0 auto;
@@ -520,7 +524,7 @@ p {
   z-index: 1;
 }
 
-/* ── Input & Probe Form ─────────────────────────────────────── */
+/* â”€â”€ Input & Probe Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 input {
   width: 100%;
   padding: 16px 20px;
@@ -595,7 +599,7 @@ button:disabled {
   box-shadow: 0 8px 24px rgba(236, 72, 153, 0.5);
 }
 
-/* ── Stepper ────────────────────────────────────────────────── */
+/* â”€â”€ Stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .progress-stepper {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -625,7 +629,7 @@ button:disabled {
   border-color: rgba(16, 185, 129, 0.35);
 }
 
-/* ── Video Explainer Card (In-App Cinema Bar) ───────────────── */
+/* â”€â”€ Video Explainer Card (In-App Cinema Bar) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .video-card-container {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%);
   border: 1px solid rgba(236, 72, 153, 0.25);
@@ -633,7 +637,7 @@ button:disabled {
   padding: 24px;
 }
 
-/* ── In-App Carbon Cinema Player Modal ───────────────────────── */
+/* â”€â”€ In-App Carbon Cinema Player Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .carbon-player-overlay {
   position: fixed;
   top: 0;
@@ -666,7 +670,7 @@ button:disabled {
 .carbon-player-header {
   padding: 16px 24px;
   background: rgba(15, 23, 42, 0.8);
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -862,7 +866,7 @@ button:disabled {
 .sidebar-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
 }
 
 .sidebar-tab {
@@ -960,7 +964,7 @@ button:disabled {
   gap: 6px;
 }
 
-/* ── Section Header ─────────────────────────────────────────── */
+/* â”€â”€ Section Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .section-header-cosmic {
   text-align: left;
   margin: 40px 0 32px;
@@ -984,7 +988,7 @@ button:disabled {
   margin-bottom: 12px;
 }
 
-/* ── Systems / Constellations Grid ──────────────────────────── */
+/* â”€â”€ Systems / Constellations Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .systems-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1207,7 +1211,7 @@ button:disabled {
   color: #05070f;
 }
 
-/* ── Command Center Dashboard ───────────────────────────────── */
+/* â”€â”€ Command Center Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1396,7 +1400,7 @@ button:disabled {
   border-color: var(--stellar-cyan);
 }
 
-/* ── Badges ─────────────────────────────────────────────────── */
+/* â”€â”€ Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .badge {
   display: inline-block;
   padding: 6px 14px;
@@ -1415,7 +1419,7 @@ button:disabled {
   color: #bae6fd;
 }
 
-/* ── Diagram Container ──────────────────────────────────────── */
+/* â”€â”€ Diagram Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .mermaid-container {
   background: rgba(0, 0, 0, 0.35);
   border-radius: var(--radius-md);
@@ -1429,7 +1433,7 @@ button:disabled {
   height: auto;
 }
 
-/* ── Space Fact Banner ──────────────────────────────────────── */
+/* â”€â”€ Space Fact Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .space-fact-banner {
   display: flex;
   align-items: center;
@@ -1459,7 +1463,7 @@ button:disabled {
   line-height: 1.5;
 }
 
-/* ── Lesson Panel Footer Fact ───────────────────────────────── */
+/* â”€â”€ Lesson Panel Footer Fact â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .lesson-panel-fact {
   display: flex;
   align-items: center;
@@ -1474,7 +1478,7 @@ button:disabled {
   line-height: 1.5;
 }
 
-/* ── Orbital Nodes / Lesson Cards ───────────────────────────── */
+/* â”€â”€ Orbital Nodes / Lesson Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .orbital-nodes-panel {
   padding: 28px;
 }
@@ -1616,7 +1620,7 @@ button:disabled {
   box-shadow: none;
 }
 
-/* ── Animations ─────────────────────────────────────────────── */
+/* â”€â”€ Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -1635,7 +1639,7 @@ button:disabled {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* ── Video Gallery ──────────────────────────────────────────── */
+/* â”€â”€ Video Gallery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .video-gallery-view {
   animation: fadeIn 0.4s ease forwards;
 }
@@ -1774,7 +1778,7 @@ button:disabled {
   gap: 6px;
 }
 
-/* ── Space Quiz ─────────────────────────────────────────────── */
+/* â”€â”€ Space Quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .space-quiz-view {
   animation: fadeIn 0.4s ease forwards;
   max-width: 700px;
@@ -1941,7 +1945,7 @@ button:disabled {
   color: var(--text-muted);
 }
 
-/* ── Next-Gen Codebase Intelligence Studio ────────────────── */
+/* â”€â”€ Next-Gen Codebase Intelligence Studio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .codebase-studio-container {
   display: flex;
   flex-direction: column;
@@ -2620,7 +2624,7 @@ button:disabled {
 .active-flow-header {
   margin-bottom: 24px;
   padding-bottom: 18px;
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
 }
 
 .flow-index-tag {
@@ -2723,7 +2727,7 @@ button:disabled {
   font-size: 14px;
 }
 
-/* ── Chatbox Intelligence Co-Pilot ──────────────────────────── */
+/* â”€â”€ Chatbox Intelligence Co-Pilot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .chatbox-studio-panel {
   display: flex;
   flex-direction: column;
@@ -2737,7 +2741,7 @@ button:disabled {
   justify-content: space-between;
   align-items: center;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
   margin-bottom: 16px;
 }
 
@@ -2982,7 +2986,7 @@ button:disabled {
   box-shadow: none;
 }
 
-/* ── Architecture Diagram Studio Viewer ─────────────────────── */
+/* â”€â”€ Architecture Diagram Studio Viewer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .mermaid-studio-wrapper {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--space-border);
@@ -2996,7 +3000,7 @@ button:disabled {
   align-items: center;
   padding: 10px 16px;
   background: rgba(15, 23, 42, 0.7);
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -3088,7 +3092,7 @@ button:disabled {
   white-space: pre-wrap;
 }
 
-/* ── Developer Command Center & Real Telemetry ──────────────── */
+/* â”€â”€ Developer Command Center & Real Telemetry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .section-subheading {
   font-size: 12px;
   font-weight: 700;
@@ -3334,7 +3338,7 @@ button:disabled {
   box-shadow: none;
 }
 
-/* ── 21st.dev / Motionsites.ai: Nav Search & Hero Badge Cluster ── */
+/* â”€â”€ 21st.dev / Motionsites.ai: Nav Search & Hero Badge Cluster â”€â”€ */
 .nav-search-btn {
   display: flex;
   align-items: center;
@@ -3407,7 +3411,7 @@ button:disabled {
   margin-left: 2px;
 }
 
-/* ── 21st.dev / Motionsites: Command Palette (⌘K) Modal ────────── */
+/* â”€â”€ 21st.dev / Motionsites: Command Palette (âŒ˜K) Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .command-palette-backdrop {
   position: fixed;
   inset: 0;
@@ -3454,7 +3458,7 @@ button:disabled {
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--space-border);
+  border-top: 1px solid var(--space-border);
   background: rgba(0, 0, 0, 0.25);
 }
 
@@ -3595,7 +3599,7 @@ button:disabled {
   gap: 5px;
 }
 
-/* ── Responsive Media Queries ───────────────────────────────── */
+/* â”€â”€ Responsive Media Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 900px) {
   .hero-main-title {
     font-size: 2.8rem;
@@ -3629,7 +3633,7 @@ button:disabled {
   }
 }
 
-/* ── AI Presentation Deck & Gamma PPT Maker ──────────────── */
+/* â”€â”€ AI Presentation Deck & Gamma PPT Maker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .presentation-deck-container {
   display: flex;
   flex-direction: column;
@@ -3752,7 +3756,7 @@ button:disabled {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Slide Viewport & Stage ───────────────────────────────── */
+/* â”€â”€ Slide Viewport & Stage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .slide-viewport {
   flex: 1;
   display: flex;
@@ -4112,7 +4116,7 @@ button:disabled {
   color: #94a3b8;
 }
 
-/* ── Bottom Deck Controls & Thumbnails ────────────────────── */
+/* â”€â”€ Bottom Deck Controls & Thumbnails â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .deck-controls-bar {
   display: flex;
   justify-content: space-between;
@@ -4181,7 +4185,7 @@ button:disabled {
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
-/* ── Native Carbon Cinema Stage & Controls ───────────────── */
+/* â”€â”€ Native Carbon Cinema Stage & Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .native-cinema-stage {
   display: flex;
   flex-direction: column;
@@ -4400,7 +4404,7 @@ button:disabled {
   color: #cbd5e1;
 }
 
-/* ── Cinema Controls Bar ──────────────────────────────────── */
+/* â”€â”€ Cinema Controls Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cinema-controls-bar {
   display: flex;
   align-items: center;
@@ -4498,7 +4502,7 @@ button:disabled {
   animation: pulse 1.5s infinite;
 }
 
-/* ── Carbon Cinema Modal & Layout ───────────────────────── */
+/* â”€â”€ Carbon Cinema Modal & Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .carbon-player-overlay {
   position: fixed;
   inset: 0;
@@ -4545,7 +4549,7 @@ button:disabled {
   align-items: center;
   padding: 12px 20px;
   background: rgba(15, 23, 42, 0.7);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 
@@ -4738,7 +4742,7 @@ button:disabled {
   padding-left: 4px;
 }
 
-/* ── Voice Engine Controls & Modal ───────────────────────── */
+/* â”€â”€ Voice Engine Controls & Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .voice-status-badge {
   display: inline-flex;
   align-items: center;

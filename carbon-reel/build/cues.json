@@ -1,0 +1,261 @@
+{
+  "meta": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "duration": 16,
+    "bpm": 120,
+    "beatOffset": 0,
+    "beatsPerBar": 4,
+    "accent": "#7c5cff",
+    "title": "Northstar — launch",
+    "grain": 0.06
+  },
+  "scenes": [
+    {
+      "id": "intro",
+      "start": 0,
+      "end": 3500,
+      "label": ""
+    },
+    {
+      "id": "dash",
+      "start": 3250,
+      "end": 9500,
+      "label": ""
+    },
+    {
+      "id": "ask",
+      "start": 9250,
+      "end": 13500,
+      "label": ""
+    },
+    {
+      "id": "outro",
+      "start": 13250,
+      "end": 16000,
+      "label": ""
+    }
+  ],
+  "cues": [
+    {
+      "t": 500,
+      "sfx": "pop",
+      "vary": false,
+      "src": "popIn"
+    },
+    {
+      "t": 1000,
+      "sfx": "whoosh-soft",
+      "vary": false,
+      "src": "blurIn"
+    },
+    {
+      "t": 3170,
+      "sfx": "whoosh",
+      "src": "scene:dash"
+    },
+    {
+      "t": 3400,
+      "sfx": "tick",
+      "vary": true,
+      "src": "fadeUp"
+    },
+    {
+      "t": 3470,
+      "sfx": "tick",
+      "vary": true,
+      "src": "fadeUp"
+    },
+    {
+      "t": 3540,
+      "sfx": "tick",
+      "vary": true,
+      "src": "fadeUp"
+    },
+    {
+      "t": 3610,
+      "sfx": "tick",
+      "vary": true,
+      "src": "fadeUp"
+    },
+    {
+      "t": 5500,
+      "sfx": "whoosh-soft",
+      "vary": false,
+      "src": "barGrow"
+    },
+    {
+      "t": 7500,
+      "sfx": "click",
+      "vary": true,
+      "src": "click"
+    },
+    {
+      "t": 7600,
+      "sfx": "chime",
+      "vary": false,
+      "src": "popIn"
+    },
+    {
+      "t": 9170,
+      "sfx": "whoosh",
+      "src": "scene:ask"
+    },
+    {
+      "t": 9700,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 9772,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 9844,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 9917,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 9989,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10061,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10133,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10206,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10278,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10350,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10422,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10494,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10567,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10639,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10711,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10783,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10856,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 10928,
+      "sfx": "type",
+      "vary": true,
+      "src": "type"
+    },
+    {
+      "t": 11500,
+      "sfx": "whoosh-soft",
+      "vary": false,
+      "src": "fadeUp"
+    },
+    {
+      "t": 11700,
+      "sfx": "riser",
+      "src": "manual"
+    },
+    {
+      "t": 12500,
+      "sfx": "shimmer",
+      "vary": false,
+      "src": "glow"
+    },
+    {
+      "t": 13500,
+      "sfx": "impact",
+      "vary": false,
+      "src": "popIn"
+    },
+    {
+      "t": 14250,
+      "sfx": "tick",
+      "vary": false,
+      "src": "fadeUp"
+    }
+  ],
+  "vo": [],
+  "audio": {
+    "music": {
+      "prompt": "Confident modern tech launch track, crisp drums, warm analog synth chords, optimistic, minimal",
+      "mood": "bright",
+      "gain": -15
+    },
+    "sfx": {},
+    "tone": "soft",
+    "mix": {
+      "music": 0,
+      "sfx": 0,
+      "vo": 0,
+      "duck": 8,
+      "lufs": -14
+    }
+  },
+  "warnings": []
+}

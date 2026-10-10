@@ -12,13 +12,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Active verified Google Gemini cloud models
 CANDIDATE_GEMINI_MODELS = [
-    "gemini-3.1-pro",
-
-    "gemini-3.5-flash",
-    "gemini-3.6-flash",
-    "gemini-3.1-flash-lite"
+    "gemini-3.1-flash",
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash"
 ]
 
 CANDIDATE_GROQ_MODELS = [
@@ -105,7 +102,7 @@ def get_gemini_client():
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY is missing from .env!")
-    return genai.Client(api_key=api_key)
+    return genai.Client(api_key=api_key, http_options={'timeout': 15000})
 
 def generate_with_gemini(prompt: str) -> str:
     """Calls Gemini cloud API with automatic multi-model failover."""

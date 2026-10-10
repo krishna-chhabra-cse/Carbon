@@ -296,34 +296,73 @@ export default function RoastPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 font-sans selection:bg-orange-500/30">
-      <div className="w-full max-w-xl mx-auto text-center">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col justify-between p-6 md:p-8 font-sans relative overflow-hidden">
+      
+      {/* Subtle Background Glow */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-tr from-cyan-500/10 via-purple-500/10 to-orange-500/10 blur-[140px] rounded-full pointer-events-none"></div>
+
+      {/* Top Navbar */}
+      <header className="w-full max-w-6xl mx-auto flex items-center justify-between relative z-20 py-2">
+        <Link 
+          to="/" 
+          className="text-neutral-400 hover:text-white transition-all inline-flex items-center gap-2.5 text-sm font-medium px-4 py-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-white/20"
         >
-          <div className="inline-flex items-center justify-center p-4 bg-orange-500/10 rounded-full mb-6 text-orange-500">
-            <Flame size={40} />
+          <ArrowLeft size={16} /> Back to Carbon
+        </Link>
+        <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-orange-400 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+          <Flame size={14} /> AI Code Roaster
+        </div>
+      </header>
+
+      {/* Main Centered Content with Generous Breathing Room */}
+      <main className="w-full max-w-3xl mx-auto text-center relative z-10 flex flex-col items-center justify-center py-10 md:py-16">
+        
+        {/* Fire Icon Badge */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="mb-8"
+        >
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-b from-orange-500/20 to-orange-500/5 border border-orange-500/30 flex items-center justify-center shadow-[0_0_35px_rgba(249,115,22,0.35)]">
+            <Flame size={44} className="text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)]" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-6">
-            ROAST MY CODEBASE
-          </h1>
-          <p className="text-lg text-neutral-400 leading-relaxed">
-            Think your code is clean? Prove it. We'll analyze your repository and tell you how bad it really is.
-          </p>
         </motion.div>
 
-        <motion.form 
-          initial={{ opacity: 0, y: 20 }}
+        {/* Heading */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          onSubmit={handleRoast} 
-          className="space-y-4"
+          transition={{ delay: 0.1, duration: 0.4 }}
+          className="mb-8 w-full"
         >
+          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-white uppercase leading-tight drop-shadow-xl">
+            ROAST MY<br />CODEBASE
+          </h1>
+        </motion.div>
+
+        {/* Subtitle with generous spacing */}
+        <motion.p 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+          className="text-lg sm:text-xl md:text-2xl text-neutral-400 leading-relaxed max-w-xl mx-auto mb-12 font-normal"
+        >
+          Think your code is clean? Prove it. We'll analyze your repository and tell you how bad it really is.
+        </motion.p>
+
+        {/* Form with roomy inputs and buttons */}
+        <motion.form 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          onSubmit={handleRoast} 
+          className="w-full max-w-xl space-y-5"
+        >
+          {/* Input */}
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <GitBranch size={20} className="text-neutral-500 group-focus-within:text-white transition-colors" />
+            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+              <GitBranch size={22} className="text-neutral-500 group-focus-within:text-cyan-400 transition-colors" />
             </div>
             <input 
               type="url" 
@@ -331,40 +370,50 @@ export default function RoastPage() {
               value={repoUrl}
               onChange={(e) => setRepoUrl(e.target.value)}
               required
-              className="w-full pl-12 pr-4 py-4 bg-neutral-900 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all font-mono"
+              className="w-full pl-14 pr-6 py-5 bg-[#0a0f16]/90 border-2 border-cyan-500/60 rounded-2xl text-white placeholder-neutral-500 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-500/25 transition-all font-mono text-base md:text-lg shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_30px_rgba(6,182,212,0.25)]"
             />
           </div>
           
           {error && (
-            <div className="flex items-center justify-center gap-2 text-red-500 text-sm font-medium bg-red-500/10 py-3 rounded-xl border border-red-500/20">
-              <Info size={16} /> {error}
+            <div className="flex items-center justify-center gap-3 text-red-400 text-sm font-medium bg-red-500/10 py-4 px-6 rounded-2xl border border-red-500/20">
+              <Info size={18} /> {error}
             </div>
           )}
 
+          {/* Button */}
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-white hover:bg-neutral-200 text-black disabled:opacity-50 disabled:cursor-not-allowed font-bold py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-2 text-lg group"
+            className="w-full bg-gradient-to-r from-[#38bdf8] via-[#818cf8] to-[#c084fc] hover:opacity-95 text-white disabled:opacity-50 disabled:cursor-not-allowed font-bold py-5 px-8 rounded-2xl transition-all flex items-center justify-center gap-3 text-lg md:text-xl shadow-[0_0_30px_rgba(168,85,247,0.35)] hover:shadow-[0_0_40px_rgba(168,85,247,0.5)] hover:scale-[1.01] active:scale-[0.99]"
           >
-            {loading ? <Loader2 size={24} className="animate-spin text-black" /> : 'Roast It'}
-            {!loading && <Flame size={20} className="text-orange-500 group-hover:scale-125 transition-transform" />}
+            {loading ? <Loader2 size={26} className="animate-spin text-white" /> : 'Roast It'}
+            {!loading && <Flame size={24} className="text-white" />}
           </button>
         </motion.form>
 
+        {/* Feature Highlights Pills for modern template spacing */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-12 text-sm text-neutral-600"
+          className="mt-12 flex flex-wrap items-center justify-center gap-3 text-xs md:text-sm text-neutral-400"
         >
-          By roasting your codebase, you agree to let Carbon AI judge your life choices.
-          <div className="mt-8">
-            <Link to="/" className="text-neutral-500 hover:text-white transition-colors inline-flex items-center gap-2">
-              <ArrowLeft size={16} /> Back to Carbon
-            </Link>
-          </div>
+          <span className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2">
+            <Terminal size={14} className="text-cyan-400" /> Deep AST Scan
+          </span>
+          <span className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2">
+            <Shield size={14} className="text-purple-400" /> Security & Smells
+          </span>
+          <span className="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2">
+            <Code size={14} className="text-emerald-400" /> Actionable Fixes
+          </span>
         </motion.div>
-      </div>
+      </main>
+
+      {/* Footer pinned at the bottom */}
+      <footer className="w-full text-center py-4 text-xs md:text-sm text-neutral-600 relative z-20">
+        By roasting your codebase, you agree to let Carbon AI judge your life choices.
+      </footer>
     </div>
   );
 }

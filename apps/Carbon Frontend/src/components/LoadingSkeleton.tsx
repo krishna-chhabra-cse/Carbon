@@ -6,22 +6,38 @@ interface LoadingSkeletonProps {
 
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ message = "Analyzing Codebase..." }) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center">
-      <div className="relative w-24 h-24 mb-8">
-        <div className="absolute inset-0 border-4 border-transparent border-t-[#10B981] border-r-[#10B981] rounded-full animate-spin"></div>
-        <div className="absolute inset-2 border-4 border-transparent border-b-[#3b82f6] border-l-[#3b82f6] rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-        <div className="absolute inset-0 flex items-center justify-center text-3xl">
-          <span className="animate-pulse">🛡️</span>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '32px', textAlign: 'center' }}>
+      
+      <div style={{ position: 'relative', width: '96px', height: '96px', marginBottom: '32px' }}>
+        <div style={{ 
+          position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, 
+          border: '4px solid transparent', borderTopColor: '#10B981', borderRightColor: '#10B981', 
+          borderRadius: '50%', animation: 'skel-spin 1s linear infinite' 
+        }}></div>
+        <div style={{ 
+          position: 'absolute', top: '8px', right: '8px', bottom: '8px', left: '8px', 
+          border: '4px solid transparent', borderBottomColor: '#3b82f6', borderLeftColor: '#3b82f6', 
+          borderRadius: '50%', animation: 'skel-spin 1.5s linear infinite reverse' 
+        }}></div>
+        <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px' }}>
+          <span style={{ animation: 'skel-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>🛡️</span>
         </div>
       </div>
-      <h3 className="text-xl font-bold text-[#e6edf3] mb-2">{message}</h3>
-      <p className="text-[#8b949e] animate-pulse">This might take a few moments</p>
+
+      <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#e6edf3', marginBottom: '8px', marginTop: 0 }}>{message}</h3>
+      <p style={{ color: '#8b949e', margin: 0, animation: 'skel-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>This might take a few moments</p>
       
-      <div className="mt-12 w-full max-w-2xl space-y-4">
-        <div className="h-4 bg-[#161b22] rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-[#10B981] via-[#3b82f6] to-[#10B981] animate-[slide_2s_linear_infinite]" style={{ width: '200%', backgroundSize: '50% 100%' }}></div>
+      <div style={{ marginTop: '48px', width: '100%', maxWidth: '672px' }}>
+        <div style={{ height: '16px', backgroundColor: '#161b22', borderRadius: '9999px', overflow: 'hidden', marginBottom: '16px' }}>
+          <div style={{ 
+            height: '100%', 
+            background: 'linear-gradient(to right, #10B981, #3b82f6, #10B981)', 
+            width: '200%', 
+            backgroundSize: '50% 100%', 
+            animation: 'skel-slide 2s linear infinite' 
+          }}></div>
         </div>
-        <div className="flex justify-between text-xs text-[#8b949e]">
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#8b949e', gap: '8px', flexWrap: 'wrap' }}>
           <span>Parsing AST</span>
           <span>Generating Graph</span>
           <span>Scanning Secrets</span>
@@ -29,7 +45,15 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ message = "Ana
       </div>
       
       <style>{`
-        @keyframes slide {
+        @keyframes skel-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes skel-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .5; }
+        }
+        @keyframes skel-slide {
           0% { transform: translateX(-50%) }
           100% { transform: translateX(0%) }
         }
