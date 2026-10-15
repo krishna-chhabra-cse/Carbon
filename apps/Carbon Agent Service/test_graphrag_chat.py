@@ -9,11 +9,13 @@ if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
 from dotenv import load_dotenv
+
 env_path = 'apps/Carbon Agent Service/.env' if os.path.exists('apps/Carbon Agent Service/.env') else '.env'
 load_dotenv(env_path)
 
-from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
 from agents.graphrag_agent import run_graphrag_chat
+from tools.graph_rag import build_codebase_graph
+
 
 def test_graphrag_graph_construction():
     print("\n--- 1. Testing Codebase Knowledge Graph & Blast Radius ---")
@@ -39,7 +41,7 @@ module.exports = router;
 
     graph = build_codebase_graph(mock_files)
     print(f"Graph constructed with {len(graph.nodes)} nodes.")
-    for node, data in graph.nodes.items():
+    for node in graph.nodes:
         if not node.startswith("external:"):
             print(f"  Node: {node} -> Depends on: {list(graph.dependencies.get(node, []))}")
 

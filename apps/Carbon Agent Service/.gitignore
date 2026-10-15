@@ -25,6 +25,8 @@ env/
 .DS_Store
 Thumbs.db
 
-Codebase_*
+# Generated outputs at the service root only; unanchored, this matched
+# tools/codebase_metrics.py on case-insensitive filesystems.
+/Codebase_*
 *_video_assets/
 *_Briefing.pptx

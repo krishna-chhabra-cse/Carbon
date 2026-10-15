@@ -12,11 +12,11 @@
 
 import os
 import re
-import stat
 import shutil
+import stat
 import tempfile
-from contextlib import contextmanager
-from typing import Optional, Tuple
+from contextlib import contextmanager, suppress
+
 import git
 
 # Resource budget & security constants
@@ -79,12 +79,14 @@ def normalize_github_url(raw_url: str) -> str:
         raise ValueError("Security Policy: Repository owner or name cannot start with a hyphen.")
 
     if not re.match(r"^[a-zA-Z0-9_.-]+$", owner) or not re.match(r"^[a-zA-Z0-9_.-]+$", repo):
-        raise ValueError("Repository and owner names must contain only alphanumeric characters, dots, hyphens, and underscores.")
+        raise ValueError(
+            "Repository and owner names must contain only alphanumeric characters, dots, hyphens, and underscores."
+        )
 
     return f"https://github.com/{owner}/{repo}"
 
 
-def validate_github_url(raw_url: str) -> Tuple[bool, Optional[str]]:
+def validate_github_url(raw_url: str) -> tuple[bool, str | None]:
     """
     Validates a GitHub URL safely without throwing an exception.
 
@@ -153,11 +155,9 @@ def _handle_remove_readonly(func, path, *args):
     shutil.rmtree to raise PermissionError. This resets write permissions
     and retries deletion.
     """
-    try:
+    with suppress(Exception):
         os.chmod(path, stat.S_IWRITE)
         func(path)
-    except Exception:
-        pass
 
 
 def cleanup_repo(repo_path: str):
@@ -222,7 +222,7 @@ def clone_repo(repo_url: str) -> dict:
             normalized_url,
             temp_dir,
             depth=1,
-            
+
         )
 
         # 4. Enforce 75MB disk budget

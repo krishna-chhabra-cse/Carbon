@@ -2,9 +2,9 @@
 #  agents/graphrag_agent.py — GraphRAG Codebase Conversational Agent
 # ============================================================
 
-import json
 from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
 from tools.llm_client import generate_with_retry
+
 
 def run_graphrag_chat(files_dict: dict, query: str, folder_structure: str = "") -> dict:
     """
@@ -36,7 +36,7 @@ Answer the following developer question about this codebase using the provided D
 4. **Visual Flowchart (Mermaid)**: Include a mini Mermaid flowchart (`graph TD` or `sequenceDiagram`) visualizing the exact flow or dependency chain in question. Keep labels clean.
 
 Return your response in clean Markdown.
-"""
+"""  # noqa: E501 - prompt text
 
     try:
         answer_markdown = generate_with_retry(prompt)

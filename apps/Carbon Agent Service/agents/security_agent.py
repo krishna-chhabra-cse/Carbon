@@ -4,8 +4,10 @@
 
 import json
 import re
-from tools.security_scanner import run_security_audit
+
 from tools.llm_client import generate_with_retry
+from tools.security_scanner import run_security_audit
+
 
 def security_agent_node(state: dict) -> dict:
     """

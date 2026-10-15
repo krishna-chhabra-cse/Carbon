@@ -13,9 +13,8 @@
 #  The better the prompt, the better the output.
 # ============================================================
 
-import os
 import json
-from google import genai            # NEW Gemini SDK (replaces google.generativeai)
+
 from dotenv import load_dotenv
 
 # Load the GEMINI_API_KEY from our .env file
@@ -45,8 +44,6 @@ def run(folder_structure: str, files_content: dict) -> dict:
     # The new SDK uses a Client object — cleaner than the old configure() approach
 
     # Step 2: Choose the Gemini model
-    # gemini-3.1-flash-lite — confirmed working and available
-    MODEL = "gemini-3.1-flash-lite"
 
     # Step 3: Format the file contents into a readable string for the prompt
     # We limit each file to 3000 chars to stay within context limits
@@ -109,7 +106,7 @@ IMPORTANT:
 - Return ONLY the JSON, no extra text before or after
 - Make the diagram accurate to the actual codebase
 - Keep the summary beginner-friendly but technical
-"""
+"""  # noqa: E501 - prompt text
 
     # Step 5: Send the prompt to Gemini with resilient multi-model failover
     print("[ARCH AGENT] Sending to Gemini for analysis...")

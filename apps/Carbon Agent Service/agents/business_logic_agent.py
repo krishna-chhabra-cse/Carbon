@@ -17,9 +17,8 @@
 #  understand the PURPOSE behind the code, not just the syntax.
 # ============================================================
 
-import os
 import json
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,18 +42,16 @@ def run(folder_structure: str, files_content: dict, architecture_info: dict = No
 
     # Step 1: Set up Gemini client
 
-    # Same reliable model we use across all agents
-    MODEL = "gemini-3.1-flash-lite"
 
     # Step 2: Use GraphRAG for intelligent context assembly
     from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
     graph = build_codebase_graph(files_content)
-    
+
     # We query the graph using architectural hints to pull the most central business logic
     query = "routes business logic services models controllers"
     if architecture_info and 'summary' in architecture_info:
         query += " " + architecture_info['summary']
-        
+
     files_text = retrieve_graphrag_context(graph, files_content, query, max_chars=18000)
     peer_context = ""
     if architecture_info or api_info:
@@ -108,7 +105,7 @@ IMPORTANT:
 - Include 3-5 business flows.
 - Each flow must have a valid Mermaid sequenceDiagram string (use \\n for line breaks). Do NOT use markdown code blocks inside the string.
 - Each step must trace back to a specific file, function, and short code snippet (1-3 lines max).
-"""
+"""  # noqa: E501 - prompt text
 
     # Step 4: Send to Gemini with resilient failover
     print("[BIZ AGENT] Sending to Gemini for business logic analysis...")

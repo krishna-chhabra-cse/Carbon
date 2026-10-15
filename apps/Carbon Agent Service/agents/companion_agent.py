@@ -2,8 +2,7 @@
 #  agents/companion_agent.py — Carbon Web Learning Companion
 # ============================================================
 
-import os
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,7 +22,6 @@ def run(query: str, mode: str = "explain", context: dict = None) -> dict:
     Handles Explain, Simplify, Example, Teach Me, Summarize, Page Explain, and Lesson Discovery.
     """
     print(f"\n[COMPANION AGENT] Mode: '{mode}' | Query: '{query[:80]}...'")
-    MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
 
     context = context or {}
     page_title = context.get("title", "Unknown Page")
@@ -105,7 +103,7 @@ TASK: Find and suggest the best structured learning roadmap, relevant interactiv
 - Break down the learning path into 3 progressive milestones.
 - Recommend key topics to master in order.
 - Include a visual explainer recommendation.
-"""
+"""  # noqa: E501 - prompt text
     else:  # default: explain / chat
         mode_instructions = """
 TASK: Explain this concept thoroughly, accurately, and concisely.

@@ -2,15 +2,14 @@
 #  agents/api_agent.py
 #
 #  This agent's job:
-#  - Look at the codebase and find all REST API endpoints, GraphQL 
+#  - Look at the codebase and find all REST API endpoints, GraphQL
 #    mutations, or websocket routes.
 #  - Extract the HTTP methods, paths, and descriptions.
 #  - Return: a structured JSON list of endpoints.
 # ============================================================
 
-import os
 import json
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,8 +34,6 @@ def run(folder_structure: str, files_content: dict) -> dict:
 
     print("[API AGENT] API Agent starting...")
 
-    # Use the same powerful and fast model
-    MODEL = "gemini-3.1-flash-lite"
 
     files_text = ""
     for filepath, content in list(files_content.items())[:40]:  # up to 40 files
@@ -74,7 +71,7 @@ Return your response as a valid JSON object with EXACTLY this structure:
 IMPORTANT:
 - Return ONLY the JSON, no extra text before or after.
 - If you cannot find any endpoints, return an empty list for endpoints.
-"""
+"""  # noqa: E501 - prompt text
 
     print("[API AGENT] Sending to Gemini for API analysis...")
     from tools.llm_client import generate_with_retry

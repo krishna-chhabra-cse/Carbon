@@ -5,7 +5,7 @@ storage/cache.py — Analysis cache with Redis (production) or in-memory (develo
 import json
 import os
 import time
-from typing import Optional
+
 
 class AnalysisCache:
     """Async-compatible analysis cache with TTL support."""
@@ -35,7 +35,7 @@ class AnalysisCache:
         else:
             self._memory_store[key] = {"data": data, "expires": time.time() + self._ttl}
 
-    async def get(self, key: str) -> Optional[dict]:
+    async def get(self, key: str) -> dict | None:
         r = await self._get_redis()
         if r:
             raw = await r.get(f"carbon:analysis:{key}")

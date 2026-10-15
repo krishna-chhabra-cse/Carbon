@@ -10,12 +10,14 @@ if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
 from dotenv import load_dotenv
+
 env_path = 'apps/Carbon Agent Service/.env' if os.path.exists('apps/Carbon Agent Service/.env') else '.env'
 load_dotenv(env_path)
 
-from tools.ast_skeletonizer import skeletonize_js_ts, skeletonize_python, optimize_repo_files
-from tools.security_scanner import run_security_audit
 from agents.graph import agent_graph
+from tools.ast_skeletonizer import skeletonize_js_ts
+from tools.security_scanner import run_security_audit
+
 
 def test_ast_skeletonizer():
     print("\n--- 1. Testing AST Skeletonizer Token Reduction ---")

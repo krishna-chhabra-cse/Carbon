@@ -4,8 +4,9 @@ Provides robust topological sorting, blast radius BFS, and RAG context retrieval
 """
 
 import re
+from typing import Any
+
 import networkx as nx
-from typing import Dict, List, Set, Any
 
 
 class CodebaseGraph:
@@ -49,7 +50,7 @@ class CodebaseGraph:
         """Compatibility property: node -> set of nodes that depend on it."""
         return {n: set(self._nx_graph.predecessors(n)) for n in self._nx_graph.nodes}
 
-    def get_blast_radius(self, target_name: str, max_depth: int = 3) -> List[str]:
+    def get_blast_radius(self, target_name: str, max_depth: int = 3) -> list[str]:
         """
         Finds all downstream components affected if target_name changes.
         Uses NetworkX BFS traversal on the reversed graph.
@@ -71,7 +72,7 @@ class CodebaseGraph:
         return list(affected)
 
 
-def extract_imports_and_symbols(file_path: str, content: str) -> Dict[str, Any]:
+def extract_imports_and_symbols(file_path: str, content: str) -> dict[str, Any]:
     """Extracts imported modules, declared routes, and top-level symbols."""
     imported_targets = []
     routes = []
@@ -122,7 +123,7 @@ def extract_imports_and_symbols(file_path: str, content: str) -> Dict[str, Any]:
     }
 
 
-def build_codebase_graph(files_dict: Dict[str, str]) -> CodebaseGraph:
+def build_codebase_graph(files_dict: dict[str, str]) -> CodebaseGraph:
     """Parses files and builds the NetworkX codebase graph."""
     graph = CodebaseGraph()
 
@@ -134,7 +135,7 @@ def build_codebase_graph(files_dict: Dict[str, str]) -> CodebaseGraph:
         for imp in extracted["imports"]:
             clean_imp = imp.replace('./', '').replace('../', '').split('/')[-1]
             matched = False
-            for potential_target in files_dict.keys():
+            for potential_target in files_dict:
                 if clean_imp in potential_target:
                     graph.add_edge(file_path, potential_target)
                     matched = True
@@ -145,7 +146,9 @@ def build_codebase_graph(files_dict: Dict[str, str]) -> CodebaseGraph:
     return graph
 
 
-def retrieve_graphrag_context(graph: CodebaseGraph, files_dict: Dict[str, str], query: str, max_chars: int = 15000) -> str:
+def retrieve_graphrag_context(
+    graph: CodebaseGraph, files_dict: dict[str, str], query: str, max_chars: int = 15000
+) -> str:
     """Retrieves subgraph context relevant to the user query."""
     query_terms = query.lower().split()
     scored_nodes = {}

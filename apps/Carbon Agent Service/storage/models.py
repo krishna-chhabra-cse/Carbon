@@ -4,8 +4,9 @@ Uses SQLite for development, PostgreSQL for production.
 """
 
 import os
-from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Float, JSON, DateTime, Text, create_engine
+from datetime import UTC, datetime
+
+from sqlalchemy import JSON, Column, DateTime, Float, Integer, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./carbon_history.db")
@@ -28,7 +29,7 @@ class AnalysisRecord(Base):
     optimized_files_count = Column(Integer, default=0)
     analysis_duration_ms = Column(Float, nullable=True)
     result_summary = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC))
 
 
 # Initialize engine and session

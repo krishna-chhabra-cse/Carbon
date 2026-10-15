@@ -3,7 +3,7 @@
 # ============================================================
 
 import re
-from typing import Dict, List, Any
+from typing import Any
 
 # Regex patterns for credential & secret leakage
 SECRET_PATTERNS = [
@@ -18,7 +18,10 @@ SECRET_PATTERNS = [
         "id": "SEC-002",
         "title": "Hardcoded Private Key / Secret Token",
         "severity": "CRITICAL",
-        "regex": r"(?:jwt_secret|jwt_key|private_key|secret_key|api_secret)\s*[:=]\s*['\"][a-zA-Z0-9_\-!@#$%^&*]{8,}['\"]",
+        "regex": (
+            r"(?:jwt_secret|jwt_key|private_key|secret_key|api_secret)"
+            r"\s*[:=]\s*['\"][a-zA-Z0-9_\-!@#$%^&*]{8,}['\"]"
+        ),
         "remediation": "Move secret key to a secure .env file accessed via process.env or os.getenv()."
     },
     {
@@ -51,14 +54,19 @@ OWASP_PATTERNS = [
         "title": "SQL / NoSQL Injection Risk (Unsanitized Query Interpolation)",
         "severity": "HIGH",
         "regex": r"(?:SELECT|INSERT|UPDATE|DELETE|FROM)\s+.*(?:\$\{|f['\"]).*(?:req\.|params|query|body)",
-        "remediation": "Use parameterized queries or ORM query builders (e.g. Prisma, Mongoose, TypeORM) instead of string concatenation."
+        "remediation": (
+            "Use parameterized queries or ORM query builders (e.g. Prisma, Mongoose, TypeORM) "
+            "instead of string concatenation."
+        )
     },
     {
         "id": "VULN-002",
         "title": "Dangerous Dynamic Code Execution (eval / exec)",
         "severity": "CRITICAL",
         "regex": r"(?<![\w.])(?:eval|exec|Function)\s*\(\s*(?:req\.|params|body|[a-zA-Z0-9_$]+)",
-        "remediation": "Avoid eval() and exec(). Use safe structured parsers like JSON.parse() or dedicated AST validators."
+        "remediation": (
+            "Avoid eval() and exec(). Use safe structured parsers like JSON.parse() or dedicated AST validators."
+        )
     },
     {
         "id": "VULN-003",
@@ -79,7 +87,10 @@ OWASP_PATTERNS = [
         "title": "Insecure Cookie Settings (Missing HttpOnly / Secure Flags)",
         "severity": "LOW",
         "regex": r"res\.cookie\([^)]*(?:httpOnly\s*:\s*false|secure\s*:\s*false)",
-        "remediation": "Enable { httpOnly: true, secure: true, sameSite: 'strict' } on session cookies to prevent XSS cookie theft."
+        "remediation": (
+            "Enable { httpOnly: true, secure: true, sameSite: 'strict' } on session cookies "
+            "to prevent XSS cookie theft."
+        )
     }
 ]
 
@@ -102,7 +113,9 @@ INJECTION_PATTERNS = [
         "id": "VULN-008", "title": "NoSQL Operator Injection ($gt, $ne, $regex)",
         "severity": "HIGH", "cwe": "CWE-943",
         "regex": r"(?:find|findOne|aggregate|updateOne)\s*\(\s*\{[^}]*(?:req\.body|req\.query|req\.params)",
-        "remediation": "Validate and sanitize MongoDB query parameters. Use mongo-sanitize or explicit field extraction."
+        "remediation": (
+            "Validate and sanitize MongoDB query parameters. Use mongo-sanitize or explicit field extraction."
+        )
     },
     {
         "id": "VULN-009", "title": "Log Injection (unsanitized user input in logs)",
@@ -196,12 +209,12 @@ DATA_PATTERNS = [
     },
 ]
 
-def scan_file_for_vulnerabilities(file_path: str, content: str) -> List[Dict[str, Any]]:
+def scan_file_for_vulnerabilities(file_path: str, content: str) -> list[dict[str, Any]]:
     """Scans a single file's content against security rules."""
     findings = []
     lines = content.split('\n')
 
-    ALL_RULES = [
+    all_rules = [
         (SECRET_PATTERNS, "Secret Leakage"),
         (OWASP_PATTERNS, "OWASP Vulnerability"),
         (INJECTION_PATTERNS, "Injection"),
@@ -211,7 +224,7 @@ def scan_file_for_vulnerabilities(file_path: str, content: str) -> List[Dict[str
         (DATA_PATTERNS, "Data Exposure"),
     ]
 
-    for rule_set, category in ALL_RULES:
+    for rule_set, category in all_rules:
         for rule in rule_set:
             for idx, line in enumerate(lines):
                 match = re.search(rule["regex"], line, re.IGNORECASE)
@@ -229,7 +242,7 @@ def scan_file_for_vulnerabilities(file_path: str, content: str) -> List[Dict[str
                     })
     return findings
 
-def calculate_security_grade(findings: List[Dict[str, Any]]) -> Dict[str, Any]:
+def calculate_security_grade(findings: list[dict[str, Any]]) -> dict[str, Any]:
     """Calculates overall security grade and summary stats."""
     critical_count = sum(1 for f in findings if f["severity"] == "CRITICAL")
     high_count = sum(1 for f in findings if f["severity"] == "HIGH")
@@ -269,7 +282,7 @@ def calculate_security_grade(findings: List[Dict[str, Any]]) -> Dict[str, Any]:
         "low": low_count
     }
 
-def run_security_audit(files_dict: Dict[str, str]) -> Dict[str, Any]:
+def run_security_audit(files_dict: dict[str, str]) -> dict[str, Any]:
     """
     Executes full static security audit across all files in repository.
     """
@@ -304,7 +317,10 @@ def export_sarif(findings: list, tool_version: str = "2.0.0") -> dict:
                 "id": rule_id,
                 "name": f["title"].replace(" ", ""),
                 "shortDescription": {"text": f["title"]},
-                "helpUri": f"https://cwe.mitre.org/data/definitions/{f.get('cwe', '').replace('CWE-', '')}.html" if f.get("cwe") else "",
+                "helpUri": (
+                    f"https://cwe.mitre.org/data/definitions/{f.get('cwe', '').replace('CWE-', '')}.html"
+                    if f.get("cwe") else ""
+                ),
                 "properties": {"tags": [f.get("cwe", ""), f["category"]]}
             }
 

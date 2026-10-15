@@ -9,10 +9,12 @@ if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
 from dotenv import load_dotenv
+
 env_path = 'apps/Carbon Agent Service/.env' if os.path.exists('apps/Carbon Agent Service/.env') else '.env'
 load_dotenv(env_path)
 
-from tools.llm_client import is_ollama_available, get_installed_ollama_models, generate_with_retry
+from tools.llm_client import generate_with_retry, get_installed_ollama_models, is_ollama_available
+
 
 def test_ollama_detection():
     print("\n--- 1. Testing Ollama Local Server Detection ---")

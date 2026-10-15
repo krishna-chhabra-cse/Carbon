@@ -1,5 +1,3 @@
-import os
-from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,7 +8,6 @@ def run(folder_structure: str, files_content: dict, query: str) -> str:
     Answers a specific user query based on the codebase context.
     """
     print(f"\n[CHAT AGENT] Answering query: '{query}'")
-    MODEL = "gemini-3.1-flash-lite"  # Using the same reliable model as other agents
 
     # Format files
     files_text = ""
