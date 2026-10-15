@@ -11,11 +11,13 @@
 #  - Security (sanitized DevSecOps audit findings)
 # ============================================================
 
-import os
 import ast
+import logging
+import os
 import re
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Any, Optional
+from dataclasses import asdict, dataclass, field
+from typing import Any
+
 import networkx as nx
 
 try:
@@ -33,6 +35,7 @@ try:
 except ImportError:
     from security_redactor import redact_security_findings
 
+logger = logging.getLogger(__name__)
 
 # ── Suspicious Naming Constants ──────────────────────────────
 SUSPICIOUS_IDENTIFIER_NAMES = {
@@ -84,9 +87,9 @@ CODE_EXTENSIONS = {
 class ScaleMetrics:
     total_files: int = 0
     total_loc: int = 0
-    languages: Dict[str, int] = field(default_factory=dict)
-    largest_files: List[Dict[str, Any]] = field(default_factory=list)
-    largest_functions: List[Dict[str, Any]] = field(default_factory=list)
+    languages: dict[str, int] = field(default_factory=dict)
+    largest_files: list[dict[str, Any]] = field(default_factory=list)
+    largest_functions: list[dict[str, Any]] = field(default_factory=list)
     avg_file_size: float = 0.0
 
 
@@ -122,23 +125,23 @@ class ComplexityDict(dict):
 class ComplexityMetrics:
     deeply_nested_branches: Any = field(default_factory=NestedBranchesList)
     deeply_nested_count: int = 0
-    long_functions: List[Dict[str, Any]] = field(default_factory=list)
-    excessive_params: List[Dict[str, Any]] = field(default_factory=list)
-    cyclomatic_complexity_samples: List[Dict[str, Any]] = field(default_factory=list)
+    long_functions: list[dict[str, Any]] = field(default_factory=list)
+    excessive_params: list[dict[str, Any]] = field(default_factory=list)
+    cyclomatic_complexity_samples: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
 class ArchitectureMetrics:
-    god_files: List[Dict[str, Any]] = field(default_factory=list)
-    circular_dependencies: List[List[str]] = field(default_factory=list)
-    utils_dumping_grounds: List[Dict[str, Any]] = field(default_factory=list)
-    high_fan_in_modules: List[Dict[str, Any]] = field(default_factory=list)
-    high_fan_out_modules: List[Dict[str, Any]] = field(default_factory=list)
+    god_files: list[dict[str, Any]] = field(default_factory=list)
+    circular_dependencies: list[list[str]] = field(default_factory=list)
+    utils_dumping_grounds: list[dict[str, Any]] = field(default_factory=list)
+    high_fan_in_modules: list[dict[str, Any]] = field(default_factory=list)
+    high_fan_out_modules: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
 class NamingMetrics:
-    suspicious_identifiers: List[Dict[str, Any]] = field(default_factory=list)
+    suspicious_identifiers: list[dict[str, Any]] = field(default_factory=list)
     total_suspicious_count: int = 0
 
 
@@ -147,18 +150,18 @@ class TestingMetrics:
     test_file_count: int = 0
     test_to_code_ratio: float = 0.0
     test_ratio_percentage: str = "0.0%"
-    empty_tests: List[Dict[str, Any]] = field(default_factory=list)
+    empty_tests: list[dict[str, Any]] = field(default_factory=list)
     empty_tests_count: int = 0
 
 
 @dataclass
 class SecurityMetrics:
-    findings: List[Dict[str, Any]] = field(default_factory=list)
+    findings: list[dict[str, Any]] = field(default_factory=list)
     critical_count: int = 0
     high_count: int = 0
     medium_count: int = 0
     low_count: int = 0
-    scorecard: Dict[str, Any] = field(default_factory=dict)
+    scorecard: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -180,15 +183,15 @@ class RoastMetrics:
         return self.scale.total_loc
 
     @property
-    def languages(self) -> Dict[str, int]:
+    def languages(self) -> dict[str, int]:
         return self.scale.languages
 
     @property
-    def largest_files(self) -> List[Dict[str, Any]]:
+    def largest_files(self) -> list[dict[str, Any]]:
         return self.scale.largest_files
 
     @property
-    def largest_functions(self) -> List[Dict[str, Any]]:
+    def largest_functions(self) -> list[dict[str, Any]]:
         return self.scale.largest_functions
 
     @property
@@ -196,7 +199,7 @@ class RoastMetrics:
         return self.scale.avg_file_size
 
     @property
-    def deeply_nested_branches(self) -> List[Dict[str, Any]]:
+    def deeply_nested_branches(self) -> list[dict[str, Any]]:
         return self.complexity.deeply_nested_branches
 
     @property
@@ -204,27 +207,27 @@ class RoastMetrics:
         return self.complexity.deeply_nested_count
 
     @property
-    def long_functions(self) -> List[Dict[str, Any]]:
+    def long_functions(self) -> list[dict[str, Any]]:
         return self.complexity.long_functions
 
     @property
-    def excessive_params(self) -> List[Dict[str, Any]]:
+    def excessive_params(self) -> list[dict[str, Any]]:
         return self.complexity.excessive_params
 
     @property
-    def god_files(self) -> List[Dict[str, Any]]:
+    def god_files(self) -> list[dict[str, Any]]:
         return self.architecture.god_files
 
     @property
-    def circular_dependencies(self) -> List[List[str]]:
+    def circular_dependencies(self) -> list[list[str]]:
         return self.architecture.circular_dependencies
 
     @property
-    def utils_dumping_grounds(self) -> List[Dict[str, Any]]:
+    def utils_dumping_grounds(self) -> list[dict[str, Any]]:
         return self.architecture.utils_dumping_grounds
 
     @property
-    def suspicious_identifiers(self) -> List[Dict[str, Any]]:
+    def suspicious_identifiers(self) -> list[dict[str, Any]]:
         return self.naming.suspicious_identifiers
 
     @property
@@ -240,14 +243,14 @@ class RoastMetrics:
         return self.testing.test_ratio_percentage
 
     @property
-    def empty_tests(self) -> List[Dict[str, Any]]:
+    def empty_tests(self) -> list[dict[str, Any]]:
         return self.testing.empty_tests
 
     @property
-    def security_findings(self) -> List[Dict[str, Any]]:
+    def security_findings(self) -> list[dict[str, Any]]:
         return self.security.findings
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         if "complexity" in d and isinstance(d["complexity"], dict):
             d["complexity"] = ComplexityDict(d["complexity"])
@@ -295,13 +298,10 @@ def is_test_file(path: str) -> bool:
 def is_utils_file(path: str) -> bool:
     """Checks if a file represents an untyped helper/utility dumping ground."""
     p_lower = path.replace("\\", "/").lower()
-    filename = p_lower.split("/")[-1]
-    name_without_ext = filename.rsplit(".", 1)[0]
-
     return bool(re.search(r"(?:^|[._\-/])(util|utils|helper|helpers|misc|common)(?:[._\-/]|$)", p_lower))
 
 
-def _read_files_from_repo(repo_path: str) -> Dict[str, str]:
+def _read_files_from_repo(repo_path: str) -> dict[str, str]:
     """Reads source files from a directory into a path -> content dict."""
     files_dict = {}
     if not repo_path or not os.path.isdir(repo_path):
@@ -315,7 +315,7 @@ def _read_files_from_repo(repo_path: str) -> Dict[str, str]:
             ext = os.path.splitext(f)[1].lower()
             if ext in CODE_EXTENSIONS:
                 try:
-                    with open(full_path, "r", encoding="utf-8", errors="ignore") as fp:
+                    with open(full_path, encoding="utf-8", errors="ignore") as fp:
                         files_dict[rel_path] = fp.read()
                 except OSError:
                     pass
@@ -325,12 +325,12 @@ def _read_files_from_repo(repo_path: str) -> Dict[str, str]:
 def _analyze_python_ast(
     file_path: str,
     content: str,
-    long_functions: List[Dict[str, Any]],
-    excessive_params: List[Dict[str, Any]],
-    deeply_nested: List[Dict[str, Any]],
-    suspicious_ids: List[Dict[str, Any]],
-    empty_tests: List[Dict[str, Any]],
-    all_functions: List[Dict[str, Any]]
+    long_functions: list[dict[str, Any]],
+    excessive_params: list[dict[str, Any]],
+    deeply_nested: list[dict[str, Any]],
+    suspicious_ids: list[dict[str, Any]],
+    empty_tests: list[dict[str, Any]],
+    all_functions: list[dict[str, Any]]
 ) -> int:
     """Parses Python file using ast module and extracts structural signals."""
     try:
@@ -400,9 +400,9 @@ def _analyze_python_ast(
                     is_empty = True
                 elif len(node.body) == 1:
                     stmt = node.body[0]
-                    if isinstance(stmt, ast.Pass):
-                        is_empty = True
-                    elif isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant):
+                    if isinstance(stmt, ast.Pass) or (
+                        isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant)
+                    ):
                         is_empty = True
 
                 if is_empty:
@@ -443,12 +443,12 @@ def _analyze_python_ast(
 def _analyze_js_ts_text(
     file_path: str,
     content: str,
-    long_functions: List[Dict[str, Any]],
-    excessive_params: List[Dict[str, Any]],
-    deeply_nested: List[Dict[str, Any]],
-    suspicious_ids: List[Dict[str, Any]],
-    empty_tests: List[Dict[str, Any]],
-    all_functions: List[Dict[str, Any]]
+    long_functions: list[dict[str, Any]],
+    excessive_params: list[dict[str, Any]],
+    deeply_nested: list[dict[str, Any]],
+    suspicious_ids: list[dict[str, Any]],
+    empty_tests: list[dict[str, Any]],
+    all_functions: list[dict[str, Any]]
 ) -> int:
     """Analyzes JS/TS source code using regex and line scanning."""
     lines = content.splitlines()
@@ -458,16 +458,17 @@ def _analyze_js_ts_text(
     arrow_fn_regex = re.compile(r"(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s*)?\(([^)]*)\)\s*=>")
     class_method_regex = re.compile(r"^\s*(?:async\s+)?([a-zA-Z0-9_$]+)\s*\(([^)]*)\)\s*\{")
     var_assign_regex = re.compile(r"\b(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=")
-    empty_test_regex = re.compile(r"(?:it|test)\s*\(\s*['\"][^'\"]+['\"]\s*,\s*(?:async\s*)?\(\s*\)\s*=>\s*\{\s*\}\s*\)")
+    empty_test_regex = re.compile(
+        r"(?:it|test)\s*\(\s*['\"][^'\"]+['\"]\s*,\s*(?:async\s*)?\(\s*\)\s*=>\s*\{\s*\}\s*\)"
+    )
 
     for idx, line in enumerate(lines):
         line_num = idx + 1
         stripped = line.strip()
 
         # Check for empty tests
-        if is_test_file(file_path):
-            if empty_test_regex.search(line):
-                empty_tests.append({"name": "anonymous_test", "file": file_path, "line": line_num})
+        if is_test_file(file_path) and empty_test_regex.search(line):
+            empty_tests.append({"name": "anonymous_test", "file": file_path, "line": line_num})
 
         # Check indentation nesting (depth >= 4: 16 spaces or 4 tabs)
         indent_spaces = len(line) - len(line.lstrip(" "))
@@ -537,7 +538,7 @@ def _analyze_js_ts_text(
 
 # ── Main Metrics Extractor ────────────────────────────────────
 
-def extract_roast_metrics(repo_path: str, files_dict: Optional[Dict[str, str]] = None) -> RoastMetrics:
+def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = None) -> RoastMetrics:
     """
     Extracts comprehensive quantitative metrics from a codebase for roast scoring.
 
@@ -558,16 +559,16 @@ def extract_roast_metrics(repo_path: str, files_dict: Optional[Dict[str, str]] =
         return RoastMetrics()
 
     # Collectors
-    languages: Dict[str, int] = {}
-    largest_files: List[Dict[str, Any]] = []
-    all_functions: List[Dict[str, Any]] = []
-    long_functions: List[Dict[str, Any]] = []
-    excessive_params: List[Dict[str, Any]] = []
-    deeply_nested: List[Dict[str, Any]] = []
-    god_files: List[Dict[str, Any]] = []
-    utils_dumping_grounds: List[Dict[str, Any]] = []
-    suspicious_ids: List[Dict[str, Any]] = []
-    empty_tests: List[Dict[str, Any]] = []
+    languages: dict[str, int] = {}
+    largest_files: list[dict[str, Any]] = []
+    all_functions: list[dict[str, Any]] = []
+    long_functions: list[dict[str, Any]] = []
+    excessive_params: list[dict[str, Any]] = []
+    deeply_nested: list[dict[str, Any]] = []
+    god_files: list[dict[str, Any]] = []
+    utils_dumping_grounds: list[dict[str, Any]] = []
+    suspicious_ids: list[dict[str, Any]] = []
+    empty_tests: list[dict[str, Any]] = []
 
     total_loc = 0
     test_file_count = 0
@@ -642,9 +643,9 @@ def extract_roast_metrics(repo_path: str, files_dict: Optional[Dict[str, str]] =
     avg_file_size = round(total_loc / total_files, 1) if total_files > 0 else 0.0
 
     # 2. Architecture Graph & Circular Dependencies
-    circular_deps: List[List[str]] = []
-    high_fan_in: List[Dict[str, Any]] = []
-    high_fan_out: List[Dict[str, Any]] = []
+    circular_deps: list[list[str]] = []
+    high_fan_in: list[dict[str, Any]] = []
+    high_fan_out: list[dict[str, Any]] = []
 
     try:
         cb_graph = build_codebase_graph(files_dict)
@@ -659,20 +660,18 @@ def extract_roast_metrics(repo_path: str, files_dict: Optional[Dict[str, str]] =
             for imp in meta.get("imports", []):
                 dotted_as_slash = imp.replace(".", "/")
                 base_name = imp.split(".")[-1].split("/")[-1]
-                clean_rel = imp.lstrip("./").lstrip("../")
+                clean_rel = re.sub(r"^[./]+", "", imp)
 
-                for target_file in files_dict.keys():
+                for target_file in files_dict:
                     target_no_ext = os.path.splitext(target_file)[0]
                     target_base = os.path.splitext(os.path.basename(target_file))[0]
-                    if (
+                    if node != target_file and (
                         target_file == imp
-                        or target_no_ext == dotted_as_slash
+                        or target_no_ext in (dotted_as_slash, clean_rel)
                         or target_no_ext.endswith(dotted_as_slash)
-                        or target_no_ext == clean_rel
                         or (base_name and target_base == base_name and len(base_name) > 2)
                     ):
-                        if node != target_file:
-                            nx_g.add_edge(node, target_file)
+                        nx_g.add_edge(node, target_file)
 
         # Extract circular dependencies using NetworkX simple cycles
         raw_cycles = list(nx.simple_cycles(nx_g))
@@ -711,22 +710,22 @@ def extract_roast_metrics(repo_path: str, files_dict: Optional[Dict[str, str]] =
 
     except Exception:
         # Graceful fallback if graph analysis encounters unexpected edge case
-        pass
+        logger.debug("Dependency graph analysis failed", exc_info=True)
 
     # 3. Testing Ratios
     test_ratio = round(test_file_count / total_files, 4) if total_files > 0 else 0.0
     test_ratio_pct = f"{test_ratio * 100:.1f}%"
 
     # 4. DevSecOps Security Audit & Redaction
-    sanitized_findings: List[Dict[str, Any]] = []
-    scorecard: Dict[str, Any] = {}
+    sanitized_findings: list[dict[str, Any]] = []
+    scorecard: dict[str, Any] = {}
     try:
         audit_output = run_security_audit(files_dict)
         raw_findings = audit_output.get("findings", [])
         sanitized_findings = redact_security_findings(raw_findings)
         scorecard = audit_output.get("scorecard", {})
     except Exception:
-        pass
+        logger.debug("Security audit failed", exc_info=True)
 
     crit_count = sum(1 for f in sanitized_findings if f.get("severity") == "CRITICAL")
     high_count = sum(1 for f in sanitized_findings if f.get("severity") == "HIGH")
