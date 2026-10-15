@@ -457,12 +457,13 @@ async def roast_codebase(req: RoastRequest):
             if not req.repo_url:
                 raise Exception("Either repo_url or files must be provided")
             repo_name = req.repo_url.split('/')[-1].replace('.git', '')
-            clone_result = clone_repo(req.repo_url)
+            # Clone and read are blocking I/O; keep them off the event loop.
+            clone_result = await asyncio.to_thread(clone_repo, req.repo_url)
             if not clone_result.get("success"):
                 raise Exception(f"Failed to clone repository: {clone_result.get('error')}")
             
             repo_path = clone_result["repo_path"]
-            files_dict = read_files_for_analysis(repo_path)
+            files_dict = await asyncio.to_thread(read_files_for_analysis, repo_path)
             
         from agents.roast_agent import run as run_roast_agent
         roast_data = run_roast_agent(
@@ -481,5 +482,5 @@ async def roast_codebase(req: RoastRequest):
         raise HTTPException(status_code=500, detail="Internal processing error")
     finally:
         if repo_path and not is_uploaded:
-            cleanup_repo(repo_path)
+            await asyncio.to_thread(cleanup_repo, repo_path)
 
