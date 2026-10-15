@@ -3,7 +3,7 @@
 # ============================================================
 
 import re
-from typing import Dict, List, Any
+from typing import Any
 
 # Regex patterns for credential & secret leakage
 SECRET_PATTERNS = [
@@ -196,7 +196,7 @@ DATA_PATTERNS = [
     },
 ]
 
-def scan_file_for_vulnerabilities(file_path: str, content: str) -> List[Dict[str, Any]]:
+def scan_file_for_vulnerabilities(file_path: str, content: str) -> list[dict[str, Any]]:
     """Scans a single file's content against security rules."""
     findings = []
     lines = content.split('\n')
@@ -229,7 +229,7 @@ def scan_file_for_vulnerabilities(file_path: str, content: str) -> List[Dict[str
                     })
     return findings
 
-def calculate_security_grade(findings: List[Dict[str, Any]]) -> Dict[str, Any]:
+def calculate_security_grade(findings: list[dict[str, Any]]) -> dict[str, Any]:
     """Calculates overall security grade and summary stats."""
     critical_count = sum(1 for f in findings if f["severity"] == "CRITICAL")
     high_count = sum(1 for f in findings if f["severity"] == "HIGH")
@@ -269,7 +269,7 @@ def calculate_security_grade(findings: List[Dict[str, Any]]) -> Dict[str, Any]:
         "low": low_count
     }
 
-def run_security_audit(files_dict: Dict[str, str]) -> Dict[str, Any]:
+def run_security_audit(files_dict: dict[str, str]) -> dict[str, Any]:
     """
     Executes full static security audit across all files in repository.
     """

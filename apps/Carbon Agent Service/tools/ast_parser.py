@@ -9,7 +9,6 @@ Falls back to the original regex skeletonizer for unsupported languages.
 """
 
 import ast as python_ast
-from typing import Optional
 
 # ── Python Skeletonizer (using built-in ast) ──────────────────
 

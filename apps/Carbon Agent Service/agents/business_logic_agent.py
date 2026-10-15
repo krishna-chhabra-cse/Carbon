@@ -17,9 +17,8 @@
 #  understand the PURPOSE behind the code, not just the syntax.
 # ============================================================
 
-import os
 import json
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -49,12 +48,12 @@ def run(folder_structure: str, files_content: dict, architecture_info: dict = No
     # Step 2: Use GraphRAG for intelligent context assembly
     from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
     graph = build_codebase_graph(files_content)
-    
+
     # We query the graph using architectural hints to pull the most central business logic
     query = "routes business logic services models controllers"
     if architecture_info and 'summary' in architecture_info:
         query += " " + architecture_info['summary']
-        
+
     files_text = retrieve_graphrag_context(graph, files_content, query, max_chars=18000)
     peer_context = ""
     if architecture_info or api_info:

@@ -7,6 +7,7 @@
 # ============================================================
 
 import os
+
 from tools.ast_skeletonizer import optimize_repo_files, should_ignore_file
 
 # Files we DON'T want to read (too big, not useful for analysis)
@@ -84,7 +85,7 @@ def read_files_for_analysis(repo_path: str, max_total_chars: int = 40000) -> dic
                 continue
 
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, encoding='utf-8', errors='ignore') as f:
                     content = f.read()
                 raw_files[relative_path] = content
             except Exception:

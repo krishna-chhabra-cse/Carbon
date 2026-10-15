@@ -2,14 +2,16 @@
 #  tools/llm_client.py — Multi-Engine LLM Router (Ollama, Gemini, Groq, Cerebras)
 # ============================================================
 
+import json
 import os
 import time
-import json
-import urllib.request
 import urllib.error
-from google import genai
-from dotenv import load_dotenv
+import urllib.request
 from pathlib import Path
+
+from dotenv import load_dotenv
+from google import genai
+
 _env_path = Path(__file__).resolve().parent.parent / ".env"
 if _env_path.exists():
     load_dotenv(dotenv_path=_env_path)
@@ -241,7 +243,7 @@ def generate_with_retry(prompt: str, system_instruction: str = None) -> str:
 
     # Cloud Cascade
     errors = []
-    
+
     if os.getenv("GEMINI_API_KEY"):
         try:
             return generate_with_gemini(prompt)
@@ -263,5 +265,5 @@ def generate_with_retry(prompt: str, system_instruction: str = None) -> str:
     # If we get here, everything failed or no keys were configured
     if not errors:
         raise ValueError("No LLM providers configured! Please set GEMINI_API_KEY, GROQ_API_KEY, or CEREBRAS_API_KEY in .env, or start Ollama locally.")
-    
+
     raise RuntimeError(f"All configured LLM providers failed. Errors: {errors}")

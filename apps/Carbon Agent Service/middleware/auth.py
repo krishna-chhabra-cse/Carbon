@@ -3,8 +3,9 @@ middleware/auth.py — API Key authentication for Carbon Agent Service.
 Supports API key header.
 """
 
-import os
 import hmac
+import os
+
 from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
 

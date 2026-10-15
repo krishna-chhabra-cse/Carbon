@@ -1,10 +1,11 @@
-from typing import TypedDict, Optional
+from typing import TypedDict
+
 
 class AgentState(TypedDict):
     repo_url: str
     folder_structure: str
     files_content: dict
-    architecture_result: Optional[dict]
-    api_result: Optional[dict]
-    business_logic_result: Optional[dict]
-    security_result: Optional[dict]
+    architecture_result: dict | None
+    api_result: dict | None
+    business_logic_result: dict | None
+    security_result: dict | None

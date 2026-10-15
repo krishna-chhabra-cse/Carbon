@@ -12,11 +12,11 @@
 
 import os
 import re
-import stat
 import shutil
+import stat
 import tempfile
 from contextlib import contextmanager
-from typing import Optional, Tuple
+
 import git
 
 # Resource budget & security constants
@@ -84,7 +84,7 @@ def normalize_github_url(raw_url: str) -> str:
     return f"https://github.com/{owner}/{repo}"
 
 
-def validate_github_url(raw_url: str) -> Tuple[bool, Optional[str]]:
+def validate_github_url(raw_url: str) -> tuple[bool, str | None]:
     """
     Validates a GitHub URL safely without throwing an exception.
 
@@ -222,7 +222,7 @@ def clone_repo(repo_url: str) -> dict:
             normalized_url,
             temp_dir,
             depth=1,
-            
+
         )
 
         # 4. Enforce 75MB disk budget

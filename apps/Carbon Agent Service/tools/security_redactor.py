@@ -7,7 +7,7 @@
 # ============================================================
 
 import re
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 try:
     from tools.security_scanner import SECRET_PATTERNS
@@ -17,7 +17,7 @@ except ImportError:
 REDACTION_TOKEN = "[REDACTED_SECRET]"
 
 
-def redact_secrets(text: str, patterns: Optional[List[Dict[str, Any]]] = None) -> str:
+def redact_secrets(text: str, patterns: list[dict[str, Any]] | None = None) -> str:
     """
     Scans text against secret regex patterns from SECRET_PATTERNS
     and replaces matched values with '[REDACTED_SECRET]'.
@@ -47,7 +47,7 @@ def redact_secrets(text: str, patterns: Optional[List[Dict[str, Any]]] = None) -
     return redacted
 
 
-def is_secret_present(text: str, patterns: Optional[List[Dict[str, Any]]] = None) -> bool:
+def is_secret_present(text: str, patterns: list[dict[str, Any]] | None = None) -> bool:
     """
     Returns True if text contains any pattern matching secret detection rules.
     """
@@ -68,7 +68,7 @@ def is_secret_present(text: str, patterns: Optional[List[Dict[str, Any]]] = None
     return False
 
 
-def redact_security_findings(findings: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def redact_security_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Sanitizes security finding snippets, descriptions, titles, and remediations
     so sensitive secrets are never leaked into LLM prompts, storage, or JSON responses.

@@ -13,31 +13,28 @@
 #    5. Return all results to Node.js
 # ============================================================
 
-import json
-import os
 import asyncio
+import json
 import logging
+import os
 import time
 from collections import OrderedDict
-from typing import Optional, List
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, model_validator
+
 from dotenv import load_dotenv
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, model_validator
+
 from middleware.auth import verify_api_access
 
 logger = logging.getLogger(__name__)
 
 # Import our tools
-from tools.git_cloner import clone_repo, cleanup_repo
-from tools.file_reader import get_folder_structure, read_files_for_analysis
-
-from agents.architecture_agent import run as run_architecture_agent
-from agents.api_agent import run as run_api_agent
-from agents.business_logic_agent import run as run_business_logic_agent
-
 from pathlib import Path
+
+from tools.file_reader import get_folder_structure, read_files_for_analysis
+from tools.git_cloner import cleanup_repo, clone_repo
 
 # Load environment variables from .env
 _env_path = Path(__file__).resolve().parent / ".env"
@@ -72,13 +69,13 @@ app.add_middleware(
 class FilePayload(BaseModel):
     path: str
     content: str
-    size: Optional[int] = None
+    size: int | None = None
 
 class AnalyzeRequest(BaseModel):
-    repo_url: Optional[str] = None         # e.g. "https://github.com/facebook/react"
-    workspace_name: Optional[str] = None   # e.g. "MyProject"
-    files: Optional[List[FilePayload]] = None  # Uploaded file contents from VS Code extension
-    folder_structure: Optional[str] = None # Folder structure tree text
+    repo_url: str | None = None         # e.g. "https://github.com/facebook/react"
+    workspace_name: str | None = None   # e.g. "MyProject"
+    files: list[FilePayload] | None = None  # Uploaded file contents from VS Code extension
+    folder_structure: str | None = None # Folder structure tree text
 
     @model_validator(mode="after")
     def _require_a_source(self):
@@ -93,9 +90,9 @@ class ChatRequest(BaseModel):
     query: str
 
 class ExplainerOPMLRequest(BaseModel):
-    architecture: Optional[dict] = None
-    api_docs: Optional[dict] = None
-    business_logic: Optional[dict] = None
+    architecture: dict | None = None
+    api_docs: dict | None = None
+    business_logic: dict | None = None
 
 
 # -------------------------------------------------------
@@ -123,10 +120,10 @@ class TTLCache:
         self.cache[key] = (value, time.time())
         if len(self.cache) > self.maxsize:
             self.cache.popitem(last=False)
-            
+
     def pop(self, key, default=None):
         return self.cache.pop(key, default)
-        
+
     def __contains__(self, key):
         return self.get(key) is not None
 
@@ -137,25 +134,25 @@ class RedisCache:
         self.r = redis.Redis.from_url(redis_url, decode_responses=True)
         # Test connection
         self.r.ping()
-        
+
     def get(self, key):
         data = self.r.get(key)
         if data:
             import json
             return json.loads(data)
         return None
-        
+
     def set(self, key, value):
         import json
         self.r.setex(key, self.ttl, json.dumps(value))
-        
+
     def pop(self, key, default=None):
         val = self.get(key)
         if val is not None:
             self.r.delete(key)
             return val
         return default
-        
+
     def __contains__(self, key):
         return self.r.exists(key) > 0
 
@@ -171,7 +168,7 @@ def get_repo_cache():
 REPO_CACHE = get_repo_cache()
 
 
-def get_cache_key(repo_url: Optional[str], workspace_name: Optional[str]) -> str:
+def get_cache_key(repo_url: str | None, workspace_name: str | None) -> str:
     """
     Builds a stable cache key for either a GitHub repo or a workspace payload.
     """
@@ -191,7 +188,7 @@ def health_check():
 
 @app.get("/llm-status")
 def get_llm_status():
-    from tools.llm_client import is_ollama_available, get_installed_ollama_models
+    from tools.llm_client import get_installed_ollama_models, is_ollama_available
     ollama_online = is_ollama_available()
     models = get_installed_ollama_models() if ollama_online else []
     provider = os.getenv("LLM_PROVIDER", "auto")
@@ -250,18 +247,18 @@ async def run_agents(request: AnalyzeRequest):
                 print("\n[STEP 2] Reading files...")
                 folder_structure = await asyncio.to_thread(get_folder_structure, repo_path)
                 files_content = await asyncio.to_thread(read_files_for_analysis, repo_path)
-            
+
             yield json.dumps({"status": "analyzing"}) + "\n"
 
             print("\n[GRAPH] Starting collaborative agent workflow...")
             from agents.graph import agent_graph
-            
+
             initial_state = {
                 "repo_url": source_label,
                 "folder_structure": folder_structure,
                 "files_content": files_content
             }
-            
+
             # Stream the graph execution incrementally!
             final_state = {}
             async for event in agent_graph.astream(initial_state):
@@ -269,7 +266,7 @@ async def run_agents(request: AnalyzeRequest):
                     print(f"[{node_name}] finished.")
                     yield json.dumps({"status": "node_finished", "node": node_name}) + "\n"
                     final_state.update(partial_state)
-            
+
             # CACHE THE REPO DATA FOR CHAT
             cache_key = get_cache_key(request.repo_url, request.workspace_name)
             REPO_CACHE.set(cache_key, {
@@ -306,8 +303,8 @@ async def run_agents(request: AnalyzeRequest):
 
 class CompanionRequest(BaseModel):
     query: str
-    mode: Optional[str] = "explain"
-    context: Optional[dict] = None
+    mode: str | None = "explain"
+    context: dict | None = None
 
 # -------------------------------------------------------
 # The Chat endpoint
@@ -398,12 +395,13 @@ class MediaRequest(BaseModel):
 async def generate_media(req: MediaRequest):
     "Triggers the DevRel Engine to build PPT and Video Storyboard."
     try:
+        import re
+
         from tools.ppt_generator import generate_executive_briefing
         from tools.video_storyboard import generate_video_storyboard
-        import re
-        
+
         safe_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', req.repo_name)
-        
+
         ppt_path = generate_executive_briefing(
             repo_name=req.repo_name,
             architecture_info=req.architecture_info,
@@ -411,14 +409,14 @@ async def generate_media(req: MediaRequest):
             business_info=req.business_info,
             output_filepath=f"{safe_name}_Briefing.pptx"
         )
-        
+
         video_json = generate_video_storyboard(
             repo_name=req.repo_name,
             architecture_info=req.architecture_info,
             business_info=req.business_info,
             output_dir=f"{safe_name}_video_assets"
         )
-        
+
         return {
             "status": "success",
             "ppt_file": ppt_path,
@@ -433,12 +431,12 @@ async def generate_media(req: MediaRequest):
 # ============================================================
 
 class RoastRequest(BaseModel):
-    repo_url: Optional[str] = None
-    workspace_name: Optional[str] = None
-    files: Optional[List[FilePayload]] = None
-    folder_structure: Optional[str] = None
-    architecture_info: Optional[dict] = None
-    security_info: Optional[dict] = None
+    repo_url: str | None = None
+    workspace_name: str | None = None
+    files: list[FilePayload] | None = None
+    folder_structure: str | None = None
+    architecture_info: dict | None = None
+    security_info: dict | None = None
 
 @app.post('/api/roast', dependencies=[Depends(verify_api_access)])
 async def roast_codebase(req: RoastRequest):
@@ -461,23 +459,23 @@ async def roast_codebase(req: RoastRequest):
             clone_result = await asyncio.to_thread(clone_repo, req.repo_url)
             if not clone_result.get("success"):
                 raise Exception(f"Failed to clone repository: {clone_result.get('error')}")
-            
+
             repo_path = clone_result["repo_path"]
             files_dict = await asyncio.to_thread(read_files_for_analysis, repo_path)
-            
+
         from agents.roast_agent import run as run_roast_agent
         roast_data = run_roast_agent(
             files_dict=files_dict,
             architecture_info=req.architecture_info,
             security_info=req.security_info
         )
-        
+
         return {
             "status": "success",
             "repo_name": repo_name,
             "roast": roast_data
         }
-    except Exception as e:
+    except Exception:
         logger.exception("Error in /api/roast")
         raise HTTPException(status_code=500, detail="Internal processing error")
     finally:

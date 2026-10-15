@@ -2,15 +2,14 @@
 #  agents/api_agent.py
 #
 #  This agent's job:
-#  - Look at the codebase and find all REST API endpoints, GraphQL 
+#  - Look at the codebase and find all REST API endpoints, GraphQL
 #    mutations, or websocket routes.
 #  - Extract the HTTP methods, paths, and descriptions.
 #  - Return: a structured JSON list of endpoints.
 # ============================================================
 
-import os
 import json
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()

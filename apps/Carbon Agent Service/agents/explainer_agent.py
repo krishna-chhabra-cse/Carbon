@@ -9,9 +9,8 @@
 #       with node-level <say> refs based on the architecture analysis.
 # ============================================================
 
-import os
 import json
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()

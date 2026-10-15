@@ -13,9 +13,8 @@
 #  The better the prompt, the better the output.
 # ============================================================
 
-import os
 import json
-from google import genai            # NEW Gemini SDK (replaces google.generativeai)
+
 from dotenv import load_dotenv
 
 # Load the GEMINI_API_KEY from our .env file

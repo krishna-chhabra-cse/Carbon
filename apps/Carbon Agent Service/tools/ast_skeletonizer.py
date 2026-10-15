@@ -3,7 +3,6 @@
 # ============================================================
 
 import re
-from typing import Dict, Tuple
 
 # Ignore patterns for deterministic AST sieve
 IGNORE_DIR_PATTERNS = [
@@ -204,7 +203,7 @@ def skeletonize_code(file_path: str, content: str) -> str:
 
     return content
 
-def optimize_repo_files(files_dict: Dict[str, str], max_total_chars: int = 45000) -> Tuple[Dict[str, str], int]:
+def optimize_repo_files(files_dict: dict[str, str], max_total_chars: int = 45000) -> tuple[dict[str, str], int]:
     """
     Sieves and skeletonizes an entire repository dictionary to fit within a strict token budget.
     Returns: (optimized_files_dict, saved_char_count)

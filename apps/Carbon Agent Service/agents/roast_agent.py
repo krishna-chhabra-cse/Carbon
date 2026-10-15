@@ -12,11 +12,10 @@
 #  and provides an infallible deterministic fallback synthesizer.
 # ============================================================
 
-import os
-import re
 import json
 import logging
-from typing import Dict, List, Any, Optional, Union
+import re
+from typing import Any
 
 # Handle package vs standalone imports
 try:
@@ -83,7 +82,7 @@ REQUIRED_ROAST_KEYS = {
 
 # ── Helper: Normalize Metrics Input ────────────────────────────
 
-def _coerce_metrics_dict(metrics: Union[RoastMetrics, Dict[str, Any]]) -> Dict[str, Any]:
+def _coerce_metrics_dict(metrics: RoastMetrics | dict[str, Any]) -> dict[str, Any]:
     """Ensures metrics are represented as a dictionary for uniform extraction."""
     if hasattr(metrics, "to_dict"):
         raw = metrics.to_dict()
@@ -92,7 +91,7 @@ def _coerce_metrics_dict(metrics: Union[RoastMetrics, Dict[str, Any]]) -> Dict[s
     else:
         raw = {}
 
-    clean: Dict[str, Any] = {}
+    clean: dict[str, Any] = {}
     for k, v in raw.items():
         if k in ("scale", "architecture", "testing", "security", "naming", "complexity"):
             clean[k] = v if isinstance(v, dict) else {}
@@ -108,7 +107,7 @@ def _coerce_metrics_dict(metrics: Union[RoastMetrics, Dict[str, Any]]) -> Dict[s
 
 # ── Helper: Worst Offender Extractor ───────────────────────────
 
-def identify_worst_offender(metrics_dict: Dict[str, Any]) -> Dict[str, str]:
+def identify_worst_offender(metrics_dict: dict[str, Any]) -> dict[str, str]:
     """
     Identifies the single worst technical offender in the repository
     grounded strictly in quantitative metrics.
@@ -189,12 +188,12 @@ def identify_worst_offender(metrics_dict: Dict[str, Any]) -> Dict[str, str]:
 
 # ── Helper: Top Crimes Extractor ───────────────────────────────
 
-def extract_top_crimes(metrics_dict: Dict[str, Any], personality: str = "SAVAGE") -> List[Dict[str, str]]:
+def extract_top_crimes(metrics_dict: dict[str, Any], personality: str = "SAVAGE") -> list[dict[str, str]]:
     """
     Extracts structured, evidence-backed engineering crimes from real metrics.
     Every crime includes: crime, file, evidence, roast, fix.
     """
-    crimes: List[Dict[str, str]] = []
+    crimes: list[dict[str, str]] = []
 
     # 1. Security vulnerabilities
     sec_findings = (metrics_dict.get("security") or {}).get("findings") or []
@@ -257,11 +256,11 @@ def extract_top_crimes(metrics_dict: Dict[str, Any], personality: str = "SAVAGE"
         evidence = f"Circular import cycle: {chain_str}"
 
         if personality == "LIGHT":
-            roast_line = f"Modules in this cycle are a bit too tightly coupled. Consider introducing an interface or event boundary."
+            roast_line = "Modules in this cycle are a bit too tightly coupled. Consider introducing an interface or event boundary."
         elif personality == "BRUTAL":
             roast_line = f"Circular architecture trap ({chain_str}) indicates structural rot and non-existent boundary enforcement."
         else:
-            roast_line = f"These modules are in a mutual hostage situation. Neither can load without the other panicking."
+            roast_line = "These modules are in a mutual hostage situation. Neither can load without the other panicking."
 
         crimes.append({
             "crime": "Circular Dependency Cycle",
@@ -391,15 +390,15 @@ def extract_top_crimes(metrics_dict: Dict[str, Any], personality: str = "SAVAGE"
 # ── Helper: Fixes Extractor ────────────────────────────────────
 
 def extract_fixes(
-    worst_offender: Dict[str, str],
-    top_crimes: List[Dict[str, str]],
+    worst_offender: dict[str, str],
+    top_crimes: list[dict[str, str]],
     overall_score: int
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """
     Generates actionable remediation items.
     Enforces contract: fixes[0]['file'] MUST match worst_offender['file'].
     """
-    fixes: List[Dict[str, str]] = []
+    fixes: list[dict[str, str]] = []
     wo_file = str(worst_offender.get("file") or "repository")
     wo_reason = str(worst_offender.get("reason") or "Architectural debt")
 
@@ -450,11 +449,11 @@ def extract_fixes(
 # ── Deterministic Fallback Synthesizer ─────────────────────────
 
 def synthesize_deterministic_roast(
-    metrics_dict: Dict[str, Any],
+    metrics_dict: dict[str, Any],
     personality: str,
     overall_score: int,
     grade: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Generates a 100% compliant roast payload using only deterministic logic.
     Used when LLM is unavailable, times out, or produces malformed JSON.
@@ -581,12 +580,12 @@ def synthesize_deterministic_roast(
 # ── Prompt Builder ─────────────────────────────────────────────
 
 def build_roast_prompt(
-    metrics_dict: Dict[str, Any],
+    metrics_dict: dict[str, Any],
     personality: str,
     overall_score: int,
     grade: str,
-    worst_offender: Dict[str, str],
-    canonical_stats: Dict[str, Any]
+    worst_offender: dict[str, str],
+    canonical_stats: dict[str, Any]
 ) -> str:
     """
     Constructs an airtight LLM prompt strictly embedding real metrics,
@@ -755,14 +754,14 @@ Schema:
 # ── Schema Sanitizer & Enforcer ────────────────────────────────
 
 def sanitize_and_validate_roast(
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     overall_score: int,
     grade: str,
     personality: str,
-    canonical_stats: Dict[str, Any],
-    worst_offender: Dict[str, str],
-    fallback_payload: Dict[str, Any]
-) -> Dict[str, Any]:
+    canonical_stats: dict[str, Any],
+    worst_offender: dict[str, str],
+    fallback_payload: dict[str, Any]
+) -> dict[str, Any]:
     """
     Validates the parsed LLM payload against the strict schema.
     Enforces deterministic properties (score, grade, canonical stats, worst offender)
@@ -794,7 +793,7 @@ def sanitize_and_validate_roast(
 
     # Top Crimes
     raw_crimes = clean.get("top_crimes")
-    valid_crimes: List[Dict[str, str]] = []
+    valid_crimes: list[dict[str, str]] = []
     if isinstance(raw_crimes, list) and raw_crimes:
         for c in raw_crimes:
             if isinstance(c, dict) and all(k in c for k in ("crime", "file", "evidence", "roast", "fix")):
@@ -812,7 +811,7 @@ def sanitize_and_validate_roast(
 
     # Fixes: Ensure fixes[0]["file"] maps to worst_offender["file"]
     raw_fixes = clean.get("fixes")
-    valid_fixes: List[Dict[str, str]] = []
+    valid_fixes: list[dict[str, str]] = []
     if isinstance(raw_fixes, list) and raw_fixes:
         for f in raw_fixes:
             if isinstance(f, dict) and all(k in f for k in ("priority", "title", "file", "action")):
@@ -864,10 +863,10 @@ def sanitize_and_validate_roast(
 # ── Main Entrypoint: generate_roast ───────────────────────────
 
 def generate_roast(
-    metrics: Union[RoastMetrics, Dict[str, Any]],
+    metrics: RoastMetrics | dict[str, Any],
     personality: str = "SAVAGE",
-    llm_client: Optional[Any] = None
-) -> Dict[str, Any]:
+    llm_client: Any | None = None
+) -> dict[str, Any]:
     """
     Generates a structured, evidence-backed codebase roast conforming to PROJECT.md §9.
 
@@ -987,12 +986,12 @@ def generate_roast(
 # ── Backwards-Compatible run() Function ────────────────────────
 
 def run(
-    files_dict: Dict[str, str],
-    architecture_info: Optional[Dict[str, Any]] = None,
-    security_info: Optional[Dict[str, Any]] = None,
-    graph_stats: Optional[Dict[str, Any]] = None,
+    files_dict: dict[str, str],
+    architecture_info: dict[str, Any] | None = None,
+    security_info: dict[str, Any] | None = None,
+    graph_stats: dict[str, Any] | None = None,
     personality: str = "SAVAGE"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Backwards-compatible interface for existing endpoints (e.g. main.py).
     Extracts RoastMetrics and delegates to generate_roast.

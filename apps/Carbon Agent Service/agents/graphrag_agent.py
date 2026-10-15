@@ -2,9 +2,9 @@
 #  agents/graphrag_agent.py — GraphRAG Codebase Conversational Agent
 # ============================================================
 
-import json
 from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
 from tools.llm_client import generate_with_retry
+
 
 def run_graphrag_chat(files_dict: dict, query: str, folder_structure: str = "") -> dict:
     """
