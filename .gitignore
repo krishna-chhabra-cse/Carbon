@@ -33,3 +33,22 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets (keep the committed example files)
+.env.*
+!.env.example
+
+# Local databases
+*.sqlite3
+*.db-journal
+
+# Media
+*.mp4
+
+# Build output
+dist/
+build/
+out/
+.next/
+coverage/
+.pytest_cache/

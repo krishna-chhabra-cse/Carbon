@@ -15,18 +15,19 @@ async def verify_api_access(
 ):
     """
     Validates API access via X-API-Key header.
-    In development (CARBON_AUTH_DISABLED=true), authentication is bypassed.
+
+    Fails closed: authentication is enforced unless CARBON_AUTH_DISABLED=true is
+    set explicitly (local development only). If enforcement is on but
+    CARBON_API_KEY is not configured, requests are rejected with 503.
     """
-    # Default to bypass in development unless auth is explicitly enforced
-    if os.getenv("CARBON_AUTH_DISABLED", "true").lower() == "true":
+    if os.getenv("CARBON_AUTH_DISABLED", "false").strip().lower() == "true":
         return {"source": "dev-bypass"}
 
     expected_key = os.getenv("CARBON_API_KEY")
     if not expected_key:
-        # If API key is not configured, do not block internal services with 503
-        return {"source": "unconfigured-bypass"}
+        raise HTTPException(status_code=503, detail="Server authentication is not configured")
 
-    if api_key and hmac.compare_digest(api_key, expected_key):
+    if api_key and hmac.compare_digest(api_key.encode(), expected_key.encode()):
         return {"source": "api-key"}
 
     raise HTTPException(status_code=401, detail="Invalid or missing API key")
