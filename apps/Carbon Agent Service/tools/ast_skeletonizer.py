@@ -26,10 +26,7 @@ def should_ignore_file(file_path: str) -> bool:
     for pattern in IGNORE_DIR_PATTERNS:
         if re.search(r'(^|/)' + pattern + r'(/|$)', path_normalized, re.IGNORECASE):
             return True
-    for pattern in IGNORE_FILE_PATTERNS:
-        if re.search(pattern, path_normalized, re.IGNORECASE):
-            return True
-    return False
+    return any(re.search(pattern, path_normalized, re.IGNORECASE) for pattern in IGNORE_FILE_PATTERNS)
 
 def get_file_priority_score(file_path: str) -> int:
     """
@@ -44,13 +41,17 @@ def get_file_priority_score(file_path: str) -> int:
     name = p.split('/')[-1]
 
     # Tier 1: Core Entry Points & App Roots
-    if name in ['server.js', 'server.ts', 'main.py', 'app.py', 'index.js', 'index.ts', 'app.js', 'app.ts', 'main.go', 'main.rs']:
+    if name in ['server.js', 'server.ts', 'main.py', 'app.py', 'index.js', 'index.ts',
+                'app.js', 'app.ts', 'main.go', 'main.rs']:
         return 100
     if 'route' in p or 'controller' in p or 'api' in p or 'endpoint' in p:
         return 90
 
     # Tier 2: Schemas & Database Entities
-    if 'schema' in p or 'model' in p or 'entity' in p or 'migration' in p or name.endswith('.prisma') or name.endswith('.sql'):
+    if (
+        'schema' in p or 'model' in p or 'entity' in p or 'migration' in p
+        or name.endswith('.prisma') or name.endswith('.sql')
+    ):
         return 80
 
     # Tier 3: Core Business Services / Handlers
@@ -125,7 +126,10 @@ def skeletonize_js_ts(content: str) -> str:
 
     skeleton = '\n'.join(skeleton_lines)
     if len(skeleton_lines) < len(lines) * 0.7:
-        return f"/* [AST SKELETON: Optimized from {len(lines)} lines to {len(skeleton_lines)} structural lines] */\n" + skeleton
+        return (
+            f"/* [AST SKELETON: Optimized from {len(lines)} lines to {len(skeleton_lines)} structural lines] */\n"
+            + skeleton
+        )
     return content
 
 def skeletonize_python(content: str) -> str:
@@ -168,7 +172,10 @@ def skeletonize_python(content: str) -> str:
 
     skeleton = '\n'.join(skeleton_lines)
     if len(skeleton_lines) < len(lines) * 0.7:
-        return f"# [AST SKELETON: Optimized from {len(lines)} lines to {len(skeleton_lines)} structural lines]\n" + skeleton
+        return (
+            f"# [AST SKELETON: Optimized from {len(lines)} lines to {len(skeleton_lines)} structural lines]\n"
+            + skeleton
+        )
     return content
 
 def skeletonize_code(file_path: str, content: str) -> str:

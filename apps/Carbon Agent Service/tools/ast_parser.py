@@ -42,7 +42,10 @@ class PythonASTSkeletonizer:
 
         skeleton = "\n\n".join(parts)
         if len(skeleton) < len(source) * 0.7:
-            return f"# [AST SKELETON: {filepath} — {len(source.splitlines())} lines → {len(skeleton.splitlines())} structural lines]\n\n{skeleton}"
+            return (
+                f"# [AST SKELETON: {filepath} — {len(source.splitlines())} lines → "
+                f"{len(skeleton.splitlines())} structural lines]\n\n{skeleton}"
+            )
         return source
 
     def _function_skeleton(self, node) -> str:
@@ -135,11 +138,14 @@ class JSTreeSitterSkeletonizer:
 
         skeleton = "\n\n".join(skeleton_parts)
         if len(skeleton) < len(source) * 0.7:
-            return f"/* [AST SKELETON: {filepath} — {len(source.splitlines())} lines → {len(skeleton.splitlines())} structural lines] */\n\n{skeleton}"
+            return (
+                f"/* [AST SKELETON: {filepath} — {len(source.splitlines())} lines → "
+                f"{len(skeleton.splitlines())} structural lines] */\n\n{skeleton}"
+            )
         return source
 
     def _extract_structural_nodes(self, node, source_bytes: bytes) -> list:
-        STRUCTURAL_TYPES = {
+        structural_types = {
             "import_statement", "import_declaration", "export_statement",
             "export_declaration", "class_declaration", "interface_declaration",
             "type_alias_declaration", "enum_declaration", "function_declaration",
@@ -148,7 +154,7 @@ class JSTreeSitterSkeletonizer:
 
         parts = []
         for child in node.children:
-            if child.type in STRUCTURAL_TYPES:
+            if child.type in structural_types:
                 text = source_bytes[child.start_byte:child.end_byte].decode("utf-8", errors="replace")
                 # For function declarations, only keep signature (first 3 lines)
                 if child.type == "function_declaration" and text.count("\n") > 5:

@@ -21,7 +21,6 @@ def run(architecture: dict, api_docs: dict, business_logic: dict) -> str:
     a rich, Scrimba-compliant OPML fragment for a video slideshow explanation.
     """
     print("[EXPLAINER AGENT] Starting OPML generation...")
-    MODEL = "gemini-3.1-flash-lite"
 
     # Extract mermaid diagram if present in architecture analysis
     existing_diagram = architecture.get("diagram") or ""
@@ -106,21 +105,15 @@ You MUST follow these strict Scrimba Explainer OPML contract rules:
 7. Exactly two `<followup>` tags
 
 Generate the full, valid OPML fragment now:
-"""
+"""  # noqa: E501 - prompt text
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt
-    )
-    raw_opml = response.text.strip()
+    from tools.llm_client import generate_with_retry
+    raw_opml = generate_with_retry(prompt).strip()
 
     # Clean up markdown code blocks if the model wrapped it anyway
     if raw_opml.startswith("```"):
         lines = raw_opml.split('\n')
         start_idx = 1
-        if lines[0].strip().startswith("```"):
-            if len(lines[0].strip()) > 3:
-                start_idx = 1
         end_idx = len(lines) - 1
         raw_opml = '\n'.join(lines[start_idx:end_idx]).strip()
 

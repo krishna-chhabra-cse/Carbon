@@ -14,7 +14,7 @@ try:
 except ImportError:
     from security_scanner import SECRET_PATTERNS
 
-REDACTION_TOKEN = "[REDACTED_SECRET]"
+REDACTION_TOKEN = "[REDACTED_SECRET]"  # noqa: S105 - placeholder text, not a secret
 
 
 def redact_secrets(text: str, patterns: list[dict[str, Any]] | None = None) -> str:

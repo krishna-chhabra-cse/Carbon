@@ -20,6 +20,9 @@ import os
 import time
 from collections import OrderedDict
 
+# Import our tools
+from pathlib import Path
+
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,14 +30,10 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, model_validator
 
 from middleware.auth import verify_api_access
-
-logger = logging.getLogger(__name__)
-
-# Import our tools
-from pathlib import Path
-
 from tools.file_reader import get_folder_structure, read_files_for_analysis
 from tools.git_cloner import cleanup_repo, clone_repo
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env
 _env_path = Path(__file__).resolve().parent / ".env"
@@ -237,7 +236,9 @@ async def run_agents(request: AnalyzeRequest):
                 clone_result = await asyncio.to_thread(clone_repo, request.repo_url)
 
                 if not clone_result["success"]:
-                    yield json.dumps({"status": "error", "message": f"Failed to clone repo: {clone_result['error']}"}) + "\n"
+                    yield json.dumps(
+                        {"status": "error", "message": f"Failed to clone repo: {clone_result['error']}"}
+                    ) + "\n"
                     return
 
                 repo_path = clone_result["repo_path"]
@@ -338,7 +339,7 @@ async def chat(request: ChatRequest):
         return {"success": True, "answer": res["answer"]}
     except Exception as e:
         print(f"[ERROR] Chat failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 # -------------------------------------------------------
@@ -358,7 +359,7 @@ async def companion(request: CompanionRequest):
         return result
     except Exception as e:
         print(f"[ERROR] Companion failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 # -------------------------------------------------------
@@ -377,7 +378,7 @@ async def generate_explainer_opml(request: ExplainerOPMLRequest):
         return {"success": True, "opml": opml_content}
     except Exception as e:
         print(f"[ERROR] OPML generation failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 
@@ -475,9 +476,9 @@ async def roast_codebase(req: RoastRequest):
             "repo_name": repo_name,
             "roast": roast_data
         }
-    except Exception:
+    except Exception as e:
         logger.exception("Error in /api/roast")
-        raise HTTPException(status_code=500, detail="Internal processing error")
+        raise HTTPException(status_code=500, detail="Internal processing error") from e
     finally:
         if repo_path and not is_uploaded:
             await asyncio.to_thread(cleanup_repo, repo_path)

@@ -41,7 +41,7 @@ module.exports = router;
 
     graph = build_codebase_graph(mock_files)
     print(f"Graph constructed with {len(graph.nodes)} nodes.")
-    for node, data in graph.nodes.items():
+    for node in graph.nodes:
         if not node.startswith("external:"):
             print(f"  Node: {node} -> Depends on: {list(graph.dependencies.get(node, []))}")
 

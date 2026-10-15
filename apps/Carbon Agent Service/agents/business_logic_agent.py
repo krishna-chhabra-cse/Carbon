@@ -42,8 +42,6 @@ def run(folder_structure: str, files_content: dict, architecture_info: dict = No
 
     # Step 1: Set up Gemini client
 
-    # Same reliable model we use across all agents
-    MODEL = "gemini-3.1-flash-lite"
 
     # Step 2: Use GraphRAG for intelligent context assembly
     from tools.graph_rag import build_codebase_graph, retrieve_graphrag_context
@@ -107,7 +105,7 @@ IMPORTANT:
 - Include 3-5 business flows.
 - Each flow must have a valid Mermaid sequenceDiagram string (use \\n for line breaks). Do NOT use markdown code blocks inside the string.
 - Each step must trace back to a specific file, function, and short code snippet (1-3 lines max).
-"""
+"""  # noqa: E501 - prompt text
 
     # Step 4: Send to Gemini with resilient failover
     print("[BIZ AGENT] Sending to Gemini for business logic analysis...")

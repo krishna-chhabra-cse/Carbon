@@ -15,7 +15,7 @@ import re
 import shutil
 import stat
 import tempfile
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 
 import git
 
@@ -79,7 +79,9 @@ def normalize_github_url(raw_url: str) -> str:
         raise ValueError("Security Policy: Repository owner or name cannot start with a hyphen.")
 
     if not re.match(r"^[a-zA-Z0-9_.-]+$", owner) or not re.match(r"^[a-zA-Z0-9_.-]+$", repo):
-        raise ValueError("Repository and owner names must contain only alphanumeric characters, dots, hyphens, and underscores.")
+        raise ValueError(
+            "Repository and owner names must contain only alphanumeric characters, dots, hyphens, and underscores."
+        )
 
     return f"https://github.com/{owner}/{repo}"
 
@@ -153,11 +155,9 @@ def _handle_remove_readonly(func, path, *args):
     shutil.rmtree to raise PermissionError. This resets write permissions
     and retries deletion.
     """
-    try:
+    with suppress(Exception):
         os.chmod(path, stat.S_IWRITE)
         func(path)
-    except Exception:
-        pass
 
 
 def cleanup_repo(repo_path: str):

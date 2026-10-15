@@ -34,7 +34,10 @@ def generate_video_storyboard(
     }
 
     # Scene 1: Intro
-    intro_script = f"Welcome to the automated codebase walkthrough for {repo_name}. Today, we will explore the system architecture and core business flows."
+    intro_script = (
+        f"Welcome to the automated codebase walkthrough for {repo_name}. "
+        "Today, we will explore the system architecture and core business flows."
+    )
     audio_path = os.path.join(output_dir, "scene_1_intro.mp3")
     generate_audio(intro_script, audio_path)
 
@@ -95,6 +98,8 @@ def generate_video_storyboard(
     with open(json_path, 'w') as f:
         json.dump(storyboard, f, indent=2)
 
-    print(f"[Video Generator] DevRel Storyboard and {len(storyboard['scenes'])} Audio tracks generated in {output_dir}/")
+    print(
+        f"[Video Generator] DevRel Storyboard and {len(storyboard['scenes'])} Audio tracks generated in {output_dir}/"
+    )
     return json_path
 

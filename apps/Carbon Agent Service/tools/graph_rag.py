@@ -146,7 +146,9 @@ def build_codebase_graph(files_dict: dict[str, str]) -> CodebaseGraph:
     return graph
 
 
-def retrieve_graphrag_context(graph: CodebaseGraph, files_dict: dict[str, str], query: str, max_chars: int = 15000) -> str:
+def retrieve_graphrag_context(
+    graph: CodebaseGraph, files_dict: dict[str, str], query: str, max_chars: int = 15000
+) -> str:
     """Retrieves subgraph context relevant to the user query."""
     query_terms = query.lower().split()
     scored_nodes = {}

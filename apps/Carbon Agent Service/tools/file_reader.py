@@ -88,7 +88,7 @@ def read_files_for_analysis(repo_path: str, max_total_chars: int = 40000) -> dic
                 with open(file_path, encoding='utf-8', errors='ignore') as f:
                     content = f.read()
                 raw_files[relative_path] = content
-            except Exception:
+            except Exception:  # noqa: S112 - unreadable files are skipped by design
                 continue
 
     # Apply AST Code Skeletonization and Token Budgeting
@@ -96,6 +96,9 @@ def read_files_for_analysis(repo_path: str, max_total_chars: int = 40000) -> dic
     final_chars = sum(len(c) for c in optimized_files.values())
 
     print(f"[FILE READER] Sieve & Skeletonizer: {len(raw_files)} -> {len(optimized_files)} files.")
-    print(f"[TOKEN OPTIMIZER] Slashed characters from {sum(len(c) for c in raw_files.values()):,} to {final_chars:,} (Saved {saved_chars:,} chars / ~85% token budget saved!).")
+    print(
+        f"[TOKEN OPTIMIZER] Slashed characters from {sum(len(c) for c in raw_files.values()):,} "
+        f"to {final_chars:,} (Saved {saved_chars:,} chars / ~85% token budget saved!)."
+    )
 
     return optimized_files
