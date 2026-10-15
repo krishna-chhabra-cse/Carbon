@@ -208,8 +208,7 @@ function AnalyzerApp() {
     setVideoError('');
 
     try {
-      // 1. Hit the new Python media generation endpoint
-      const pyUrl = isDev ? 'http://localhost:8000' : 'https://carbon-agent-service.onrender.com';
+      const pyUrl = import.meta.env.VITE_PYTHON_SERVICE_URL || (isDev ? 'http://127.0.0.1:8005' : 'https://carbon-agent-service.onrender.com');
       const response = await fetch(`${pyUrl}/api/generate-media`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

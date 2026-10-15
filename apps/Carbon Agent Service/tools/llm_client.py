@@ -9,13 +9,17 @@ import urllib.request
 import urllib.error
 from google import genai
 from dotenv import load_dotenv
-
+from pathlib import Path
+_env_path = Path(__file__).resolve().parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(dotenv_path=_env_path)
 load_dotenv()
 
 CANDIDATE_GEMINI_MODELS = [
-    "gemini-3.1-flash",
-    "gemini-3.1-flash-lite",
-    "gemini-2.5-flash"
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+    "gemini-flash-latest",
+    "gemini-3.5-flash-lite"
 ]
 
 CANDIDATE_GROQ_MODELS = [
@@ -109,7 +113,9 @@ def generate_with_gemini(prompt: str) -> str:
     client = get_gemini_client()
     last_err = None
 
-    for model_name in CANDIDATE_GEMINI_MODELS:
+    models_to_try = list(CANDIDATE_GEMINI_MODELS)
+
+    for model_name in models_to_try:
         for attempt in range(2):
             try:
                 print(f"[CLOUD LLM] Calling {model_name} (attempt {attempt + 1})...")
@@ -127,6 +133,33 @@ def generate_with_gemini(prompt: str) -> str:
                     time.sleep(1.5 * (attempt + 1))
                 else:
                     time.sleep(0.5)
+
+    # Dynamic self-healing: if hardcoded models are deprecated, discover live active models
+    print("[CLOUD LLM] Standard candidate models failed. Querying Gemini API for active models...")
+    try:
+        discovered = []
+        for m in client.models.list():
+            name = m.name.replace("models/", "")
+            if "flash" in name and not any(x in name for x in ["image", "tts", "audio", "live", "preview"]):
+                discovered.append(name)
+        if discovered:
+            print(f"[CLOUD LLM] Discovered active models: {discovered}")
+            for model_name in discovered:
+                if model_name not in CANDIDATE_GEMINI_MODELS:
+                    try:
+                        print(f"[CLOUD LLM] Trying discovered model {model_name}...")
+                        response = client.models.generate_content(
+                            model=model_name,
+                            contents=prompt
+                        )
+                        if response and response.text:
+                            if model_name not in CANDIDATE_GEMINI_MODELS:
+                                CANDIDATE_GEMINI_MODELS.insert(0, model_name)
+                            return response.text.strip()
+                    except Exception as e:
+                        print(f"[CLOUD LLM WARNING] Discovered model {model_name} failed: {e}")
+    except Exception as list_err:
+        print(f"[CLOUD LLM] Model discovery failed: {list_err}")
 
     raise RuntimeError(f"All Gemini models failed. Last error: {str(last_err)}")
 

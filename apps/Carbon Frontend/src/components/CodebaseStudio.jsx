@@ -84,7 +84,7 @@ export default function CodebaseStudio({
     setRoastLoading(true);
     setRoastError('');
     try {
-      const pyUrl = import.meta.env.DEV ? 'http://localhost:8000' : 'https://carbon-agent-service.onrender.com';
+      const pyUrl = import.meta.env.VITE_PYTHON_SERVICE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8005' : 'https://carbon-agent-service.onrender.com');
       const response = await fetch(`${pyUrl}/api/roast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

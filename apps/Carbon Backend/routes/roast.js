@@ -36,6 +36,11 @@ router.post('/', async (req, res) => {
   }
 
   try {
+    const headers = {};
+    if (process.env.CARBON_API_KEY) {
+      headers['X-API-Key'] = process.env.CARBON_API_KEY;
+    }
+
     // Call Python agent service
     const response = await axios.post(`${PYTHON_API_URL}/api/roast`, {
       repo_url,
@@ -44,7 +49,7 @@ router.post('/', async (req, res) => {
       folder_structure,
       architecture_info: architecture_info || {},
       security_info: security_info || {}
-    });
+    }, { headers });
 
     if (response.data.status !== 'success') {
       return res.status(500).json({ error: response.data.message || 'Python service failed' });

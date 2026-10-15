@@ -3,7 +3,10 @@
   "private": true,
   "version": "1.0.2",
   "scripts": {
-    "dev": "concurrently \"npm --prefix \\\"apps/Carbon Frontend\\\" run dev\" \"npm --prefix \\\"apps/Carbon Backend\\\" run dev\"",
+    "dev": "concurrently \"npm --prefix \\\"apps/Carbon Frontend\\\" run dev\" \"npm --prefix \\\"apps/Carbon Backend\\\" run dev\" \"cd \\\"apps/Carbon Agent Service\\\" && python -m uvicorn main:app --port 8005 --reload\"",
+    "dev:frontend": "npm --prefix \"apps/Carbon Frontend\" run dev",
+    "dev:backend": "npm --prefix \"apps/Carbon Backend\" run dev",
+    "dev:agent": "cd \"apps/Carbon Agent Service\" && python -m uvicorn main:app --port 8005 --reload",
     "build": "npm --prefix \"apps/Carbon Frontend\" install && npm --prefix \"apps/Carbon Frontend\" run build",
     "preview": "npm --prefix \"apps/Carbon Frontend\" run preview"
   },

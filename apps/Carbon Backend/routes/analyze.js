@@ -73,10 +73,16 @@ router.post('/analyze', async (req, res) => {
       // Step 4: Call the Python agent service with streaming
       console.log(`🐍 Forwarding to Python agent service (streaming)... (attempt ${attempt})`);
 
+      const headers = {};
+      if (process.env.CARBON_API_KEY) {
+        headers['X-API-Key'] = process.env.CARBON_API_KEY;
+      }
+
       const pythonResponse = await axios.post(
         `${PYTHON_SERVICE_URL}/run-agents`,
         agentPayload,
         { 
+          headers,
           timeout: 0,
           responseType: 'stream'
         }                  
@@ -109,16 +115,18 @@ router.post('/analyze', async (req, res) => {
     } catch (error) {
       console.error(`❌ Attempt ${attempt}/${MAX_RETRIES} failed:`, error.message);
 
-      if (error.response && error.response.status === 502 && attempt < MAX_RETRIES) {
-        console.log(`⏳ Python service is cold-starting. Retrying in ${RETRY_DELAY_MS / 1000}s...`);
+      const statusCode = error.response ? error.response.status : null;
+
+      if ((statusCode === 502 || statusCode === 503) && attempt < MAX_RETRIES) {
+        console.log(`⏳ Python service is cold-starting/warming up (HTTP ${statusCode}). Retrying in ${RETRY_DELAY_MS / 1000}s...`);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
         continue;
       }
 
-      if (error.code === 'ECONNREFUSED') {
+      if (error.code === 'ECONNREFUSED' || statusCode === 502 || statusCode === 503) {
         return res.status(503).json({ 
-          error: 'Python agent service is not running.',
-          hint: 'The AI service may be starting up. Please try again in 30 seconds.'
+          error: 'Python agent service is not running or warming up.',
+          hint: 'The AI service is currently starting up. Please try again in 15-30 seconds.'
         });
       }
 
