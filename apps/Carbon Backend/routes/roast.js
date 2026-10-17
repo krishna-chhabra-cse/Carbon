@@ -24,7 +24,7 @@ db.exec(`
 const insertRoast = db.prepare('INSERT INTO roasts (id, repo_url, repo_name, roast_data) VALUES (?, ?, ?, ?)');
 const getRoast = db.prepare('SELECT * FROM roasts WHERE id = ?');
 
-const PYTHON_API_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8000';
+const PYTHON_API_URL = process.env.PYTHON_SERVICE_URL || 'http://localhost:8005';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // 1. POST /api/roast - Generate and save roast

@@ -80,7 +80,7 @@ app.get(['/', '/health'], (req, res) => {
     status: 'ok',
     service: 'Carbon Backend',
     version: '1.0.0',
-    pythonService: process.env.PYTHON_SERVICE_URL || 'http://localhost:8000'
+    pythonService: process.env.PYTHON_SERVICE_URL || 'http://localhost:8005'
   });
 });
 
@@ -108,5 +108,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`✅ Carbon Backend running on port ${PORT}`);
-  console.log(`🐍 Connected to Python Agent Service at ${process.env.PYTHON_SERVICE_URL || 'http://localhost:8000'}`);
+  console.log(`🐍 Connected to Python Agent Service at ${process.env.PYTHON_SERVICE_URL || 'http://localhost:8005'}`);
 });
