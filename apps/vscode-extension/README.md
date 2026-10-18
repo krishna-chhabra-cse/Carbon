@@ -1,5 +1,11 @@
 # Carbon
 
+> **Status (October 2026).** This extension is a side project of Carbon and is not part of the launch-video product. It now defaults to `https://api.carbons.codes`, but the production backend keeps parts of the old API **off** by default:
+> - Analyzing and roasting the open workspace send your files, which needs `ALLOW_FILE_UPLOADS=true` on the backend.
+> - Narration (`/api/tts`), explainer videos and telemetry need `LEGACY_ROUTES=true`.
+>
+> Point `carbon.backendUrl` at your own backend (or `http://localhost:3002`) if you need those.
+
 > **AI Coding & Learning Companion for VS Code**
 
 **Carbon** delivers instant codebase intelligence right inside Visual Studio Code. Understand complex codebases in seconds through interactive architecture flowcharts, component breakdowns, API documentation, and interactive video walkthroughs.
@@ -64,7 +70,7 @@ You can customize your Carbon backend endpoint in VS Code Settings (`Ctrl + ,` o
 
 | Setting | Default | Description |
 |---|---|---|
-| `carbon.backendUrl` | `https://carbon-backend-a1sg.onrender.com` | HTTPS URL of your deployed Carbon Backend on Render. |
+| `carbon.backendUrl` | `https://api.carbons.codes` | HTTPS URL of your deployed Carbon Backend on Render. |
 
 ---
 

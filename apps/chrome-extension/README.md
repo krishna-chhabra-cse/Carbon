@@ -1,5 +1,9 @@
 # ✦ Carbon — AI Web Learning Companion (Chrome Extension)
 
+> **Status (October 2026).** This extension is a side project of Carbon and is not part of the launch-video product. Against the live site (`https://api.carbons.codes`):
+> - The **🧠 Explain with Carbon** button on GitHub and the popup's **Analyze** button work: they open Go deeper at `carbons.codes/app?repo=...`.
+> - The side panel's learning modes (Explain Page, Summarize, Teach Me, Simplify, ...) call `/api/companion`, which the production backend keeps **off** by default. They work only against a backend started with `LEGACY_ROUTES=true`.
+
 Carbon is an AI-powered learning companion for the web. Whenever you encounter confusing code, complex documentation, or deep topics while browsing, Carbon explains, simplifies, teaches, and finds visual lessons right inside Chrome without taking you away from your workflow.
 
 ---

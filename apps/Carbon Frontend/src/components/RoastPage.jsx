@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, Copy, Flame, GitBranch, Loader2, ShieldAlert, Wrench } from 'lucide-react';
 import { SiteShell } from './site/SiteShell';
-import { api } from '../lib/api';
+import { api, warmUp } from '../lib/api';
 
 const STEPS = ['Cloning the repo', 'Measuring every file', 'Mapping imports for circular deps', 'Counting tests', 'Scanning for leaked secrets', 'Warming up the grill'];
 const PRIORITY_COLOR = { CRITICAL: 'var(--cx-red)', HIGH: 'var(--cx-ember)', MEDIUM: 'var(--cx-amber)', LOW: 'var(--cx-muted)' };
@@ -46,6 +46,8 @@ export default function RoastPage() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => { warmUp(); }, []);
 
   useEffect(() => {
     if (!id) { setData(null); return; }
@@ -97,7 +99,7 @@ export default function RoastPage() {
               </li>
             ))}
           </ol>
-          <p className="mt-8 text-sm" style={{ color: 'var(--cx-dim)' }}>Big repos can take up to a minute.</p>
+          <p className="mt-8 text-sm" style={{ color: 'var(--cx-dim)' }}>Most take under a minute. The first one after a quiet period can take up to two.</p>
         </section>
       </SiteShell>
     );

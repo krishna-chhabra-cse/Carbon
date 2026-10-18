@@ -526,7 +526,7 @@ function buildResultsHtml(workspaceName, result, backendUrl) {
     let elapsed = 0;
     const totalSecs = 120;
     let currentAudio = null;
-    const backendApiUrl = '${escapeHtml(backendUrl || 'https://carbon-backend-a1sg.onrender.com')}';
+    const backendApiUrl = '${escapeHtml(backendUrl || 'https://api.carbons.codes')}';
 
     async function playNarration(speechText) {
       if (isMuted) return;

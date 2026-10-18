@@ -2,7 +2,7 @@
 //  sidepanel.js — Carbon AI Learning Companion Controller
 // ============================================================
 
-const DEFAULT_BACKEND_URL = 'https://carbon-backend-a1sg.onrender.com';
+const DEFAULT_BACKEND_URL = 'https://api.carbons.codes';
 const DEFAULT_WEB_URL = 'https://carbons.codes';
 
 let currentTabContext = {

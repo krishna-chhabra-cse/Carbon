@@ -55,8 +55,11 @@ coverage/
 
 # Website media (demo + sample outputs) is intentionally committed
 !apps/Carbon Frontend/public/media/*.mp4
+!apps/Carbon Frontend/public/media/styles/*.mp4
 !apps/Carbon Frontend/public/media/*.pptx
 
 # Carbon Video render cache and backend runtime data
 .bundle/
 apps/Carbon Backend/data/
+apps/scratch/
+apps/Carbon Studio/recordings/

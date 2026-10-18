@@ -56,8 +56,8 @@
       "properties": {
         "carbon.backendUrl": {
           "type": "string",
-          "default": "https://carbon-backend-a1sg.onrender.com",
-          "description": "HTTPS URL of the live Carbon AI Cloud Backend on Render."
+          "default": "https://api.carbons.codes",
+          "description": "HTTPS URL of the Carbon backend."
         },
         "carbon.llmProvider": {
           "type": "string",
