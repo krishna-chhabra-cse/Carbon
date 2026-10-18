@@ -22,11 +22,6 @@ from typing import Any
 import networkx as nx
 
 try:
-    from tools.graph_rag import build_codebase_graph
-except ImportError:
-    from graph_rag import build_codebase_graph
-
-try:
     from tools.security_scanner import run_security_audit
 except ImportError:
     from security_scanner import run_security_audit
@@ -309,7 +304,9 @@ LOCKFILES = {
     "poetry.lock", "pipfile.lock", "cargo.lock", "composer.lock", "gemfile.lock", "go.sum",
 }
 DATA_EXTENSIONS = {".json", ".yaml", ".yml", ".toml", ".lock", ".map", ".csv", ".svg"}
-GENERATED_DIR_RE = re.compile(r"(?:^|/)(?:vendor|third_party|generated|__generated__|\.bundle|public/build|static/build)(?:/|$)")
+GENERATED_DIR_RE = re.compile(
+    r"(?:^|/)(?:vendor|third_party|generated|__generated__|\.bundle|public/build|static/build)(?:/|$)"
+)
 
 
 def is_lockfile(path: str) -> bool:
@@ -359,7 +356,7 @@ def counts_as_security_issue(finding: dict[str, Any]) -> bool:
     snippet = str(finding.get("snippet") or finding.get("match") or "")
     if not snippet or _PLACEHOLDER_RE.search(snippet):
         return False
-    # Low-entropy values (AKIA1122334455667788) are hand-typed fixtures.
+    # Low-entropy values (a key prefix followed by repeated or counting digits) are hand-typed fixtures.
     for token in re.findall(r"[A-Za-z0-9+/_\-]{12,}", snippet):
         body = re.sub(r"^(?:AKIA|ASIA|sk_live_|sk_test_|ghp_|gho_|xox[abp]-)", "", token)
         if len(body) >= 12 and len(set(body)) <= 5:
@@ -411,7 +408,7 @@ def build_import_graph(files_dict: dict[str, str]) -> "nx.DiGraph":
 
         def shared(c: str) -> int:
             n = 0
-            for a, b in zip(imp_dir, c.split("/")[:-1]):
+            for a, b in zip(imp_dir, c.split("/")[:-1], strict=False):
                 if a != b:
                     break
                 n += 1
@@ -756,7 +753,9 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
     # god-file and test metrics only see hand-written source.
     security_files = {
         k: v for k, v in files_dict.items()
-        if not is_lockfile(k) and not k.endswith((".min.js", ".map")) and not GENERATED_DIR_RE.search(k.replace("\\", "/").lower())
+        if not is_lockfile(k)
+        and not k.endswith((".min.js", ".map"))
+        and not GENERATED_DIR_RE.search(k.replace("\\", "/").lower())
     }
     files_dict = {k: v for k, v in files_dict.items() if not is_non_source(k)}
     if not files_dict:
