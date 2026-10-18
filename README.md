@@ -7,6 +7,10 @@
 
 **Live at [carbons.codes](https://carbons.codes)**
 
+[![Watch the 1:48 demo](apps/Carbon%20Frontend/public/media/carbon-demo-poster.jpg)](https://carbons.codes/media/carbon-demo.mp4)
+
+*Click the image to watch the 1:48 demo.*
+
 Carbon reads a public GitHub repo or a live website and makes:
 
 1. **A launch video** (30 or 15 seconds, 16:9, MP4). Real numbers and real code from your project, cut on the beat of an original soundtrack. Pick one of 18 styles, or answer four quick questions and let Carbon recommend one.
@@ -18,6 +22,16 @@ Two free tools come with it, no account needed:
 - **Go deeper** (`/app`): the architecture, API endpoints and business logic of any public repo in plain English, plus a chat about the code.
 
 Making videos needs a free account. Free accounts get **2 videos per rolling 24 hours** (720p, small watermark). People who want more join the early-access list, for longer videos (up to 2 minutes), more video categories and more soundtracks. There are no paid plans and no prices yet.
+
+
+## See the styles
+
+Eight of the 18 styles, rendered by Carbon from sample projects:
+
+| | | | |
+|:-:|:-:|:-:|:-:|
+| ![Blueprint](apps/Carbon%20Frontend/public/media/styles/blueprint.jpg)<br>Blueprint | ![Swiss Poster](apps/Carbon%20Frontend/public/media/styles/poster.jpg)<br>Swiss Poster | ![Editorial Collage](apps/Carbon%20Frontend/public/media/styles/collage.jpg)<br>Editorial Collage | ![Pixel Arcade](apps/Carbon%20Frontend/public/media/styles/arcade.jpg)<br>Pixel Arcade |
+| ![Data Story](apps/Carbon%20Frontend/public/media/styles/datastory.jpg)<br>Data Story | ![Signal](apps/Carbon%20Frontend/public/media/styles/signal.jpg)<br>Signal | ![Bauhaus Geometry](apps/Carbon%20Frontend/public/media/styles/bauhaus.jpg)<br>Bauhaus Geometry | ![Whiteboard Explainer](apps/Carbon%20Frontend/public/media/styles/whiteboard.jpg)<br>Whiteboard Explainer |
 
 ## How a video is made
 
@@ -33,6 +47,18 @@ link ──► read ──► 4 questions ──► storyboard ──► render 
 3. **Storyboard.** Gemini writes the copy against a strict schema. Numbers, code and commands are chosen **by index** from the facts that were read, so a video never shows an invented stat or snippet. Without an API key, a storyboard is built straight from the facts.
 4. **Render.** Hand-built [Remotion](https://www.remotion.dev) scenes, cut on the soundtrack's beat grid. There are eleven *directed* styles that each tell their own story (Blueprint, Swiss Poster, Editorial Collage, Pixel Arcade, Data Story, Product Tour, Signal, Bauhaus Geometry, Whiteboard Explainer, Shell Session, Cinematic 3D) and seven classic looks (HUD, Paper, Bold, Glass, Terminal, Kinetic, Aurora) with five video types. The soundtracks are synthesized in code, no samples. See [docs/VIDEO_STYLES.md](docs/VIDEO_STYLES.md).
 5. **Deck.** Native PowerPoint shapes, so every slide is editable.
+
+## Engineering highlights
+
+- **No invented facts.** The AI writes the words, but every number, code snippet and command in a video is picked *by index* from the facts that were read from the repo or site, so it can't make up a stat. This is checked by tests.
+- **Real accounts, safely.** Sign-in is Supabase (email + password with confirmation, Google, GitHub). The backend verifies each token with Supabase on every request and **fails closed**: if Supabase is missing or down, nobody gets in. The local dev bypass only works from the developer's own machine and is ignored in production.
+- **A daily limit that can't be skipped.** 2 videos per rolling 24 hours, counted on the server (not in the browser), with a per-network cap against fake accounts. Failed renders don't count.
+- **A render pipeline, not a script.** A job queue with a worker, progress reporting, restart recovery (interrupted jobs go back in the queue) and a timeout. Videos are drawn by Remotion in headless Chrome and cut to a beat grid.
+- **18 video styles from one catalog.** A single `catalog.json` drives the renderer, the backend checks and the website gallery. A test fails if a style is missing its renderer, deck palette or preview.
+- **Safe link handling.** Website links are resolved first and refused if they point at private or local addresses, so the server can't be tricked into fetching internal pages.
+- **Tested and checked on every push.** About 320 automated tests (backend, website, agent service), a linter, a type check, a production build, and a security scan of the repo itself that must grade A+. GitHub secret scanning is switched on.
+- **Fast first load.** The heavy diagram code for Go deeper loads only when that page opens, which cut the home page's JavaScript from about 570 KB to about 100 KB (gzipped).
+- **Deployed for real.** Website on Vercel, backend and renderer in Docker on AWS EC2 behind Caddy (automatic HTTPS), analysis service on Render, accounts on Supabase. The steps are written down in [docs/LAUNCH_SETUP.md](docs/LAUNCH_SETUP.md).
 
 ## How it fits together
 
@@ -120,6 +146,14 @@ Main settings (full list in `.env.example`):
 ## Contributing
 
 Read [CLAUDE.md](CLAUDE.md) first: it lists the project rules, such as keeping the README honest, shipping tests with every change, and never committing secrets or build output.
+
+## About this project
+
+Built by **Krishna Chhabra** · [GitHub](https://github.com/krishna-chhabra-cse) · krishcarbon7@gmail.com
+
+I built Carbon with AI coding tools (Claude Code and Gemini) as assistants. I set the product direction, made the architecture and deployment decisions, and run it live. The commit history shows this openly.
+
+Open to internships and placement opportunities. If you're hiring, I'd love to talk about what I built and how.
 
 ## License
 
