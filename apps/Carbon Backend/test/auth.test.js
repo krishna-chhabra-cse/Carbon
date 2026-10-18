@@ -286,3 +286,30 @@ test('retention: old finished videos lose their files and show as expired; recen
     }
   }
 });
+
+test('admin: the early-access list needs ADMIN_TOKEN; off without it, 401 with a wrong token', async () => {
+  const app = require('../server');
+  const server = app.listen(0);
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const get = (token) => fetch(`${base}/api/admin/early-access`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  const good = 'a'.repeat(40);
+  try {
+    delete process.env.ADMIN_TOKEN;
+    assert.equal((await get(good)).status, 404, 'off when no token is configured');
+    process.env.ADMIN_TOKEN = 'too-short';
+    assert.equal((await get('too-short')).status, 404, 'a short token is refused');
+    process.env.ADMIN_TOKEN = good;
+    assert.equal((await get()).status, 401);
+    assert.equal((await get('b'.repeat(40))).status, 401);
+    assert.equal((await get('a'.repeat(39))).status, 401);
+    db.prepare("INSERT OR REPLACE INTO early_access (email, wants, url, source) VALUES ('admin-test@example.com', 'a video', '', 'test')").run();
+    const ok = await get(good);
+    assert.equal(ok.status, 200);
+    assert.equal(ok.headers.get('cache-control'), 'no-store');
+    const body = await ok.json();
+    assert.ok(body.count >= 1 && body.rows.some((r) => r.email === 'admin-test@example.com'));
+  } finally {
+    delete process.env.ADMIN_TOKEN;
+    server.close();
+  }
+});

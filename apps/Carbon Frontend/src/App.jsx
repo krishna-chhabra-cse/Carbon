@@ -12,6 +12,7 @@ import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
+import Admin from './pages/Admin';
 import Dashboard from './pages/Dashboard';
 import { AuthProvider } from './lib/auth';
 import RequireAuth from './components/site/RequireAuth';
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/app" element={<Suspense fallback={<div className="cx" />}><GoDeeper /></Suspense>} />
             <Route path="/roast" element={<RoastPage />} />
             <Route path="/roast/:id" element={<RoastPage />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />

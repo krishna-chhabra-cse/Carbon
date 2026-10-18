@@ -162,12 +162,22 @@ Redeploy (Vite bakes these in at build time, so a redeploy is needed after any c
 
 ## Reading the early-access list
 
-Everyone who joins the list from the site is stored in the backend's database (`early_access` table). To get them as a spreadsheet:
+Everyone who joins the list from the site is stored in the backend's database (`early_access` table).
 
-- **On the EC2 server (Docker):** `sudo docker exec carbon node scripts/early-access.js > early-access.csv`
-- **On Railway or another host:** run `npm run early-access --prefix "apps/Carbon Backend"` in the service's shell.
+**In your browser (easiest):** set `ADMIN_TOKEN` on the backend to a long random value, restart the backend, then open `https://carbons.codes/admin`, enter the token, and click **Show list**. There's a **Download CSV** button. The page is switched off when `ADMIN_TOKEN` is empty or shorter than 24 characters, and it isn't linked from anywhere on the site. Make a token with:
 
-Open the CSV in Excel or Google Sheets. People who only create an account (without joining the list) are in Supabase under **Authentication → Users**.
+```bash
+node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+```
+
+On the EC2 server, add it to `~/carbon.env` (`ADMIN_TOKEN=...`) and re-run the `docker run` command from step 5 of the EC2 section. Keep the token private.
+
+**From the command line instead:**
+
+- On the EC2 server (Docker): `sudo docker exec carbon node scripts/early-access.js > early-access.csv`
+- On Railway or another host: run `npm run early-access --prefix "apps/Carbon Backend"` in the service's shell.
+
+People who only create an account (without joining the list) are in Supabase under **Authentication → Users**.
 
 ## Running everything locally
 
