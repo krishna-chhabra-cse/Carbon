@@ -63,3 +63,19 @@ coverage/
 apps/Carbon Backend/data/
 apps/scratch/
 apps/Carbon Studio/recordings/
+
+# Keys, certificates and credentials: never commit these
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa*
+id_ed25519*
+*secrets*.json
+*credentials*.json
+service-account*.json
+.npmrc
+.netrc
+.aws/
+
