@@ -139,6 +139,12 @@ export default function VideoResult() {
               </div>
             </div>
           </>
+        ) : job.status === 'expired' ? (
+          <div className="cx-card p-8 max-w-xl">
+            <div className="text-xl font-semibold">This video has been removed</div>
+            <p className="mt-3" style={{ color: 'var(--cx-muted)' }}>To save space, finished videos and decks are deleted after 60 days. You can make a new one from the same link in a minute.</p>
+            <Link to={`/create?url=${encodeURIComponent(job.url)}`} className="cx-btn cx-btn-primary mt-6">Make it again</Link>
+          </div>
         ) : job.status === 'error' ? (
           <div className="cx-card p-8 max-w-xl">
             <div className="flex items-center gap-3 text-xl font-semibold"><AlertTriangle color="var(--cx-red)" /> That one didn’t work</div>

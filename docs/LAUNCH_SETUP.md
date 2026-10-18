@@ -101,19 +101,27 @@ This is what carbons.codes runs on. It is the cheapest way if you have AWS credi
 
    ```bash
    sudo mkdir -p /opt/carbon-data
-   sudo docker run -d --restart unless-stopped --name carbon --env-file ~/carbon.env      -v /opt/carbon-data:/data -p 127.0.0.1:3002:3002 carbon-backend
-   printf 'api.carbons.codes {
-    reverse_proxy localhost:3002
-}
-' | sudo tee /etc/caddy/Caddyfile
+   sudo docker run -d --restart unless-stopped --name carbon --env-file ~/carbon.env \
+     --log-opt max-size=10m --log-opt max-file=3 \
+     -v /opt/carbon-data:/data -p 127.0.0.1:3002:3002 carbon-backend
+   printf 'api.carbons.codes {\n    reverse_proxy localhost:3002\n}\n' | sudo tee /etc/caddy/Caddyfile
    sudo systemctl restart caddy
    ```
 
 6. **Check**: `https://api.carbons.codes/health` shows `"status": "ok"`. Set the website's `VITE_API_URL` to `https://api.carbons.codes` and redeploy it.
 
-**Updating later**: `cd ~/carbon && git pull && sudo docker build -f deploy/backend.Dockerfile -t carbon-backend . && sudo docker rm -f carbon`, then run step 5's `docker run` again.
+**Updating later**: `cd ~/carbon && git pull && sudo docker build -f deploy/backend.Dockerfile -t carbon-backend . && sudo docker rm -f carbon`, then run step 5's `docker run` again, then `sudo docker image prune -f` to free the old image.
 
 **Reading the early-access list**: `sudo docker exec carbon node scripts/early-access.js > early-access.csv`.
+
+### 3c. Keeping the server healthy (do these before launch day)
+
+- **Backups.** Everything the backend stores (video records, the early-access list, roasts) lives in `/opt/carbon-data` on one disk. In the AWS console go to **EC2 → Lifecycle Manager → Create lifecycle policy → EBS snapshot policy**, target the instance's volume, snapshot once a day, keep 7. Accounts themselves are in Supabase, which backs itself up.
+- **Disk.** Each video is about 2 MB. Finished videos are deleted after `VIDEO_RETENTION_DAYS` (default 60) and show "This video has been removed". Check `df -h /` now and then, and grow the EBS volume (EC2 → Volumes → Modify) if it passes 70%.
+- **Logs.** The `--log-opt` flags in step 5 stop container logs from growing forever.
+- **Uptime alerts.** Add free monitors (for example [UptimeRobot](https://uptimerobot.com)) for `https://api.carbons.codes/health` and `https://carbons.codes`, with email alerts.
+- **How many videos at once.** One video renders at a time (`RENDER_CONCURRENCY=1`), taking about 1 to 3 minutes. If many people sign up at once they queue (the page shows their position). To serve more at once, use a bigger instance and raise `RENDER_CONCURRENCY`.
+- **AI quota.** If the Gemini key runs out of quota, videos still work with built-in fallbacks, but the writing is plainer. Use a key with billing or enough quota before a launch.
 
 ## 4. Agent service (Roast + Go deeper)
 

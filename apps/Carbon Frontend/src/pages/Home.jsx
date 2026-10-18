@@ -30,7 +30,7 @@ function UrlForm({ big = false }) {
     >
       <input
         className="cx-input cx-mono"
-        placeholder="github.com/you/app  or  your-app.com"
+        placeholder="Paste a repo or website link"
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         aria-label="GitHub repo or website URL"
@@ -205,6 +205,7 @@ export default function Home() {
             ['Private repos?', 'Public repos and public websites for now.'],
             ['Do I need an account?', 'To make videos, yes: sign up with your email or Google. Roast my codebase needs no account.'],
             ['What if a render fails?', 'It doesn’t count toward your free limit.'],
+            ['Who owns the video?', 'You do. The videos and decks you make are yours to post and share.'],
             ['Is it free?', 'Yes: 2 videos a day, 720p with a small watermark. Want longer videos, more categories or more soundtracks? Join early access.'],
           ].map(([q, a]) => (
             <div key={q} className="cx-card p-6">

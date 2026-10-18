@@ -17,6 +17,9 @@ const OUT_DIR = path.join(DATA_DIR, 'outputs');
 const BRIEF_DIR = path.join(DATA_DIR, 'briefs');
 const BRIEF_TTL_HOURS = 24;
 const WORK_DIR = path.join(DATA_DIR, 'work');
+// Finished videos and decks are deleted after this many days so the disk can't fill up.
+// The job row stays (status 'expired'); 0 turns the clean-up off.
+const RETENTION_DAYS = parseInt(process.env.VIDEO_RETENTION_DAYS || '60', 10);
 const CONCURRENCY = parseInt(process.env.RENDER_CONCURRENCY || '1', 10);
 const RENDER_TIMEOUT_MS = parseInt(process.env.RENDER_TIMEOUT_MS || String(15 * 60 * 1000), 10);
 
@@ -32,6 +35,8 @@ const refundCredit = db.prepare('UPDATE users SET credits = credits + 1 WHERE id
 const getBrief = db.prepare(`SELECT * FROM video_briefs WHERE id = ? AND created_at > datetime('now', '-${BRIEF_TTL_HOURS} hours')`);
 const oldBriefs = db.prepare(`SELECT id FROM video_briefs WHERE created_at <= datetime('now', '-${BRIEF_TTL_HOURS} hours')`);
 const dropBrief = db.prepare('DELETE FROM video_briefs WHERE id = ?');
+const oldVideos = db.prepare("SELECT id, video_file, deck_file FROM video_jobs WHERE status = 'done' AND created_at <= datetime('now', ?)");
+const markExpired = db.prepare("UPDATE video_jobs SET status = 'expired', video_file = NULL, deck_file = NULL, updated_at = datetime('now') WHERE id = ?");
 
 const parse = (s) => {
   try {
@@ -163,13 +168,28 @@ async function tick() {
   }
 }
 
+// Deletes the files of videos older than the retention window. Returns how many.
+function sweepVideos(days = RETENTION_DAYS) {
+  if (!(days > 0)) return 0;
+  const old = oldVideos.all(`-${days} days`);
+  for (const job of old) {
+    for (const file of [job.video_file, job.deck_file]) {
+      if (file) fs.rmSync(path.join(OUT_DIR, path.basename(file)), { force: true });
+    }
+    markExpired.run(job.id);
+  }
+  return old.length;
+}
+
 function startWorker() {
   if (timer) return;
   db.prepare("UPDATE video_jobs SET status = 'queued', step = 'queued' WHERE status = 'running'").run();
   sweepBriefs();
   setInterval(sweepBriefs, 60 * 60 * 1000).unref();
+  sweepVideos();
+  setInterval(sweepVideos, 6 * 60 * 60 * 1000).unref();
   timer = setInterval(tick, 2000);
   tick();
 }
 
-module.exports = { startWorker, processJob, sweepBriefs, kick: () => setImmediate(tick), OUT_DIR, BRIEF_DIR, BRIEF_TTL_HOURS };
+module.exports = { startWorker, processJob, sweepBriefs, sweepVideos, kick: () => setImmediate(tick), OUT_DIR, BRIEF_DIR, BRIEF_TTL_HOURS };

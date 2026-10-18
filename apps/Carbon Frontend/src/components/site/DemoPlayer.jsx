@@ -205,7 +205,7 @@ export default function DemoPlayer({ src, poster, chapters = [], badge = 'Demo',
 
       {/* Chapter buttons */}
       {chapters.length ? (
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Chapters">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1 cx-scroll" role="list" aria-label="Chapters">
           {chapters.map((c, i) => (
             <button key={c.t} type="button" role="listitem" onClick={() => { seek(c.t); play(); }}
               className="shrink-0 text-left px-3 py-2 rounded-lg transition"

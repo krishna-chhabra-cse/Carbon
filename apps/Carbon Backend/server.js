@@ -13,6 +13,11 @@ const app = express();
 
 // Trust reverse proxies (Render, Railway, Cloudflare, NGINX) for real client IPs
 app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
+  next();
+});
 
 // ── 1. Security & Middleware Configuration ───────────────────
 
