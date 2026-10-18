@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import EarlyAccess from '../components/site/EarlyAccess';
 import { QuotaBadge, useMe } from './Create';
 
-const statusColor = { done: 'var(--cx-green)', error: 'var(--cx-red)', queued: 'var(--cx-amber)', running: 'var(--cx-amber)' };
+const statusColor = { done: 'var(--cx-green)', error: 'var(--cx-red)', queued: 'var(--cx-amber)', running: 'var(--cx-amber)', expired: 'var(--cx-dim)' };
 
 export default function Dashboard() {
   const { me, state, reload } = useMe();

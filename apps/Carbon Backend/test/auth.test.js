@@ -239,3 +239,50 @@ test('GET /api/warm answers right away, even with no agent configured', async ()
     server.close();
   }
 });
+
+test('API does not advertise Express and sets basic safety headers', async () => {
+  const app = require('../server');
+  const server = app.listen(0);
+  try {
+    const r = await fetch(`http://127.0.0.1:${server.address().port}/health`);
+    assert.equal(r.headers.get('x-powered-by'), null);
+    assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(r.headers.get('referrer-policy'), 'no-referrer');
+  } finally {
+    server.close();
+  }
+});
+
+test('retention: old finished videos lose their files and show as expired; recent ones are kept', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const { sweepVideos, OUT_DIR } = require('../pipeline/worker');
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  const make = (ago, status = 'done') => {
+    const id = crypto.randomUUID();
+    const video = `${id}.mp4`;
+    const deck = `${id}.pptx`;
+    fs.writeFileSync(path.join(OUT_DIR, video), 'v');
+    fs.writeFileSync(path.join(OUT_DIR, deck), 'd');
+    db.prepare(`INSERT INTO video_jobs (id, user_id, input_url, input_type, tier, status, video_file, deck_file, created_at)
+      VALUES (?, 'ret-user', 'https://github.com/a/b', 'repo', 'free', ?, ?, ?, datetime('now', ?))`).run(id, status, video, deck, ago);
+    return { id, video, deck };
+  };
+  const oldJob = make('-61 days');
+  const newJob = make('-5 days');
+  const failed = make('-90 days', 'error');
+  try {
+    assert.equal(sweepVideos(60), 1);
+    assert.equal(db.prepare('SELECT status, video_file FROM video_jobs WHERE id = ?').get(oldJob.id).status, 'expired');
+    assert.equal(db.prepare('SELECT video_file FROM video_jobs WHERE id = ?').get(oldJob.id).video_file, null);
+    assert.ok(!fs.existsSync(path.join(OUT_DIR, oldJob.video)) && !fs.existsSync(path.join(OUT_DIR, oldJob.deck)));
+    assert.ok(fs.existsSync(path.join(OUT_DIR, newJob.video)), 'recent video kept');
+    assert.equal(db.prepare('SELECT status FROM video_jobs WHERE id = ?').get(failed.id).status, 'error', 'only finished videos expire');
+    assert.equal(sweepVideos(0), 0, '0 days turns the clean-up off');
+  } finally {
+    for (const f of [oldJob, newJob, failed]) {
+      fs.rmSync(path.join(OUT_DIR, f.video), { force: true });
+      fs.rmSync(path.join(OUT_DIR, f.deck), { force: true });
+    }
+  }
+});

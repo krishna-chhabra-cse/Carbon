@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /create
+Disallow: /dashboard
+Disallow: /login
+Disallow: /reset-password
+Disallow: /v/
+
+Sitemap: https://carbons.codes/sitemap.xml

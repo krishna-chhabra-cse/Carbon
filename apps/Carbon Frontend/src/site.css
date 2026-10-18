@@ -70,3 +70,6 @@
   .cx button:not(.cx-btn) { background: none; box-shadow: none; padding: 0; color: inherit; border-radius: 0; }
   .cx button:not(.cx-btn):hover:not(:disabled) { background: none; box-shadow: none; transform: none; }
 }
+
+/* Thin dark scrollbars for horizontal chip rows (the default is a bright bar). */
+.cx-scroll { scrollbar-width: thin; scrollbar-color: #3a3a3a transparent; }
