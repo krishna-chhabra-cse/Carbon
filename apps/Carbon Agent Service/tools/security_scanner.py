@@ -104,7 +104,7 @@ INJECTION_PATTERNS = [
         "severity": "CRITICAL", "cwe": "CWE-78",
         # Bare or child_process-qualified calls only (not db.exec / regex.exec),
         # and template strings only when they interpolate something.
-        "regex": r"(?:(?<![\w.$])|(?<=child_process\.)|(?<=\bcp\.))(?-i:execSync|exec|spawnSync|spawn)\s*\(\s*(?:req\.|params|query|body|`[^`]*\$\{)",
+        "regex": r"(?:(?<![\w.$])|(?<=child_process\.)|(?<=\bcp\.))(?-i:execSync|exec|spawnSync|spawn)\s*\(\s*(?:req\.|params|query|body|`[^`]*\$\{)",  # noqa: E501
         "remediation": "Use parameterized commands or a safe wrapper. Never pass user input directly to shell commands."
     },
     {
@@ -125,7 +125,7 @@ INJECTION_PATTERNS = [
         "id": "VULN-009", "title": "Log Injection (unsanitized user input in logs)",
         "severity": "MEDIUM", "cwe": "CWE-117",
         # Real request data in the log call, not the words "body"/"query" in a message.
-        "regex": r"(?:console\.log|logger\.info|logger\.error|logging\.info)\s*\(.*\b(?:req|request)\.(?:body|query|params|headers|args|form)",
+        "regex": r"(?:console\.log|logger\.info|logger\.error|logging\.info)\s*\(.*\b(?:req|request)\.(?:body|query|params|headers|args|form)",  # noqa: E501
         "remediation": "Sanitize log inputs by stripping newlines and control characters before logging."
     },
 ]

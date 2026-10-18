@@ -1045,8 +1045,5 @@ def run(
     Pass `repo_path` for a cloned repo so every file is measured; `files_dict`
     alone may be a size-capped sample (it is what the LLM context gets).
     """
-    if repo_path:
-        metrics = extract_roast_metrics(repo_path)
-    else:
-        metrics = extract_roast_metrics("", files_dict=files_dict)
+    metrics = extract_roast_metrics(repo_path) if repo_path else extract_roast_metrics("", files_dict=files_dict)
     return generate_roast(metrics, personality=personality)
