@@ -19,8 +19,9 @@ Every change should serve that pipeline. If a request doesn't, say so before doi
 | `carbon-reel/` | Standalone HTML/JS reel prototype. |
 | `tests/` | Python pytest suite for the Agent Service: `unit/`, `integration/`, `e2e/`. `tests/conftest.py` sets `CARBON_AUTH_DISABLED=true` for the suite. |
 | `benchmarks/` | Scripts behind numbers quoted in the README. |
+| `docs/` | `LAUNCH_SETUP.md` (going live, including the EC2 option and reading the early-access list), `VIDEO_STYLES.md`, `TEST_INFRA.md`. `DEPLOYMENT.md` at the root only points to `LAUNCH_SETUP.md`. |
 
-Legacy apps (`apps/vscode-extension/`, `apps/chrome-extension/`, `apps/carbon-pr-action/`) are slated for archiving — don't extend them.
+Legacy apps (`apps/vscode-extension/`, `apps/chrome-extension/`, `apps/carbon-pr-action/`) are slated for archiving — don't extend them. The old analyzer endpoints they use (`/api/tts`, `/api/explain-video`, `/api/companion`, `/api/telemetry`) are off in the backend unless `LEGACY_ROUTES=true`; raw file upload to `/api/analyze` and `/api/roast` needs `ALLOW_FILE_UPLOADS=true`.
 
 ## Running
 

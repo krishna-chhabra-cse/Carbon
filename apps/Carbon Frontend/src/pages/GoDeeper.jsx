@@ -7,7 +7,7 @@ import { AlertCircle, GitBranch, Loader2, Search } from 'lucide-react';
 import { SiteShell } from '../components/site/SiteShell';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import CodebaseStudio from '../components/CodebaseStudio';
-import { API_URL } from '../lib/api';
+import { API_URL, warmUp } from '../lib/api';
 
 const SAMPLES = [
   { name: 'expressjs/express', url: 'https://github.com/expressjs/express', tag: 'Backend' },
@@ -87,6 +87,8 @@ export default function GoDeeper() {
     }
   };
 
+  useEffect(() => { warmUp(); }, []);
+
   // ?repo= links (from a finished video, or shared) start right away, once.
   useEffect(() => {
     const repo = (params.get('repo') || '').trim();
@@ -114,7 +116,7 @@ export default function GoDeeper() {
           <div className="cx-label mb-3">Go deeper · free, no sign-up</div>
           <h1 className="cx-h1 text-4xl md:text-6xl">See how a repo fits together.</h1>
           <p className="mt-4 text-lg" style={{ color: 'var(--cx-muted)' }}>
-            Paste a public GitHub repo. Carbon reads the code and shows its architecture, API endpoints and business logic in plain English. Big repos take a minute or two.
+            Paste a public GitHub repo. Carbon reads the code and shows its architecture, API endpoints and business logic in plain English. Most take a minute or two; the first one after a quiet period can take a little longer.
           </p>
           <form onSubmit={submit} className="mt-8 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">

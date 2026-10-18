@@ -54,7 +54,7 @@ function fireEvent(context, event, metadata) {
         if (!optedIn)
             return;
         const config = vscode.workspace.getConfiguration('carbon');
-        const backendUrl = config.get('backendUrl') || 'https://carbon-backend-a1sg.onrender.com';
+        const backendUrl = config.get('backendUrl') || 'https://api.carbons.codes';
         const payload = JSON.stringify({ event, source: 'vscode', metadata });
         const url = new URL('/api/telemetry', backendUrl);
         const req = https.request({ hostname: url.hostname, port: url.port || 443, path: url.pathname, method: 'POST',

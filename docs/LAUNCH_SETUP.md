@@ -79,6 +79,42 @@ Rendering needs headless Chrome and about 2 GB RAM, so Render's free tier won't 
 
    Do **not** set `AUTH_DEV_BYPASS` (it is ignored in production anyway). `GITHUB_TOKEN` matters: without it GitHub allows only 60 API calls per hour for the whole server, which a launch day burns through in minutes.
 
+### 3b. Alternative: the backend on your own EC2 server
+
+This is what carbons.codes runs on. It is the cheapest way if you have AWS credits.
+
+1. **Launch** an Ubuntu 24.04 instance, type **t3.medium** (4 GB RAM; t3.small is the minimum), 20 GB disk. Security group: SSH only from your own IP, HTTP (80) and HTTPS (443) from anywhere. Attach an **Elastic IP** so the address never changes.
+2. **DNS**: add an `A` record `api` → the Elastic IP (gives `api.carbons.codes`).
+3. **Install** (over SSH):
+
+   ```bash
+   sudo apt update && sudo apt install -y docker.io git caddy
+   sudo usermod -aG docker ubuntu
+   sudo fallocate -l 4G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+   echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+   git clone https://github.com/krishna-chhabra-cse/Carbon.git carbon && cd carbon
+   sudo docker build -f deploy/backend.Dockerfile -t carbon-backend .
+   ```
+
+4. **Settings**: create `~/carbon.env` (`nano ~/carbon.env`) with the variables from step 3 above, one `NAME=value` per line, no quotes. Keep this file private.
+5. **Run** the backend and let Caddy add HTTPS:
+
+   ```bash
+   sudo mkdir -p /opt/carbon-data
+   sudo docker run -d --restart unless-stopped --name carbon --env-file ~/carbon.env      -v /opt/carbon-data:/data -p 127.0.0.1:3002:3002 carbon-backend
+   printf 'api.carbons.codes {
+    reverse_proxy localhost:3002
+}
+' | sudo tee /etc/caddy/Caddyfile
+   sudo systemctl restart caddy
+   ```
+
+6. **Check**: `https://api.carbons.codes/health` shows `"status": "ok"`. Set the website's `VITE_API_URL` to `https://api.carbons.codes` and redeploy it.
+
+**Updating later**: `cd ~/carbon && git pull && sudo docker build -f deploy/backend.Dockerfile -t carbon-backend . && sudo docker rm -f carbon`, then run step 5's `docker run` again.
+
+**Reading the early-access list**: `sudo docker exec carbon node scripts/early-access.js > early-access.csv`.
+
 ## 4. Agent service (Roast + Go deeper)
 
 Deploy `apps/Carbon Agent Service` (Render or Railway, Python, start command `uvicorn main:app --host 0.0.0.0 --port $PORT`). Variables:
@@ -118,11 +154,12 @@ Redeploy (Vite bakes these in at build time, so a redeploy is needed after any c
 
 ## Reading the early-access list
 
-On the backend host (where `DATA_DIR` points at the volume):
+Everyone who joins the list from the site is stored in the backend's database (`early_access` table). To get them as a spreadsheet:
 
-```bash
-npm run early-access --prefix "apps/Carbon Backend" > early-access.csv
-```
+- **On the EC2 server (Docker):** `sudo docker exec carbon node scripts/early-access.js > early-access.csv`
+- **On Railway or another host:** run `npm run early-access --prefix "apps/Carbon Backend"` in the service's shell.
+
+Open the CSV in Excel or Google Sheets. People who only create an account (without joining the list) are in Supabase under **Authentication → Users**.
 
 ## Running everything locally
 

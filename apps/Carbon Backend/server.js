@@ -101,6 +101,13 @@ const roastRoutes = require('./routes/roast');
 // for, so nobody can spend those API credits through a public URL.
 const legacyRoutes = process.env.LEGACY_ROUTES === 'true';
 app.use('/api/companion', (req, res, next) => (legacyRoutes ? next() : res.status(404).json({ error: 'Not found' })));
+// The agent service sleeps when idle on free hosts. The site calls this when
+// someone opens Roast or Go deeper, so it is awake by the time they press the button.
+app.get('/api/warm', (req, res) => {
+  const agent = (process.env.PYTHON_SERVICE_URL || '').trim().replace(/\/+$/, '');
+  if (agent) require('axios').get(`${agent}/`, { timeout: 90000 }).catch(() => {});
+  res.json({ ok: true });
+});
 app.use('/api', analyzeRoutes);
 if (legacyRoutes) {
   app.use('/api', explainVideoRoutes);

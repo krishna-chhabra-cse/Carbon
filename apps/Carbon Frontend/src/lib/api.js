@@ -34,3 +34,8 @@ export async function api(path, { method = 'GET', body, auth = true } = {}) {
 }
 
 export const fileUrl = (path) => (path ? `${API_URL}${path}` : null);
+
+// Wakes the analysis service (it sleeps when idle). Fire and forget.
+export const warmUp = () => {
+  fetch(`${API_URL}/api/warm`).catch(() => {});
+};

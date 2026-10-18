@@ -69,7 +69,7 @@ async function roastWorkspaceCommand() {
             const data = await (0, carbonClient_1.roastWorkspacePayload)(payload);
             if (data.status === 'success') {
                 const isLocal = backendUrl.includes('localhost');
-                const frontendBase = isLocal ? 'http://localhost:5173' : 'https://carbon.ai';
+                const frontendBase = isLocal ? 'http://localhost:5173' : 'https://carbons.codes';
                 const targetUrl = vscode.Uri.parse(`${frontendBase}/roast/${data.id}`);
                 vscode.env.openExternal(targetUrl);
             }

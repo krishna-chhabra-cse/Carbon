@@ -227,3 +227,15 @@ test('old analyzer endpoints (TTS, Scrimba, companion, telemetry) are off by def
     server.close();
   }
 });
+
+test('GET /api/warm answers right away, even with no agent configured', async () => {
+  const app = require('../server');
+  const server = app.listen(0);
+  try {
+    const r = await fetch(`http://127.0.0.1:${server.address().port}/api/warm`);
+    assert.equal(r.status, 200);
+    assert.deepEqual(await r.json(), { ok: true });
+  } finally {
+    server.close();
+  }
+});

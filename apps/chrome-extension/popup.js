@@ -2,7 +2,7 @@
 //  Carbon Chrome Extension — Popup Controller
 // ============================================================
 
-const DEFAULT_BACKEND_URL = 'https://carbon-backend-a1sg.onrender.com';
+const DEFAULT_BACKEND_URL = 'https://api.carbons.codes';
 const DEFAULT_WEB_URL = 'https://carbons.codes';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openCarbonStudio(repoUrl) {
     chrome.storage.local.get({ webUrl: DEFAULT_WEB_URL }, (res) => {
       const baseUrl = (res.webUrl || DEFAULT_WEB_URL).replace(/\/+$/, '');
-      const targetUrl = repoUrl ? `${baseUrl}/?repo=${encodeURIComponent(repoUrl)}` : baseUrl;
+      const targetUrl = repoUrl ? `${baseUrl}/app?repo=${encodeURIComponent(repoUrl)}` : baseUrl;
       chrome.tabs.create({ url: targetUrl });
     });
   }

@@ -44,10 +44,10 @@
       if (chrome && chrome.storage && chrome.storage.local) {
         chrome.storage.local.get({ webUrl: DEFAULT_WEB_URL }, (res) => {
           const baseUrl = (res.webUrl || DEFAULT_WEB_URL).replace(/\/+$/, '');
-          window.open(`${baseUrl}/?repo=${encodeURIComponent(fullRepoUrl)}`, '_blank');
+          window.open(`${baseUrl}/app?repo=${encodeURIComponent(fullRepoUrl)}`, '_blank');
         });
       } else {
-        window.open(`${DEFAULT_WEB_URL}/?repo=${encodeURIComponent(fullRepoUrl)}`, '_blank');
+        window.open(`${DEFAULT_WEB_URL}/app?repo=${encodeURIComponent(fullRepoUrl)}`, '_blank');
       }
     });
 
