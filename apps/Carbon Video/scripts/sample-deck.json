@@ -1,0 +1,77 @@
+{
+  "title": "fastify",
+  "tagline": "Fast and low overhead web framework, for Node.js.",
+  "url": "github.com/fastify/fastify",
+  "accent": "#f1e05a",
+  "watermark": true,
+  "whyHeading": "Why developers pick it",
+  "why": [
+    {
+      "title": "Built for throughput",
+      "body": "Designed around low overhead so a server spends its time on your code, not the framework."
+    },
+    {
+      "title": "Everything is a plugin",
+      "body": "Routes, hooks and decorators are encapsulated plugins you can compose and share."
+    },
+    {
+      "title": "Validate + serialize fast",
+      "body": "JSON Schema validates input and compiles output serializers for speed."
+    }
+  ],
+  "architecture": {
+    "heading": "Architecture",
+    "nodes": [
+      {
+        "name": "Request",
+        "desc": "Incoming HTTP request"
+      },
+      {
+        "name": "Hooks",
+        "desc": "Lifecycle hooks wrap every request"
+      },
+      {
+        "name": "Handler",
+        "desc": "Your route code"
+      },
+      {
+        "name": "Serializer",
+        "desc": "Schema-compiled JSON output"
+      }
+    ],
+    "summary": "Lifecycle hooks wrap every request, and schemas make validation and serialization fast."
+  },
+  "api": {
+    "label": "Quickstart",
+    "heading": "API in one glance",
+    "items": [
+      {
+        "left": "Fastify({ logger: true })",
+        "right": "Create an app with logging"
+      },
+      {
+        "left": "app.get(path, handler)",
+        "right": "Declare a route"
+      },
+      {
+        "left": "app.register(plugin)",
+        "right": "Add an encapsulated plugin"
+      },
+      {
+        "left": "app.listen({ port })",
+        "right": "Start the server"
+      }
+    ]
+  },
+  "numbers": [
+    {
+      "value": "76K+",
+      "label": "req/s (per the README)"
+    }
+  ],
+  "numbersNote": "Sample deck made with Carbon from github.com/fastify/fastify.",
+  "cta": {
+    "headline": "Start building.",
+    "command": "npm i fastify"
+  }
+}

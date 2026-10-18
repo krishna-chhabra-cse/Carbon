@@ -1,6 +1,81 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* Element defaults live in the base layer so Tailwind utilities can override them. */
+@layer base {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background-color: var(--space-black);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-main);
+}
+p {
+  color: var(--text-muted);
+}
+input {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--space-border);
+  background: rgba(9, 13, 22, 0.7);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 15px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+input:focus {
+  border-color: var(--stellar-cyan);
+  background: rgba(9, 13, 22, 0.95);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+}
+button {
+  background: var(--gradient-btn-primary);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+}
+button:hover:not(:disabled) {
+  background: var(--gradient-btn-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.45);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+}
+
+
 :root {
   /* Deep Space Color Palette */
   --space-black: #05070f;
@@ -43,25 +118,8 @@
   --shadow-glow-purple: 0 0 24px rgba(168, 85, 247, 0.25);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
 
-html {
-  scroll-behavior: smooth;
-}
 
-body {
-  background-color: var(--space-black);
-  color: var(--text-main);
-  font-family: var(--font-family);
-  min-height: 100vh;
-  line-height: 1.6;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
 
 /* â”€â”€ Typography & Gradients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .cosmic-text-gradient {
@@ -78,15 +136,7 @@ body {
   background-clip: text;
 }
 
-h1, h2, h3, h4 {
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--text-main);
-}
 
-p {
-  color: var(--text-muted);
-}
 
 /* â”€â”€ Universal Glass Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .glass-panel {
@@ -525,55 +575,10 @@ p {
 }
 
 /* â”€â”€ Input & Probe Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-input {
-  width: 100%;
-  padding: 16px 20px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--space-border);
-  background: rgba(9, 13, 22, 0.7);
-  color: var(--text-main);
-  font-family: var(--font-family);
-  font-size: 15px;
-  outline: none;
-  transition: all 0.25s ease;
-}
 
-input:focus {
-  border-color: var(--stellar-cyan);
-  background: rgba(9, 13, 22, 0.95);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
-}
 
-button {
-  background: var(--gradient-btn-primary);
-  color: white;
-  border: none;
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-family);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
-}
 
-button:hover:not(:disabled) {
-  background: var(--gradient-btn-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.45);
-}
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
 
 .btn-outline {
   background: transparent;
@@ -2028,6 +2033,10 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
+}
+@media (max-width: 520px) {
+  .hud-stats-row { grid-template-columns: repeat(2, 1fr); width: 100%; }
+  .hud-stat-box { min-width: 0; padding: 10px 8px; }
 }
 
 .hud-stat-box {

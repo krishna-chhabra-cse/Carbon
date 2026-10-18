@@ -20,10 +20,24 @@ import {
   Film,
   Search
 } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 export default function Navbar({ activeTab, setActiveTab, onOpenPalette }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Real backend health instead of a hardcoded "online" badge.
+  const [aiStatus, setAiStatus] = useState('checking');
+
+  useEffect(() => {
+    let alive = true;
+    const check = () =>
+      fetch(`${API_URL}/health`)
+        .then((r) => alive && setAiStatus(r.ok ? 'online' : 'offline'))
+        .catch(() => alive && setAiStatus('offline'));
+    check();
+    const t = setInterval(check, 60000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,9 +119,9 @@ export default function Navbar({ activeTab, setActiveTab, onOpenPalette }) {
           )}
 
           {/* Live AI Mesh Badge */}
-          <div className="ai-mesh-pill">
-            <span className="live-pulse-dot"></span>
-            <span className="mesh-text">AI Online</span>
+          <div className="ai-mesh-pill" title={aiStatus === 'offline' ? 'Carbon backend is not reachable' : undefined}>
+            <span className="live-pulse-dot" style={aiStatus === 'online' ? undefined : { background: aiStatus === 'offline' ? '#f43f5e' : '#fbbf24', boxShadow: 'none' }}></span>
+            <span className="mesh-text">{aiStatus === 'online' ? 'AI Online' : aiStatus === 'offline' ? 'AI Offline' : 'Connecting…'}</span>
           </div>
 
           {/* Mobile Menu Toggle */}

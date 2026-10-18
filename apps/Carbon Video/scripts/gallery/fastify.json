@@ -1,0 +1,159 @@
+{
+ "accent": "#f1e05a",
+ "length": 30,
+ "beats": [
+  "Low overhead",
+  "High throughput",
+  "JSON Schema",
+  "Pino logging"
+ ],
+ "features": [
+  "Highly performant",
+  "Extensible",
+  "Schema-based",
+  "Logging",
+  "Developer friendly"
+ ],
+ "languages": [
+  {
+   "name": "JavaScript",
+   "pct": 91
+  },
+  {
+   "name": "TypeScript",
+   "pct": 9
+  }
+ ],
+ "diagram": {
+  "heading": "Architecture",
+  "nodes": [
+   {
+    "name": "Require",
+    "desc": "Import and instantiate Fastify."
+   },
+   {
+    "name": "Route",
+    "desc": "Declare endpoints and validation schemas."
+   },
+   {
+    "name": "Listen",
+    "desc": "Bind to port and start serving requests."
+   }
+  ]
+ },
+ "meta": {
+  "type": "repo",
+  "license": "MIT",
+  "language": "JavaScript",
+  "domain": "github.com/fastify/fastify",
+  "commands": [
+   "npm i fastify"
+  ],
+  "headings": [
+   "Quick start",
+   "Install",
+   "Example",
+   "Core features",
+   "Benchmarks",
+   "Documentation"
+  ],
+  "topics": [
+   "fastify",
+   "fastify-core",
+   "hacktoberfest",
+   "nodejs",
+   "performance",
+   "speed",
+   "webframework"
+  ]
+ },
+ "explainer": {
+  "problem": "Handling high request volume with low overhead.",
+  "detail": "Servers need efficient resource usage without sacrificing security or dev experience.",
+  "answer": "Fastify delivers low overhead and high throughput for Node.…",
+  "steps": [
+   {
+    "title": "Install",
+    "detail": "Add fastify to your project using npm."
+   },
+   {
+    "title": "Configure",
+    "detail": "Instantiate the framework and declare your routes."
+   },
+   {
+    "title": "Listen",
+    "detail": "Start the server and handle incoming requests."
+   }
+  ]
+ },
+ "numbers": [
+  {
+   "value": 37,
+   "suffix": "K+",
+   "label": "GitHub stars"
+  },
+  {
+   "value": 3064,
+   "suffix": "",
+   "label": "forks"
+  },
+  {
+   "value": 368,
+   "suffix": "",
+   "label": "watchers"
+  },
+  {
+   "value": 3,
+   "suffix": "",
+   "label": "languages"
+  }
+ ],
+ "chromeTitle": "FASTIFY · JAVASCRIPT · OSS",
+ "watermark": false,
+ "sections": [
+  "SIG 01 · scan",
+  "SIG 02 · github stars",
+  "SIG 03 · quickstart",
+  "SIG 04 · features",
+  "SIG 05 · start"
+ ],
+ "title": {
+  "title": "fastify",
+  "scanLabel": "SIG 01 — repo scan · github.com/fastify/fastify",
+  "ribbon": "web · framework · json · schema · open · api",
+  "caption": "fast and low overhead web framework",
+  "tag": "JAVASCRIPT"
+ },
+ "slot2": {
+  "kind": "stat",
+  "label": "GITHUB STARS",
+  "value": 37,
+  "suffix": "K+",
+  "unit": "active developers",
+  "note": "GitHub stars · live from the github api"
+ },
+ "slot3": {
+  "kind": "code",
+  "label": "QUICKSTART",
+  "heading": "Example usage",
+  "filename": "server.js",
+  "code": "npm i fastify",
+  "runCommand": "npm i fastify",
+  "status": "ready",
+  "request": "node server.js",
+  "response": "server listening"
+ },
+ "tree": {
+  "label": "FEATURES",
+  "heading": "Core features",
+  "root": "fastify()",
+  "plugins": "Highly performant, Extensible, Schema-based, Logging, Developer friendly"
+ },
+ "outro": {
+  "command": "npm i fastify",
+  "commandLabel": "INSTALL",
+  "headline": "Get started",
+  "url": "github.com/fastify/fastify",
+  "title": "fastify"
+ }
+}

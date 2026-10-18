@@ -1035,11 +1035,18 @@ def run(
     architecture_info: dict[str, Any] | None = None,
     security_info: dict[str, Any] | None = None,
     graph_stats: dict[str, Any] | None = None,
-    personality: str = "SAVAGE"
+    personality: str = "SAVAGE",
+    repo_path: str | None = None,
 ) -> dict[str, Any]:
     """
     Backwards-compatible interface for existing endpoints (e.g. main.py).
     Extracts RoastMetrics and delegates to generate_roast.
+
+    Pass `repo_path` for a cloned repo so every file is measured; `files_dict`
+    alone may be a size-capped sample (it is what the LLM context gets).
     """
-    metrics = extract_roast_metrics("", files_dict=files_dict)
+    if repo_path:
+        metrics = extract_roast_metrics(repo_path)
+    else:
+        metrics = extract_roast_metrics("", files_dict=files_dict)
     return generate_roast(metrics, personality=personality)

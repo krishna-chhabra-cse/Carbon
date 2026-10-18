@@ -1,0 +1,37 @@
+{
+  "name": "carbon-video",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Carbon launch-video templates, renderer, deck builder and site capture",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc",
+    "render:sample": "node scripts/render-video.mjs scripts/sample-storyboard.json out/sample.mp4"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.3.0",
+    "@remotion/bundler": "4.0.535",
+    "@remotion/cli": "4.0.535",
+    "@remotion/google-fonts": "4.0.535",
+    "@remotion/media": "4.0.535",
+    "@remotion/noise": "4.0.535",
+    "@remotion/paths": "4.0.535",
+    "@remotion/renderer": "4.0.535",
+    "@remotion/shapes": "4.0.535",
+    "@remotion/three": "4.0.535",
+    "@remotion/transitions": "4.0.535",
+    "playwright-core": "^1.64.1",
+    "pptxgenjs": "^4.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.535",
+    "roughjs": "4.6.6",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/three": "0.180.0",
+    "typescript": "5.9.3"
+  }
+}

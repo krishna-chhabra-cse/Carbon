@@ -96,3 +96,17 @@ class TestFullAudit:
         clean = {"app.js": "const express = require('express');\nconst app = express();\napp.listen(3000);"}
         result = run_security_audit(clean)
         assert result["scorecard"]["grade"] == "A+"
+
+
+def test_exec_rules_ignore_db_exec_and_function_keyword():
+    """`db.exec(...)` and the `function` keyword are not command/code injection."""
+    from tools.security_scanner import run_security_audit
+
+    files = {
+        "lib/db.js": "db.exec(`CREATE TABLE IF NOT EXISTS t (id TEXT)`)\nconst m = re.exec(text)\n",
+        "lib/util.js": "module.exports = function (util) { return function(x) { return x } }\n",
+        "bad/run.js": "const cp = require('child_process')\ncp.execSync(`ffmpeg -i ${req.query.file}`)\n",
+    }
+    found = {(f["filePath"], f["title"]) for f in run_security_audit(files)["findings"] if f["severity"] in ("CRITICAL", "HIGH")}
+    assert not any(path.startswith("lib/") for path, _ in found)
+    assert any(path == "bad/run.js" and "Command Injection" in title for path, title in found)

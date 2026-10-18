@@ -13,6 +13,7 @@ const axios   = require('axios');   // for making HTTP calls to Python service
 
 // A "Router" is like a mini Express app — we use it to group related routes
 const router = express.Router();
+const { parseRepo, fileUploadsAllowed } = require('../lib/inputUrl');
 
 // The URL of our Python agent service (read from .env)
 const PYTHON_SERVICE_URL = (process.env.PYTHON_SERVICE_URL || 'http://localhost:8000').trim().replace(/\/+$/, '');
@@ -24,10 +25,20 @@ const PYTHON_SERVICE_URL = (process.env.PYTHON_SERVICE_URL || 'http://localhost:
 // We return:              Streaming NDJSON with architectural analysis
 // -------------------------------------------------------
 router.post('/analyze', async (req, res) => {
-  const { repoUrl, files, folderStructure, workspaceName } = req.body;
+  const { files, folderStructure, workspaceName } = req.body || {};
+  let repoUrl = null;
 
-  // Step 1: Input Validation
-  if (!repoUrl && (!files || !Array.isArray(files) || files.length === 0)) {
+  // Step 1: Input Validation (the site only sends public GitHub repo URLs)
+  if (files && !fileUploadsAllowed()) {
+    return res.status(400).json({ error: 'Paste a public GitHub repo URL.', code: 'BAD_URL' });
+  }
+  if (!files) {
+    try {
+      repoUrl = parseRepo(req.body?.repoUrl);
+    } catch (err) {
+      return res.status(400).json({ error: err.message, code: 'BAD_URL' });
+    }
+  } else if (!Array.isArray(files) || files.length === 0) {
     return res.status(400).json({
       error: 'Either repoUrl or a non-empty files array is required.'
     });
@@ -125,16 +136,21 @@ router.post('/analyze', async (req, res) => {
 
       if (error.code === 'ECONNREFUSED' || statusCode === 502 || statusCode === 503) {
         return res.status(503).json({ 
-          error: 'Python agent service is not running or warming up.',
+          error: 'The analysis service is starting up. Please try again in 30 seconds.',
           hint: 'The AI service is currently starting up. Please try again in 15-30 seconds.'
         });
       }
 
-      return res.status(500).json({ 
-        error: 'Analysis failed',
-        details: error.message 
+      const auth = statusCode === 401 || statusCode === 403;
+      if (auth) console.error('❌ The agent service rejected our API key: check CARBON_API_KEY on both services.');
+      return res.status(auth ? 503 : 502).json({
+        error: auth ? 'Go deeper is temporarily unavailable. Please try again later.' : 'Could not analyze that repo. Is it public and not too large?'
       });
     }
+  }
+  // Every wake-up ping failed: answer instead of leaving the request hanging.
+  if (!res.headersSent) {
+    res.status(503).json({ error: 'The analysis service is starting up. Please try again in a minute.', code: 'AGENT_UNAVAILABLE' });
   }
 });
 

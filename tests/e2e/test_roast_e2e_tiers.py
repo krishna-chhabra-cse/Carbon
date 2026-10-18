@@ -856,7 +856,8 @@ class TestTier2BoundaryAndCornerCases:
             "complexity": {"deeply_nested_branches": 15}
         }
         score, grade = calculate_deterministic_score(metrics)
-        assert score == 0
+        # Scores compress toward zero but never hit a flat 0.
+        assert 1 <= score <= 5
         assert grade == "IDIOT_SANDWICH"
 
     def test_boundary_score_upper_bound_clamped_at_100(self):

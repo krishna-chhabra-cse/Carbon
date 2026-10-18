@@ -1,0 +1,14 @@
+**/node_modules
+**/.bundle
+**/out
+**/dist
+**/data
+**/.env
+**/.env.*
+# No "!" exceptions: one makes BuildKit walk every excluded node_modules tree.
+.git
+apps/Carbon Studio
+apps/vscode-extension
+apps/chrome-extension
+**/*.vsix
+**/*.zip

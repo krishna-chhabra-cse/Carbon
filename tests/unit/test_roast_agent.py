@@ -791,3 +791,23 @@ class TestDefensiveHardenings:
         wo = identify_worst_offender(metrics)
         assert "101" in wo["file"]
         assert "101 -> 102 -> 103" in wo["reason"]
+
+
+def test_run_with_repo_path_measures_every_file(tmp_path):
+    """A cloned repo is measured in full, not from the size-capped LLM sample."""
+    from agents.roast_agent import run
+
+    src = tmp_path / "src"
+    tests_dir = tmp_path / "test"
+    src.mkdir()
+    tests_dir.mkdir()
+    for i in range(40):
+        (src / f"mod_{i}.py").write_text("\n".join(f"def f{j}():\n    return {j}" for j in range(30)))
+    for i in range(10):
+        (tests_dir / f"test_mod_{i}.py").write_text("def test_ok():\n    assert True\n")
+
+    with patch("agents.roast_agent.generate_with_retry", None):
+        result = run(files_dict={}, repo_path=str(tmp_path))
+
+    assert result["stats"]["total_files"] == 50
+    assert result["stats"]["test_ratio"] != "0.0%"

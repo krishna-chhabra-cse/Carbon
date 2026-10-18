@@ -57,6 +57,24 @@ jobs:
           flags: python
           fail_ci_if_error: false
 
+  # ── Backend + launch-video pipeline tests ───────────────────
+  backend-tests:
+    runs-on: ubuntu-latest
+    name: Backend Tests (auth, quota, storyboard, billing)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # better-sqlite3 13 needs >=22; matches deploy/backend.Dockerfile
+      - name: Install backend
+        run: npm ci --prefix "apps/Carbon Backend"
+      - name: Run backend tests
+        run: npm test --prefix "apps/Carbon Backend"
+      - name: Typecheck video templates
+        run: |
+          npm ci --prefix "apps/Carbon Video"
+          npm run typecheck --prefix "apps/Carbon Video"
+
   # ── Security Scanner (SARIF) ────────────────────────────────
   security-scan:
     runs-on: ubuntu-latest
