@@ -85,6 +85,14 @@ app.use('/api/chat', analyzeLimiter);
 app.post('/api/roast', heavyLimiter);
 app.post('/api/videos', heavyLimiter);
 app.post('/api/briefs', heavyLimiter);
+// The owner's admin endpoints: few tries, so the token can't be guessed.
+app.use('/api/admin', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many tries. Wait a few minutes.', code: 'RATE_LIMIT_EXCEEDED' }
+}));
 app.post('/api/early-access', rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,

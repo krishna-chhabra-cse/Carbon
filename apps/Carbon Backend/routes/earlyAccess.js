@@ -4,8 +4,13 @@
 //  POST /api/early-access  { email, wants?, url? }  → { ok: true }
 //  Stores one row per email (updated if they come back). Nothing is charged
 //  and no price is shown; this tells us who wants videos and for what.
+//
+//  GET /api/admin/early-access  (Authorization: Bearer <ADMIN_TOKEN>)  → { count, rows }
+//  The owner's view of the list. Off (404) unless ADMIN_TOKEN is set to a
+//  long random value (24+ characters).
 // ============================================================
 
+const crypto = require('crypto');
 const express = require('express');
 const { db } = require('../lib/db');
 
@@ -50,6 +55,25 @@ router.post('/early-access', (req, res) => {
     source: clean(req.body?.source, 40) || 'site',
   });
   res.json({ ok: true });
+});
+
+const listAll = db.prepare('SELECT email, wants, url, source, created_at, updated_at FROM early_access ORDER BY created_at DESC');
+
+function adminOnly(req, res, next) {
+  const token = (process.env.ADMIN_TOKEN || '').trim();
+  if (token.length < 24) return res.status(404).json({ error: 'Not found' });
+  const given = Buffer.from((req.get('authorization') || '').replace(/^Bearer /, ''));
+  const real = Buffer.from(token);
+  if (given.length !== real.length || !crypto.timingSafeEqual(given, real)) {
+    return res.status(401).json({ error: 'Wrong token.', code: 'ADMIN_AUTH' });
+  }
+  next();
+}
+
+router.get('/admin/early-access', adminOnly, (req, res) => {
+  const rows = listAll.all();
+  res.set('Cache-Control', 'no-store');
+  res.json({ count: rows.length, rows });
 });
 
 module.exports = router;
