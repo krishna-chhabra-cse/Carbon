@@ -1,0 +1,11 @@
+{
+  "accent": "#3178c6",
+  "chromeTitle": "VITE · TYPESCRIPT · OSS",
+  "watermark": true,
+  "sections": ["SIG 01 · repo scan", "SIG 02 · community", "SIG 03 · quickstart", "SIG 04 · features", "SIG 05 · install"],
+  "title": { "title": "vite", "scanLabel": "SIG 01 — repo scan · github.com/vitejs/vite", "ribbon": "dev server · hmr · rollup · esbuild · plugins · ssr · typescript", "caption": "next generation frontend tooling", "tag": "TYPESCRIPT" },
+  "slot2": { "kind": "stat", "label": "GITHUB STARS", "value": 70, "suffix": "K+", "unit": "stars on github", "note": "from the github api" },
+  "slot3": { "kind": "code", "label": "QUICKSTART", "heading": "One command to start.", "filename": "terminal", "code": "npm create vite@latest my-app\ncd my-app\nnpm install\nnpm run dev", "runCommand": "npm run dev", "status": "ready in 300 ms", "request": "GET /", "response": "<div id=app>" },
+  "tree": { "label": "FEATURES", "heading": "Fast by default.", "root": "vite", "plugins": "instant server start, lightning hmr, rollup builds, typed api, universal plugins" },
+  "outro": { "command": "npm create vite", "headline": "Start building.", "url": "github.com/vitejs/vite", "title": "vite" }
+}

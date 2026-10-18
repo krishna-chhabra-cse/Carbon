@@ -63,7 +63,9 @@ OWASP_PATTERNS = [
         "id": "VULN-002",
         "title": "Dangerous Dynamic Code Execution (eval / exec)",
         "severity": "CRITICAL",
-        "regex": r"(?<![\w.])(?:eval|exec|Function)\s*\(\s*(?:req\.|params|body|[a-zA-Z0-9_$]+)",
+        # Case-sensitive on purpose: the `Function` constructor, not the
+        # `function` keyword (rules run with IGNORECASE).
+        "regex": r"(?<![\w.$])(?-i:eval|exec|Function)\s*\(\s*(?:req\.|params|body|[a-zA-Z0-9_$]+)",
         "remediation": (
             "Avoid eval() and exec(). Use safe structured parsers like JSON.parse() or dedicated AST validators."
         )
@@ -100,7 +102,9 @@ INJECTION_PATTERNS = [
     {
         "id": "VULN-006", "title": "Command Injection (child_process with user input)",
         "severity": "CRITICAL", "cwe": "CWE-78",
-        "regex": r"(?:exec|execSync|spawn|spawnSync)\s*\(\s*(?:req\.|params|query|body|`)",
+        # Bare or child_process-qualified calls only (not db.exec / regex.exec),
+        # and template strings only when they interpolate something.
+        "regex": r"(?:(?<![\w.$])|(?<=child_process\.)|(?<=\bcp\.))(?-i:execSync|exec|spawnSync|spawn)\s*\(\s*(?:req\.|params|query|body|`[^`]*\$\{)",
         "remediation": "Use parameterized commands or a safe wrapper. Never pass user input directly to shell commands."
     },
     {
@@ -120,7 +124,8 @@ INJECTION_PATTERNS = [
     {
         "id": "VULN-009", "title": "Log Injection (unsanitized user input in logs)",
         "severity": "MEDIUM", "cwe": "CWE-117",
-        "regex": r"(?:console\.log|logger\.info|logger\.error|logging\.info)\s*\(.*(?:req\.|params|query|body)",
+        # Real request data in the log call, not the words "body"/"query" in a message.
+        "regex": r"(?:console\.log|logger\.info|logger\.error|logging\.info)\s*\(.*\b(?:req|request)\.(?:body|query|params|headers|args|form)",
         "remediation": "Sanitize log inputs by stripping newlines and control characters before logging."
     },
 ]

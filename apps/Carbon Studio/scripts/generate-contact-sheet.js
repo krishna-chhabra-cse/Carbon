@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -13,7 +13,8 @@ console.log('Generating contact sheet and QA frames...');
 
 try {
   // Extract a frame every 1 second for visual inspection
-  execSync(`ffmpeg -y -i "${videoPath}" -vf fps=1 "${outDir}/frame_%03d.png"`, { stdio: 'inherit' });
+  // Arguments as an array: no shell, so paths can't inject commands.
+  execFileSync('ffmpeg', ['-y', '-i', videoPath, '-vf', 'fps=1', path.join(outDir, 'frame_%03d.png')], { stdio: 'inherit' });
   
   // Montage into a contact sheet using ImageMagick/ffmpeg
   console.log(`\nQA frames generated in: ${outDir}`);

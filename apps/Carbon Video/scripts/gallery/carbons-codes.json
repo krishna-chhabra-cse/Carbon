@@ -1,0 +1,122 @@
+{
+ "accent": "#ff5b1f",
+ "length": 30,
+ "beats": [
+  "Catch leaks early.",
+  "Air-gapped secure.",
+  "Blast radius maps."
+ ],
+ "features": [
+  "Security Scorecards",
+  "Architecture Maps",
+  "Blast-Radius Q&A",
+  "Offline Mode"
+ ],
+ "languages": [],
+ "diagram": {
+  "heading": "System Architecture",
+  "nodes": [
+   {
+    "name": "AST Token Sieve",
+    "desc": "Scans code for leaked secrets and OWASP vulnerabilities."
+   },
+   {
+    "name": "Code Skeletonizer",
+    "desc": "Reduces LLM context while preserving signatures."
+   },
+   {
+    "name": "GraphRAG Engine",
+    "desc": "Answers impact questions with citation-backed maps."
+   }
+  ]
+ },
+ "meta": {
+  "type": "site",
+  "license": "",
+  "language": "",
+  "domain": "carbons.codes",
+  "commands": [],
+  "headings": [
+   "Catch what's leaking before it ships.",
+   "Your codebase is a black box. And it",
+   "DevSecOps Security Scanner",
+   "AST Token Sieve",
+   "GraphRAG Blast Radius Q&A",
+   "Air-Gapped Offline Mode"
+  ],
+  "topics": []
+ },
+ "explainer": {
+  "problem": "Your codebase is a black box. And it might be leaking.",
+  "detail": "Hardcoded secrets survive dozens of commits before anyone notices.",
+  "answer": "Carbon AI catches leaked credentials and vulnerabilities.",
+  "steps": [
+   {
+    "title": "Connect",
+    "detail": "Link your codebase to the security scanner."
+   },
+   {
+    "title": "Scan",
+    "detail": "Run AST token sieves and generate security scorecards."
+   },
+   {
+    "title": "Fix",
+    "detail": "Apply one-click remediation diffs before merging."
+   }
+  ]
+ },
+ "numbers": [],
+ "chromeTitle": "CARBON AI · CARBONS.CODES · LIVE",
+ "watermark": false,
+ "sections": [
+  "SIG 01 · scan",
+  "SIG 02 · homepage",
+  "SIG 03 · product",
+  "SIG 04 · features",
+  "SIG 05 · start"
+ ],
+ "title": {
+  "title": "Carbon AI",
+  "scanLabel": "SIG 01 — site scan · carbons.codes",
+  "ribbon": "Security · AST Architecture · Blast Radius Q&A · Offline Mode · Zero Token Cost",
+  "caption": "catch leaked credentials and owasp vulnerabilities.",
+  "tag": "DEVSECOPS"
+ },
+ "slot2": {
+  "kind": "shot",
+  "image": "gallery/carbons-codes-hero.jpg",
+  "label": "LIVE SITE",
+  "heading": "Catch what's leaking before it ships.",
+  "domain": "carbons.codes",
+  "chips": [
+   "AST Token Sieve",
+   "GraphRAG Blast Radius",
+   "Air-Gapped Mode"
+  ]
+ },
+ "slot3": {
+  "kind": "shot",
+  "image": "gallery/carbons-codes-section.jpg",
+  "label": "TAKE A LOOK",
+  "heading": "Works where your team already works.",
+  "domain": "carbons.codes",
+  "chips": [
+   "VS Code Extension",
+   "1-Click Remediation",
+   "Dependency Graph"
+  ]
+ },
+ "tree": {
+  "label": "FEATURES",
+  "heading": "Multi-Agent Intelligence",
+  "root": "carbons.codes",
+  "plugins": "Security Scorecards, Architecture Maps, Blast-Radius Q&A, Offline Mode"
+ },
+ "outro": {
+  "command": "carbons.codes",
+  "commandLabel": "VISIT",
+  "headline": "Audit your codebase.",
+  "url": "carbons.codes",
+  "title": "Carbon AI"
+ }
+}

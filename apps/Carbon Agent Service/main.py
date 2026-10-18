@@ -181,6 +181,16 @@ def get_cache_key(repo_url: str | None, workspace_name: str | None) -> str:
 # -------------------------------------------------------
 # Health check — useful to know if Python service is alive
 # -------------------------------------------------------
+def clone_error_message(error: str) -> str:
+    "A visitor-friendly reason a clone failed (git's own output stays in the logs)."
+    text = str(error or "")
+    if "Only https://github.com/" in text or "Security Policy" in text:
+        return "Paste a public GitHub repo URL, like https://github.com/owner/repo"
+    if "too large" in text.lower() or "disk budget" in text:
+        return "That repo is too large to analyze. Try a smaller one."
+    return "Could not download that repo. Check that it is public and the URL is right."
+
+
 @app.get("/")
 def health_check():
     return {"status": "ok", "message": "🐍 Python Agent Service is running!"}
@@ -319,7 +329,10 @@ async def chat(request: ChatRequest):
     if cached_data:
         from agents.graphrag_agent import run_graphrag_chat
         try:
-            res = run_graphrag_chat(
+            # LLM calls are blocking: run them off the event loop so one chat
+            # doesn't freeze every other request.
+            res = await asyncio.to_thread(
+                run_graphrag_chat,
                 files_dict=cached_data["files_content"],
                 query=request.query,
                 folder_structure=cached_data.get("folder_structure", "")
@@ -331,7 +344,8 @@ async def chat(request: ChatRequest):
     # Fallback to general AI companion
     from agents.companion_agent import run as run_companion_agent
     try:
-        res = run_companion_agent(
+        res = await asyncio.to_thread(
+            run_companion_agent,
             query=request.query,
             mode="explain",
             context={"url": request.repo_url}
@@ -351,7 +365,8 @@ async def chat(request: ChatRequest):
 async def companion(request: CompanionRequest):
     from agents.companion_agent import run as run_companion_agent
     try:
-        result = run_companion_agent(
+        result = await asyncio.to_thread(
+            run_companion_agent,
             query=request.query,
             mode=request.mode or "explain",
             context=request.context or {}
@@ -465,10 +480,13 @@ async def roast_codebase(req: RoastRequest):
             files_dict = await asyncio.to_thread(read_files_for_analysis, repo_path)
 
         from agents.roast_agent import run as run_roast_agent
-        roast_data = run_roast_agent(
+        # Metrics + LLM call are blocking; keep them off the event loop.
+        roast_data = await asyncio.to_thread(
+            run_roast_agent,
             files_dict=files_dict,
             architecture_info=req.architecture_info,
-            security_info=req.security_info
+            security_info=req.security_info,
+            repo_path=repo_path,
         )
 
         return {

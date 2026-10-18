@@ -7,14 +7,14 @@
 //  and AI Co-Pilot with real-time filters and video cinema integration.
 // ============================================================
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Layers, 
   Server, 
   Webhook, 
   Brain, 
   MessageSquare, 
-  Play, 
   Film, 
   ExternalLink, 
   Copy, 
@@ -23,31 +23,17 @@ import {
   Filter, 
   Sparkles, 
   ArrowRight, 
-  Maximize2, 
   Folder, 
   Code2, 
-  CheckCircle2, 
-  Compass, 
-  ShieldAlert, 
-  Clock,
   Terminal,
   Grid,
   ChevronRight,
-  Presentation
 } from 'lucide-react';
 import ArchitectureDiagram from './ArchitectureDiagram';
 import GalaxyDiagram from './GalaxyDiagram';
 import Chatbox from './Chatbox';
-import PresentationDeck from './PresentationDeck';
 
-export default function CodebaseStudio({ 
-  result, 
-  videoUrl, 
-  videoLoading, 
-  videoError, 
-  onGenerateVideo, 
-  onOpenCinema 
-}) {
+export default function CodebaseStudio({ result }) {
   const [activeStudioTab, setActiveStudioTab] = useState('overview'); // 'overview' | 'architecture' | 'endpoints' | 'logic' | 'chat'
   const [componentSearch, setComponentSearch] = useState('');
   const [endpointMethodFilter, setEndpointMethodFilter] = useState('ALL');
@@ -56,56 +42,6 @@ export default function CodebaseStudio({
   const [copiedEndpointIdx, setCopiedEndpointIdx] = useState(null);
   
   const [is3DView, setIs3DView] = useState(false);
-
-  const [roastData, setRoastData] = useState(null);
-  const [roastLoading, setRoastLoading] = useState(false);
-  const [roastError, setRoastError] = useState('');
-  const [roastLoadingStep, setRoastLoadingStep] = useState(0);
-
-  const roastLoadingMessages = [
-    'Preparing the grill...',
-    'Analyzing architecture for spaghetti...',
-    'Checking security vulnerabilities...',
-    'Judging your coding skills...',
-    'Synthesizing brutal feedback...'
-  ];
-
-  useEffect(() => {
-    if (roastLoading) {
-      setRoastLoadingStep(0);
-      const interval = setInterval(() => {
-        setRoastLoadingStep(s => Math.min(s + 1, roastLoadingMessages.length - 1));
-      }, 2500);
-      return () => clearInterval(interval);
-    }
-  }, [roastLoading]);
-
-  const generateRoast = async () => {
-    setRoastLoading(true);
-    setRoastError('');
-    try {
-      const pyUrl = import.meta.env.VITE_PYTHON_SERVICE_URL || (import.meta.env.DEV ? 'http://127.0.0.1:8005' : 'https://carbon-agent-service.onrender.com');
-      const response = await fetch(`${pyUrl}/api/roast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          repo_url: result.repo_url || 'Unknown',
-          architecture_info: result.architecture || {},
-          security_info: result.security || {}
-        })
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        setRoastData(data.roast);
-      } else {
-        setRoastError(data.message || 'Failed to roast');
-      }
-    } catch (e) {
-      setRoastError(e.message);
-    } finally {
-      setRoastLoading(false);
-    }
-  };
 
   if (!result || !result.architecture) return null;
 
@@ -117,23 +53,23 @@ export default function CodebaseStudio({
   // Filtered components
   const componentsList = architecture.key_components || [];
   const filteredComponents = componentsList.filter(c => 
-    c.name.toLowerCase().includes(componentSearch.toLowerCase()) ||
-    c.purpose.toLowerCase().includes(componentSearch.toLowerCase()) ||
+    String(c.name || '').toLowerCase().includes(componentSearch.toLowerCase()) ||
+    String(c.purpose || '').toLowerCase().includes(componentSearch.toLowerCase()) ||
     (c.location && c.location.toLowerCase().includes(componentSearch.toLowerCase()))
   );
 
   // Filtered endpoints
   const endpointsList = api_docs?.endpoints || [];
   const filteredEndpoints = endpointsList.filter(ep => {
-    const matchesMethod = endpointMethodFilter === 'ALL' || ep.method.toUpperCase() === endpointMethodFilter;
-    const matchesSearch = ep.path.toLowerCase().includes(endpointSearch.toLowerCase()) ||
-                          ep.description.toLowerCase().includes(endpointSearch.toLowerCase()) ||
+    const matchesMethod = endpointMethodFilter === 'ALL' || String(ep.method || '').toUpperCase() === endpointMethodFilter;
+    const matchesSearch = String(ep.path || '').toLowerCase().includes(endpointSearch.toLowerCase()) ||
+                          String(ep.description || '').toLowerCase().includes(endpointSearch.toLowerCase()) ||
                           (ep.file && ep.file.toLowerCase().includes(endpointSearch.toLowerCase()));
     return matchesMethod && matchesSearch;
   });
 
   const getMethodStyle = (method) => {
-    switch (method.toUpperCase()) {
+    switch (String(method || '').toUpperCase()) {
       case 'GET': return { bg: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', border: 'rgba(34, 197, 94, 0.35)' };
       case 'POST': return { bg: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: 'rgba(56, 189, 248, 0.35)' };
       case 'PUT': return { bg: 'rgba(234, 179, 8, 0.15)', color: '#facc15', border: 'rgba(234, 179, 8, 0.35)' };
@@ -144,7 +80,7 @@ export default function CodebaseStudio({
   };
 
   const copyPath = (path, idx) => {
-    navigator.clipboard.writeText(path);
+    navigator.clipboard?.writeText(path).catch(() => {});
     setCopiedEndpointIdx(idx);
     setTimeout(() => setCopiedEndpointIdx(null), 2000);
   };
@@ -201,63 +137,31 @@ export default function CodebaseStudio({
         </div>
       </div>
 
-      {/* ── 2. AI VIDEO CINEMA BANNER ── */}
+      {/* ── 2. NEXT STEPS: the real video + deck, and the roast ── */}
       <div className="studio-video-banner">
         <div className="video-banner-info">
           <div className="video-tag">
-            <Sparkles size={13} /> AI Video Walkthrough
+            <Sparkles size={13} /> Launch it
           </div>
-          <h3 className="video-banner-title">
-            {videoUrl ? "Architectural Video Walkthrough is Ready!" : "Generate 3-Minute Audiovisual Walkthrough"}
-          </h3>
+          <h3 className="video-banner-title">Turn this repo into a launch video + pitch deck</h3>
           <p className="video-banner-desc">
-            {videoUrl 
-              ? "Watch the narrated, synchronized slides and interactive flowcharts directly inside Carbon."
-              : "Let our video agent synthesize an interactive presentation with narrated slides and diagrams."}
+            A 30-second beat-synced video and an editable .pptx deck, made from the repo’s real numbers and code. Free account, 2 videos a day.
           </p>
         </div>
-
         <div className="video-banner-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setActiveStudioTab('slides')}
-            className="btn-video-hero"
-            style={{ background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)' }}
-            title="Open AI Slide Deck with 1-click Gamma AI and PowerPoint PPTX export"
-          >
-            <Presentation size={18} />
-            <span>AI Slide Deck & PPT</span>
-          </button>
-
-          {!videoUrl ? (
-            <button
-              type="button"
-              onClick={onGenerateVideo}
-              disabled={videoLoading}
-              className="btn-video-hero"
-            >
-              {videoLoading ? <div className="spinner-dots"><span>.</span><span>.</span><span>.</span></div> : <Play size={18} fill="currentColor" />}
-              <span>{videoLoading ? 'Synthesizing Video...' : 'Generate AI Video'}</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenCinema}
-              className="btn-video-hero ready"
-            >
-              <Play size={18} fill="currentColor" />
-              <span>Watch in Carbon Cinema</span>
-            </button>
-          )}
+          {repo_url ? (
+            <>
+              <Link to={`/create?url=${encodeURIComponent(repo_url)}`} className="btn-video-hero">
+                <Film size={18} />
+                <span>Make a launch video</span>
+              </Link>
+              <Link to={`/roast?url=${encodeURIComponent(repo_url)}`} className="btn-video-hero" style={{ background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)' }}>
+                <span>🌶️ Roast this repo</span>
+              </Link>
+            </>
+          ) : null}
         </div>
       </div>
-
-      {videoError && (
-        <div className="studio-error-banner">
-          <ShieldAlert size={18} color="#ef4444" />
-          <span>{videoError}</span>
-        </div>
-      )}
 
       {/* ── 3. STUDIO NAVIGATION TABS ── */}
       <div className="studio-tabs-bar">
@@ -268,15 +172,6 @@ export default function CodebaseStudio({
         >
           <Grid size={16} />
           <span>Overview</span>
-        </button>
-
-        <button
-          type="button"
-          className={`studio-tab-btn ${activeStudioTab === 'slides' ? 'active' : ''}`}
-          onClick={() => setActiveStudioTab('slides')}
-        >
-          <Presentation size={16} color="#ec4899" />
-          <span>Slide Deck & PPT</span>
         </button>
 
         <button
@@ -312,17 +207,9 @@ export default function CodebaseStudio({
           onClick={() => setActiveStudioTab('chat')}
         >
           <MessageSquare size={16} />
-          <span>AI Carbon</span>
+          <span>Ask about the code</span>
         </button>
 
-        <button
-          type="button"
-          className={`studio-tab-btn ${activeStudioTab === 'roast' ? 'active' : ''}`}
-          onClick={() => setActiveStudioTab('roast')}
-          style={{marginLeft: 'auto', border: '1px solid rgba(239, 68, 68, 0.3)', background: activeStudioTab === 'roast' ? 'rgba(239, 68, 68, 0.2)' : 'transparent', color: activeStudioTab === 'roast' ? '#fca5a5' : '#ef4444'}}
-        >
-          <span>🌶️ Roast Mode</span>
-        </button>
       </div>
 
       {/* ── 4. STUDIO CONTENT PANELS ── */}
@@ -700,10 +587,6 @@ export default function CodebaseStudio({
         </div>
       )}
 
-      {/* ── TAB: AI PRESENTATION & GAMMA PPT DECK ── */}
-      {activeStudioTab === 'slides' && (
-        <PresentationDeck result={result} />
-      )}
 
       {/* ── TAB: AI CO-PILOT CHAT ── */}
       {activeStudioTab === 'chat' && (
@@ -712,78 +595,6 @@ export default function CodebaseStudio({
         </div>
       )}
 
-      {/* ── TAB: ROAST MODE ── */}
-      {activeStudioTab === 'roast' && (
-        <div className="studio-single-panel animate-fade-in" style={{textAlign: 'center', padding: '40px'}}>
-          <h2 style={{fontSize: '32px', marginBottom: '10px', color: '#ef4444'}}>🌶️ Roast My Codebase</h2>
-          <p style={{color: '#94a3b8', marginBottom: '30px'}}>Let the AI Gordon Ramsay brutally analyze your architecture and security flaws.</p>
-          
-          {roastError && (
-            <div style={{color: '#ef4444', marginBottom: '15px', fontWeight: 'bold'}}>{roastError}</div>
-          )}
-          {!roastData && (
-            <button 
-              onClick={generateRoast} 
-              disabled={roastLoading}
-              aria-label="Generate Codebase Roast"
-              style={{
-                padding: '12px 24px', 
-                fontSize: '18px', 
-                background: roastLoading ? '#333' : '#ef4444', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '8px', 
-                cursor: roastLoading ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                margin: '0 auto',
-                gap: '8px'
-              }}
-            >
-              <span>{roastLoading ? 'Generating Roast...' : 'Roast Me Now 🌶️'}</span>
-              {roastLoading && <span style={{fontSize: '14px', color: '#94a3b8'}}>{roastLoadingMessages[roastLoadingStep]}</span>}
-            </button>
-          )}
-
-          {roastData && (
-            <div className="glass-panel" style={{maxWidth: '800px', margin: '0 auto', textAlign: 'left', border: '2px solid #ef4444'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155', paddingBottom: '20px', marginBottom: '20px'}}>
-                <h3 style={{fontSize: '24px', margin: 0, color: 'white'}}>Spaghetti Rating: <span style={{color: '#ef4444'}}>{roastData.overall_score}/100</span></h3>
-                <button onClick={() => setRoastData(null)} style={{background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px'}}>Reset</button>
-              </div>
-              
-              <h4 style={{color: '#fca5a5', marginTop: 0}}>The Brutal Summary</h4>
-              <p style={{fontSize: '18px', lineHeight: '1.6', color: '#e2e8f0', fontStyle: 'italic'}}>"{roastData.roast}"</p>
-              
-              <h4 style={{color: '#fca5a5', marginTop: '30px'}}>Top Developer Sins</h4>
-              <ul style={{color: '#cbd5e1', lineHeight: '1.8', fontSize: '15px'}}>
-                {roastData.top_crimes?.map((sin, idx) => (
-                  <li key={idx}>🚩 {sin.title || sin.crime || "Coding Sin"}</li>
-                ))}
-              </ul>
-              
-              <div style={{marginTop: '40px', padding: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px'}}>
-                <h4 style={{color: '#38bdf8', marginTop: 0, marginBottom: '15px'}}>🐦 Share your shame on Twitter</h4>
-                {roastData.share_text ? [roastData.share_text] : []?.map((quote, idx) => (
-                  <div key={idx} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f172a', padding: '10px 15px', borderRadius: '6px', marginBottom: '10px'}}>
-                    <span style={{fontSize: '14px', color: '#94a3b8', fontStyle: 'italic'}}>"{quote}"</span>
-                    <a 
-                      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(quote + '\n\nRoasted by @CarbonAI 🌶️')}`} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      style={{background: '#1d9bf0', color: 'white', padding: '6px 12px', borderRadius: '4px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold'}}
-                    >
-                      Tweet
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
     </div>
   );

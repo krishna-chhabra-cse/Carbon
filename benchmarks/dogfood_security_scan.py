@@ -25,7 +25,7 @@ def run_carbon_dogfood_audit():
     raw_files = {}
 
     for root, dirs, files in os.walk(repo_root):
-        dirs[:] = [d for d in dirs if d not in ['node_modules', '.git', 'dist', 'build', 'out', '.next', '.venv', 'venv', '__pycache__', 'coverage', '.tempmediaStorage', '.user_uploaded', 'tests', 'test']]
+        dirs[:] = [d for d in dirs if d not in ['node_modules', '.git', 'dist', 'build', 'out', '.next', '.venv', 'venv', '__pycache__', 'coverage', '.tempmediaStorage', '.user_uploaded', 'tests', 'test', '.bundle', 'data']]
         for file in files:
             file_path = Path(root) / file
             rel_path = str(file_path.relative_to(repo_root)).replace('\\', '/')

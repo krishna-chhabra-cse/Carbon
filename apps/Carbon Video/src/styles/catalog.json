@@ -1,0 +1,1126 @@
+{
+  "version": 1,
+  "styles": [
+    {
+      "id": "blueprint",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Blueprint",
+      "category": "Technical",
+      "tagline": "Your system, drafted line by line",
+      "description": "A technical drawing on drafting-blue paper. Hairlines draw themselves, the camera pans across one sheet, and the product's real architecture becomes a labelled system diagram.",
+      "bestFor": [
+        "infrastructure",
+        "APIs",
+        "backends",
+        "developer tools"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "glass",
+      "requires": [],
+      "transition": {
+        "kind": "slide",
+        "frames": 20
+      },
+      "motion": "Strokes draw on with eased dash offsets; slides pan the sheet; nothing pops.",
+      "typography": "IBM Plex Mono labels, wide-tracked Geist caps for titles, drafting title block.",
+      "director": "Write like an engineer annotating a drawing: plain nouns, no adjectives. The diagram (deck architecture nodes) is the star, so make every node a real part or step of the product from FACTS, in order. Headings are short labels, not slogans. For `snippetIndex`, pick a real code example that shows how it is used (not a bare install line); the install command already closes the film.",
+      "references": [
+        "3b1b/manim (study: construct-then-transform)",
+        "motion-canvas (study: one canvas, camera moves)",
+        "@remotion/paths (stroke drawing)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "blueprint.titleblock",
+            "frames": 120
+          },
+          {
+            "scene": "blueprint.system",
+            "frames": 200
+          },
+          {
+            "scene": "blueprint.stamp",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "blueprint.titleblock",
+            "frames": 160
+          },
+          {
+            "scene": "blueprint.system",
+            "frames": 260
+          },
+          {
+            "scene": "blueprint.detail",
+            "frames": 200
+          },
+          {
+            "scene": "blueprint.specs",
+            "frames": 140
+          },
+          {
+            "scene": "blueprint.stamp",
+            "frames": 140
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/blueprint.jpg",
+        "clip": "/media/styles/blueprint.mp4",
+        "sample": "fastify",
+        "posterFrame": 330,
+        "clipFrom": 120
+      }
+    },
+    {
+      "id": "poster",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Swiss Poster",
+      "category": "Typography",
+      "tagline": "Huge type, hard cuts, every beat",
+      "description": "International-style kinetic typography: a strict grid, giant grotesk words that slam in on the beat, colour-block backgrounds and a hard cut every two to four beats.",
+      "bestFor": [
+        "launches",
+        "frameworks",
+        "social posts",
+        "bold brands"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "kinetic",
+      "requires": [],
+      "transition": {
+        "kind": "none",
+        "frames": 0
+      },
+      "motion": "Letters rise out of masks with tight springs; cuts are hard and land on beats; colour blocks wipe.",
+      "typography": "Geist 900 at display sizes with negative tracking, Geist Mono indices, 12-column grid.",
+      "director": "Write punchy. `beats` are the star: three to six 1–3 word phrases from FACTS that read like poster headlines. Verbs and nouns, no filler. The tagline must survive being set huge, so keep it under 40 characters if you can.",
+      "references": [
+        "greensock/GSAP SplitText (study: per-character staggers)",
+        "juliangarnier/anime (study: stagger grids)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "poster.name",
+            "frames": 80
+          },
+          {
+            "scene": "poster.word",
+            "frames": 60,
+            "params": {
+              "i": 0
+            }
+          },
+          {
+            "scene": "poster.tagline",
+            "frames": 100
+          },
+          {
+            "scene": "poster.list",
+            "frames": 120
+          },
+          {
+            "scene": "poster.end",
+            "frames": 100
+          }
+        ],
+        "30": [
+          {
+            "scene": "poster.name",
+            "frames": 80
+          },
+          {
+            "scene": "poster.word",
+            "frames": 60,
+            "params": {
+              "i": 0
+            }
+          },
+          {
+            "scene": "poster.word",
+            "frames": 60,
+            "params": {
+              "i": 1
+            }
+          },
+          {
+            "scene": "poster.word",
+            "frames": 60,
+            "params": {
+              "i": 2
+            }
+          },
+          {
+            "scene": "poster.tagline",
+            "frames": 120
+          },
+          {
+            "scene": "poster.list",
+            "frames": 200
+          },
+          {
+            "scene": "poster.figure",
+            "frames": 120
+          },
+          {
+            "scene": "poster.command",
+            "frames": 100
+          },
+          {
+            "scene": "poster.end",
+            "frames": 100
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/poster.jpg",
+        "clip": "/media/styles/poster.mp4",
+        "sample": "fastify",
+        "posterFrame": 110,
+        "clipFrom": 0
+      }
+    },
+    {
+      "id": "collage",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Editorial Collage",
+      "category": "Editorial",
+      "tagline": "A magazine, cut and pasted by hand",
+      "description": "Stop-motion paper collage: torn cut-outs of your real screenshots and code printed with halftone, tape, pins, ransom-note letters and a highlighter, animated on twos like a hand-made film.",
+      "bestFor": [
+        "consumer products",
+        "creative tools",
+        "writing and design",
+        "community launches"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "aurora",
+      "requires": [],
+      "transition": {
+        "kind": "wipe",
+        "frames": 14
+      },
+      "motion": "Everything runs at 12 fps; cut-outs slide in, overshoot and settle with a hand-placed jitter.",
+      "typography": "DM Serif Display headlines, Special Elite typewriter labels, ransom-note letters.",
+      "director": "Write like a magazine editor: the tagline must work as a pull quote, `beats` as cover lines (short, specific, true), features as clipping labels. Warm, human, never salesy.",
+      "references": [
+        "Skillry paper-cutout and halftone launch films (study only)",
+        "stop-motion on twos (classic animation technique)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "collage.cover",
+            "frames": 140
+          },
+          {
+            "scene": "collage.board",
+            "frames": 180
+          },
+          {
+            "scene": "collage.back",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "collage.cover",
+            "frames": 180
+          },
+          {
+            "scene": "collage.spread",
+            "frames": 240
+          },
+          {
+            "scene": "collage.quote",
+            "frames": 160
+          },
+          {
+            "scene": "collage.board",
+            "frames": 180
+          },
+          {
+            "scene": "collage.back",
+            "frames": 140
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/collage.jpg",
+        "clip": "/media/styles/collage.mp4",
+        "sample": "carbons-codes",
+        "posterFrame": 160,
+        "clipFrom": 60
+      }
+    },
+    {
+      "id": "arcade",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Pixel Arcade",
+      "category": "Playful",
+      "tagline": "Your product as a retro video game",
+      "description": "An 8-bit game: title screen, a player-select card with your real numbers, a side-scrolling level where a pixel character collects your features, a cheat code that is your install command.",
+      "bestFor": [
+        "dev tools with a sense of humour",
+        "games",
+        "hackathon projects",
+        "communities"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "terminal",
+      "requires": [],
+      "transition": {
+        "kind": "iris",
+        "frames": 16
+      },
+      "motion": "Stepped at 8 fps like sprite animation; iris-wipe scene changes; hard block shadows.",
+      "typography": "Press Start 2P bitmap type with offset block shadows.",
+      "director": "Playful and short. Features become collectible items, so keep each to 1–3 words. Never turn anything into a fake score: only real numbers appear as stats.",
+      "references": [
+        "pixijs (study: sprite-sheet animation)",
+        "p5.js (study: procedural pixel art)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "arcade.start",
+            "frames": 120
+          },
+          {
+            "scene": "arcade.level",
+            "frames": 200
+          },
+          {
+            "scene": "arcade.win",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "arcade.start",
+            "frames": 140
+          },
+          {
+            "scene": "arcade.select",
+            "frames": 180
+          },
+          {
+            "scene": "arcade.level",
+            "frames": 240
+          },
+          {
+            "scene": "arcade.boss",
+            "frames": 180
+          },
+          {
+            "scene": "arcade.win",
+            "frames": 160
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/arcade.jpg",
+        "clip": "/media/styles/arcade.mp4",
+        "sample": "fastify",
+        "posterFrame": 290,
+        "clipFrom": 60
+      }
+    },
+    {
+      "id": "datastory",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Data Story",
+      "category": "Data",
+      "tagline": "Your repo, told through its real numbers",
+      "description": "An editorial data graphic: a headline number counting up, a labelled log-scale bar chart of the repo's GitHub numbers, a language-composition donut and a grid of what's inside. Every value is exact and sourced.",
+      "bestFor": [
+        "popular open-source repos",
+        "libraries",
+        "data and analytics tools"
+      ],
+      "inputs": [
+        "repo"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "paper",
+      "requires": [],
+      "transition": {
+        "kind": "wipe",
+        "frames": 16
+      },
+      "motion": "Charts grow with an expo-out ease; staggered reveals from the centre of a grid; calm, precise.",
+      "typography": "Space Grotesk headlines and numbers, JetBrains Mono labels and sources.",
+      "director": "Write like a data journalist: the tagline is the one-sentence takeaway, features are short labels. Pick `statKey` for the most meaningful real number. Never imply a trend or growth we have no data for.",
+      "references": [
+        "d3/d3 (study: scales, arcs, data joins)",
+        "3b1b/manim (study: animated number reveals)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "data.headline",
+            "frames": 140
+          },
+          {
+            "scene": "data.donut",
+            "frames": 180
+          },
+          {
+            "scene": "data.takeaway",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "data.headline",
+            "frames": 180
+          },
+          {
+            "scene": "data.bars",
+            "frames": 200
+          },
+          {
+            "scene": "data.donut",
+            "frames": 200
+          },
+          {
+            "scene": "data.topics",
+            "frames": 160
+          },
+          {
+            "scene": "data.takeaway",
+            "frames": 160
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/datastory.jpg",
+        "clip": "/media/styles/datastory.mp4",
+        "sample": "fastify",
+        "posterFrame": 340,
+        "clipFrom": 120
+      }
+    },
+    {
+      "id": "tour",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Product Tour",
+      "category": "Product",
+      "tagline": "A guided walkthrough of your live site",
+      "description": "A polished product walkthrough: the URL typed into a browser, the page loading, a cursor gliding and clicking through tooltips, camera push-ins and a real scroll from your hero to the next section.",
+      "bestFor": [
+        "SaaS",
+        "web apps",
+        "landing pages",
+        "design-led products"
+      ],
+      "inputs": [
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "bold",
+      "requires": [],
+      "transition": {
+        "kind": "fade",
+        "frames": 12
+      },
+      "motion": "Eased cursor paths, click ripples, spring-in tooltips, slow camera push-ins and a smooth scroll.",
+      "typography": "Geist UI type on soft brand-tinted gradients, macOS-style window chrome.",
+      "director": "Write like a product marketer giving a demo: `shotChips` are the three things the cursor points out on the homepage (2–4 words, from the page), `section2Heading` names the second section, features are what someone gets.",
+      "references": [
+        "Linear-style launch films (study: UI glide and push-ins)",
+        "motiondivision/motion (study: spring UI transitions)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "tour.open",
+            "frames": 120
+          },
+          {
+            "scene": "tour.hero",
+            "frames": 200
+          },
+          {
+            "scene": "tour.cta",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "tour.open",
+            "frames": 140
+          },
+          {
+            "scene": "tour.hero",
+            "frames": 260
+          },
+          {
+            "scene": "tour.scroll",
+            "frames": 220
+          },
+          {
+            "scene": "tour.features",
+            "frames": 140
+          },
+          {
+            "scene": "tour.cta",
+            "frames": 140
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/tour.jpg",
+        "clip": "/media/styles/tour.mp4",
+        "sample": "carbons-codes",
+        "posterFrame": 300,
+        "clipFrom": 60
+      }
+    },
+    {
+      "id": "signal",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Signal",
+      "category": "Generative",
+      "tagline": "Particles that assemble into your product",
+      "description": "A generative particle film: thousands of particles drift through a noise flow field, then converge into your product's name, form one constellation per feature, and collapse into your install line.",
+      "bestFor": [
+        "AI and ML products",
+        "infrastructure",
+        "networks and data",
+        "anything with a big idea"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "glass",
+      "requires": [],
+      "transition": {
+        "kind": "fade",
+        "frames": 14
+      },
+      "motion": "A seek-safe noise flow field with light trails; shapes form organically with per-particle delays.",
+      "typography": "Light, wide-tracked Geist over particles; the name itself is drawn by particles.",
+      "director": "Write sparse and evocative but concrete: `beats` are three short phrases shown one at a time over the particle field; features name the constellations (1–3 words each).",
+      "references": [
+        "processing/p5.js (study: flow fields)",
+        "@remotion/noise (simplex noise)",
+        "Skillry generative motion films (study only)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "signal.name",
+            "frames": 160
+          },
+          {
+            "scene": "signal.constellation",
+            "frames": 160
+          },
+          {
+            "scene": "signal.collapse",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "signal.field",
+            "frames": 120
+          },
+          {
+            "scene": "signal.name",
+            "frames": 220
+          },
+          {
+            "scene": "signal.tagline",
+            "frames": 160
+          },
+          {
+            "scene": "signal.constellation",
+            "frames": 220
+          },
+          {
+            "scene": "signal.collapse",
+            "frames": 180
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/signal.jpg",
+        "clip": "/media/styles/signal.mp4",
+        "sample": "fastify",
+        "posterFrame": 250,
+        "clipFrom": 100
+      }
+    },
+    {
+      "id": "bauhaus",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Bauhaus Geometry",
+      "category": "Minimal",
+      "tagline": "Primary shapes, snapped to the beat",
+      "description": "Minimalist geometric motion: circles, squares, half-discs and triangles in red, yellow, blue and your accent fly in, snap a quarter-turn on every beat and lock into a grid around your words.",
+      "bestFor": [
+        "design tools",
+        "consumer apps",
+        "education",
+        "friendly brands"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "bold",
+      "requires": [],
+      "transition": {
+        "kind": "clockWipe",
+        "frames": 18
+      },
+      "motion": "Staggered springs from the edges, quarter-turns on the beat, clock-wipe scene changes.",
+      "typography": "Space Grotesk set lowercase, words sitting on coloured blocks.",
+      "director": "Write simply: the tagline is set word by word on coloured blocks, so short common words work best; features become grid cells (1–3 words).",
+      "references": [
+        "juliangarnier/anime (study: staggered grid animation)",
+        "@remotion/shapes (geometry)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "bauhaus.compose",
+            "frames": 140
+          },
+          {
+            "scene": "bauhaus.grid",
+            "frames": 180
+          },
+          {
+            "scene": "bauhaus.resolve",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "bauhaus.compose",
+            "frames": 160
+          },
+          {
+            "scene": "bauhaus.statement",
+            "frames": 140
+          },
+          {
+            "scene": "bauhaus.grid",
+            "frames": 240
+          },
+          {
+            "scene": "bauhaus.figure",
+            "frames": 180
+          },
+          {
+            "scene": "bauhaus.resolve",
+            "frames": 180
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/bauhaus.jpg",
+        "clip": "/media/styles/bauhaus.mp4",
+        "sample": "fastify",
+        "posterFrame": 470,
+        "clipFrom": 100
+      }
+    },
+    {
+      "id": "whiteboard",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Whiteboard Explainer",
+      "category": "Explainer",
+      "tagline": "Problem, answer, three steps, drawn by hand",
+      "description": "A founder at a whiteboard: the problem written out, your product circled as the answer, three hand-drawn steps joined by arrows, the proof and how to try it. Every stroke draws itself and gently boils like hand-made animation.",
+      "bestFor": [
+        "products that need explaining",
+        "B2B tools",
+        "non-technical audiences",
+        "LinkedIn"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "paper",
+      "requires": [],
+      "transition": {
+        "kind": "wipe",
+        "frames": 16
+      },
+      "motion": "rough.js strokes draw on; lines re-drawn every 8 frames (boil); handwriting writes left to right; eraser-wipe transitions.",
+      "typography": "Permanent Marker headings, Caveat handwriting, JetBrains Mono for the exact command.",
+      "director": "Write like you are explaining it to a smart friend: `problem` is one sentence a customer would say, `answer` names the product, `steps` are three concrete steps from FACTS. Plain words, no jargon.",
+      "references": [
+        "rough-stuff/rough (hand-drawn rendering)",
+        "excalidraw-style sketch diagrams (study only)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "wb.problem",
+            "frames": 140
+          },
+          {
+            "scene": "wb.steps",
+            "frames": 200
+          },
+          {
+            "scene": "wb.cta",
+            "frames": 120
+          }
+        ],
+        "30": [
+          {
+            "scene": "wb.problem",
+            "frames": 200
+          },
+          {
+            "scene": "wb.answer",
+            "frames": 140
+          },
+          {
+            "scene": "wb.steps",
+            "frames": 280
+          },
+          {
+            "scene": "wb.proof",
+            "frames": 140
+          },
+          {
+            "scene": "wb.cta",
+            "frames": 140
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/whiteboard.jpg",
+        "clip": "/media/styles/whiteboard.mp4",
+        "sample": "carbons-codes",
+        "posterFrame": 590,
+        "clipFrom": 280
+      }
+    },
+    {
+      "id": "shell",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Shell Session",
+      "category": "Developer",
+      "tagline": "One continuous take in the terminal",
+      "description": "A developer film shot as one terminal take: clone the repo, read its real README headings, print the real snippet with syntax colour, open a pane with the real GitHub numbers, then install. The cuts are invisible.",
+      "bestFor": [
+        "CLIs",
+        "libraries",
+        "developer tools",
+        "backends"
+      ],
+      "inputs": [
+        "repo"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "hud",
+      "requires": [],
+      "transition": {
+        "kind": "none",
+        "frames": 0
+      },
+      "motion": "Real-time typing at a human pace, output line by line, a tmux-style pane sliding open, a final pull-back.",
+      "typography": "JetBrains Mono in a macOS-style terminal with syntax highlighting.",
+      "director": "Write for developers: the snippet (`snippetIndex`) is the hero, so pick the clearest real example; the tagline becomes the final shell comment, so keep it short and literal.",
+      "references": [
+        "code-hike/codehike (study: code walkthroughs)",
+        "shikijs/shiki (study: token colouring)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "shell.clone",
+            "frames": 120
+          },
+          {
+            "scene": "shell.code",
+            "frames": 200
+          },
+          {
+            "scene": "shell.install",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "shell.clone",
+            "frames": 160
+          },
+          {
+            "scene": "shell.readme",
+            "frames": 180
+          },
+          {
+            "scene": "shell.code",
+            "frames": 240
+          },
+          {
+            "scene": "shell.stats",
+            "frames": 160
+          },
+          {
+            "scene": "shell.install",
+            "frames": 160
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/shell.jpg",
+        "clip": "/media/styles/shell.mp4",
+        "sample": "fastify",
+        "posterFrame": 700,
+        "clipFrom": 500
+      }
+    },
+    {
+      "id": "cinema",
+      "version": 1,
+      "status": "available",
+      "engine": "directed",
+      "name": "Cinematic 3D",
+      "category": "Cinematic",
+      "tagline": "A premium launch film in a dark 3D studio",
+      "description": "Your real screenshot or code as a glowing panel floating over a reflective floor in a dark studio: light sweeps, a slow dolly and orbit, features as lit slabs, and your name in wide-tracked type.",
+      "bestFor": [
+        "premium launches",
+        "SaaS",
+        "AI products",
+        "hardware-like software"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "hud",
+      "requires": [
+        "webgl"
+      ],
+      "transition": {
+        "kind": "fade",
+        "frames": 20
+      },
+      "motion": "Long takes: dolly-in, orbit, light sweeps, slow dissolves; nothing snaps.",
+      "typography": "Light Geist caps with wide, tightening tracking; JetBrains Mono details.",
+      "director": "Write like a film trailer: few words, each one weighty. The tagline sits under the name in the opening, features appear one per lit slab (1–3 words each). For `snippetIndex`, pick the most recognisable real usage example (not an install line).",
+      "references": [
+        "mrdoob/three.js (rendering)",
+        "pmndrs/react-three-fiber (React renderer)",
+        "@remotion/three (frame-accurate 3D)"
+      ],
+      "scenes": {
+        "15": [
+          {
+            "scene": "cinema.open",
+            "frames": 160
+          },
+          {
+            "scene": "cinema.orbit",
+            "frames": 160
+          },
+          {
+            "scene": "cinema.end",
+            "frames": 140
+          }
+        ],
+        "30": [
+          {
+            "scene": "cinema.open",
+            "frames": 240
+          },
+          {
+            "scene": "cinema.orbit",
+            "frames": 300
+          },
+          {
+            "scene": "cinema.array",
+            "frames": 200
+          },
+          {
+            "scene": "cinema.end",
+            "frames": 160
+          }
+        ]
+      },
+      "preview": {
+        "poster": "/media/styles/cinema.jpg",
+        "clip": "/media/styles/cinema.mp4",
+        "sample": "carbons-codes",
+        "posterFrame": 420,
+        "clipFrom": 160
+      }
+    },
+    {
+      "id": "hud",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "HUD",
+      "category": "Classic",
+      "tagline": "Dark, glowing, cinematic",
+      "description": "The original Carbon launch film in a black sci-fi heads-up display. Classic looks share one story structure and differ in palette, type and background.",
+      "bestFor": [
+        "infrastructure",
+        "CLIs",
+        "backends"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "hud",
+      "preview": {
+        "poster": "/media/style-hud.jpg"
+      }
+    },
+    {
+      "id": "paper",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "Paper",
+      "category": "Classic",
+      "tagline": "Light, editorial serif",
+      "description": "The classic launch film on warm off-white paper with an editorial serif.",
+      "bestFor": [
+        "docs",
+        "writing",
+        "calm products"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "paper",
+      "preview": {
+        "poster": "/media/style-paper.jpg"
+      }
+    },
+    {
+      "id": "bold",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "Bold",
+      "category": "Classic",
+      "tagline": "Your colour, poster type",
+      "description": "The classic launch film flooded with your brand colour and tall condensed type.",
+      "bestFor": [
+        "consumer brands",
+        "marketing"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "bold",
+      "preview": {
+        "poster": "/media/style-bold.jpg"
+      }
+    },
+    {
+      "id": "glass",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "Glass",
+      "category": "Classic",
+      "tagline": "Frosted cards, soft light",
+      "description": "The classic launch film on a night gradient with frosted-glass cards.",
+      "bestFor": [
+        "SaaS",
+        "AI products"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "glass",
+      "preview": {
+        "poster": "/media/style-glass.jpg"
+      }
+    },
+    {
+      "id": "terminal",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "Terminal",
+      "category": "Classic",
+      "tagline": "CRT green, pixel mono",
+      "description": "The classic launch film on a phosphor CRT with scanlines.",
+      "bestFor": [
+        "shells",
+        "security",
+        "low-level code"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "terminal",
+      "preview": {
+        "poster": "/media/style-terminal.jpg"
+      }
+    },
+    {
+      "id": "kinetic",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "Kinetic",
+      "category": "Classic",
+      "tagline": "Huge type, whip cuts",
+      "description": "The classic launch film in black and white with extra-wide type and whip-pan cuts.",
+      "bestFor": [
+        "frameworks",
+        "hype launches"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "kinetic",
+      "preview": {
+        "poster": "/media/style-kinetic.jpg"
+      }
+    },
+    {
+      "id": "aurora",
+      "version": 1,
+      "status": "available",
+      "engine": "classic",
+      "name": "Aurora",
+      "category": "Classic",
+      "tagline": "Pastel glow, rounded",
+      "description": "The classic launch film on light pastel aurora gradients with rounded type.",
+      "bestFor": [
+        "consumer apps",
+        "education",
+        "community"
+      ],
+      "inputs": [
+        "repo",
+        "site"
+      ],
+      "lengths": [
+        30,
+        15
+      ],
+      "music": "aurora",
+      "preview": {
+        "poster": "/media/style-aurora.jpg"
+      }
+    }
+  ]
+}

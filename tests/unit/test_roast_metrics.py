@@ -706,3 +706,102 @@ class TestAdversarialSyntaxErrorsAndRobustness:
         score, grade = calculate_deterministic_score(metrics)
         assert score <= 60
         assert grade in ["SPAGHETTI_JUNCTION", "DUMPSTER_FIRE", "IDIOT_SANDWICH", "ACCEPTABLE_CHAOS"]
+
+
+def test_long_test_files_are_not_god_files():
+    """Big test suites are normal; only source files can be god files."""
+    from tools.codebase_metrics import extract_roast_metrics
+
+    big = "\n".join(f"x{i} = {i}" for i in range(1500))
+    m = extract_roast_metrics("", files_dict={"test/big.test.js": big, "src/huge.js": big})
+    god = [g["file"] for g in m.god_files]
+    assert god == ["src/huge.js"]
+    assert m.test_file_count == 1
+
+
+def test_security_findings_in_tests_only_cost_points_for_secrets():
+    from tools.codebase_metrics import calculate_deterministic_score
+
+    def score(findings):
+        return calculate_deterministic_score({"testing": {"test_to_code_ratio": 0.5}, "security": {"findings": findings}})[0]
+
+    clean = score([])
+    # Pattern hits in tests never count.
+    assert score([{"file": "test/helpers.ts", "severity": "HIGH", "title": "Command Injection (child_process)"}]) == clean
+    # Obvious fixtures in tests don't count; a real-looking secret does.
+    fixture = {"file": "test/fixtures.ts", "severity": "CRITICAL", "title": "Hardcoded AWS Secret Key", "snippet": "accessKeyId: 'AKIA1234567890EXAMPLE'"}
+    real = {"file": "test/fixtures.ts", "severity": "CRITICAL", "title": "Hardcoded AWS Secret Key", "snippet": "accessKeyId: '" + "AKIA" + "Q7TZK3LNRV2WXHPM" + "'"}  # built at runtime so repo secret scanners don't flag it
+    assert score([fixture]) == clean
+    assert score([real]) < clean
+    # Anything outside tests counts.
+    assert score([{"file": "src/run.ts", "severity": "HIGH", "title": "Command Injection (child_process)"}]) < clean
+
+
+def test_lockfiles_and_data_files_are_not_source():
+    from tools.codebase_metrics import extract_roast_metrics
+
+    lock = "\n".join(f'"pkg-{i}": "1.0.{i}",' for i in range(6000))
+    m = extract_roast_metrics("", files_dict={
+        "package-lock.json": lock,
+        "data/big.json": lock,
+        "dist/app.min.js": lock,
+        "src/app.js": "export const a = 1\n",
+    })
+    assert m.total_files == 1
+    assert m.god_files == []
+
+
+def test_no_false_cycles_from_package_imports():
+    """`from langgraph.graph import X` must not link to our own agents/graph.py."""
+    from tools.codebase_metrics import extract_roast_metrics
+
+    m = extract_roast_metrics("", files_dict={
+        "agents/graph.py": "from langgraph.graph import StateGraph\nfrom agents.state import S\n",
+        "agents/state.py": "from typing import TypedDict\nclass S(TypedDict): pass\n",
+        "tools/ast_parser.py": "import ast\nfrom tools import graph_utils\n",
+        "tools/graph_utils.py": "import networkx as nx\n",
+        "web/src/index.ts": "import ky from 'ky'\nimport { helper } from './helper.js'\n",
+        "web/src/helper.ts": "import type { Options } from './index'\nexport const helper = 1\n",
+    })
+    assert m.circular_dependencies == []
+
+
+def test_real_relative_cycles_still_found():
+    from tools.codebase_metrics import extract_roast_metrics
+
+    m = extract_roast_metrics("", files_dict={
+        "pkg/a.py": "from .b import x\n",
+        "pkg/b.py": "from .a import y\n",
+        "web/one.ts": "import { two } from './two.js'\n",
+        "web/two.ts": "import { one } from './one'\n",
+    })
+    found = [sorted(set(c)) for c in m.circular_dependencies]
+    assert ["pkg/a.py", "pkg/b.py"] in found
+    assert ["web/one.ts", "web/two.ts"] in found
+
+
+def test_small_js_files_full_of_callbacks_are_not_god_files():
+    from tools.codebase_metrics import extract_roast_metrics
+
+    js = "\n".join(f"app.get('/r{i}', (req, res) => res.send({i}))" for i in range(60))
+    m = extract_roast_metrics("", files_dict={"lib/routes.js": js})
+    assert m.god_files == []
+
+
+def test_obvious_fixture_secrets_in_tests_do_not_count():
+    from tools.codebase_metrics import counts_as_security_issue
+
+    for snippet in ["const aws = 'AKIA1111111111111111';", "const aws = 'AKIA" + "1122334411223344';", "const db = 'postgres://admin:superSecretPassword@db.internal:5432/prod';",
+                    "const mongo = 'mongodb://root:p@ssw0rd123@mongo.internal:27017/db';"]:
+        assert not counts_as_security_issue({"filePath": "tests/test_x.py", "ruleId": "SEC-001", "category": "Secret Leakage", "snippet": snippet})
+    assert counts_as_security_issue({"filePath": "src/config.js", "ruleId": "SEC-001", "category": "Secret Leakage", "snippet": "const aws = 'AKIA1111111111111111';"})
+
+
+def test_giant_stylesheet_is_one_god_file_not_a_monolith():
+    from tools.codebase_metrics import calculate_deterministic_score
+
+    base = {"testing": {"test_to_code_ratio": 0.5}, "security": {"findings": []}}
+    css = calculate_deterministic_score({**base, "architecture": {"god_files": [{"file": "src/index.css", "lines": 4800, "functions_count": 0}]}})[0]
+    code = calculate_deterministic_score({**base, "architecture": {"god_files": [{"file": "src/app.js", "lines": 4800, "functions_count": 0}]}})[0]
+    assert css == 92
+    assert code < css

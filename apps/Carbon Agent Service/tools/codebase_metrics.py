@@ -13,6 +13,7 @@
 
 import ast
 import logging
+import math
 import os
 import re
 from dataclasses import asdict, dataclass, field
@@ -301,6 +302,184 @@ def is_utils_file(path: str) -> bool:
     return bool(re.search(r"(?:^|[._\-/])(util|utils|helper|helpers|misc|common)(?:[._\-/]|$)", p_lower))
 
 
+# Files that aren't hand-written source: lockfiles, data/config, minified or
+# generated output. They never count toward size, god files or the test ratio.
+LOCKFILES = {
+    "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb",
+    "poetry.lock", "pipfile.lock", "cargo.lock", "composer.lock", "gemfile.lock", "go.sum",
+}
+DATA_EXTENSIONS = {".json", ".yaml", ".yml", ".toml", ".lock", ".map", ".csv", ".svg"}
+GENERATED_DIR_RE = re.compile(r"(?:^|/)(?:vendor|third_party|generated|__generated__|\.bundle|public/build|static/build)(?:/|$)")
+
+
+def is_lockfile(path: str) -> bool:
+    return os.path.basename(path).lower() in LOCKFILES
+
+
+def is_non_source(path: str) -> bool:
+    p = path.replace("\\", "/").lower()
+    name = os.path.basename(p)
+    return (
+        is_lockfile(p)
+        or os.path.splitext(name)[1] in DATA_EXTENSIONS
+        or name.endswith((".min.js", ".min.css", ".bundle.js", ".chunk.js"))
+        or bool(GENERATED_DIR_RE.search(p))
+    )
+
+
+_PLACEHOLDER_RE = re.compile(
+    r"example|sample|dummy|fake|test|mock|placeholder|changeme|your[_-]|my[_-]|xxxx|1234|abcd|redacted|<[^>]+>"
+    r"|super_?secret|secret_?123|p@ss|passw(?:or)?d|hunter2|letmein|admin:admin|\.internal\b|\blocalhost\b|\.local\b"
+    r"|([A-Za-z0-9])\1{5,}",  # runs like AKIA1111111111 or xxxxxx
+    re.I,
+)
+_SECRET_RE = re.compile(r"secret|api key|token|password|credential|private key|access key|CWE-798", re.I)
+
+
+def counts_as_security_issue(finding: dict[str, Any]) -> bool:
+    """Whether a scanner finding should count against the score.
+
+    - Outside test files: everything counts.
+    - Inside test files: pattern hits (e.g. child_process in a test helper)
+      never count, and secrets count only if they don't look like fixtures
+      (AKIA1234..., "my_secret_key", "EXAMPLE", "test-token"...).
+    """
+    path = str(finding.get("filePath") or finding.get("file") or "")
+    if not is_test_file(path):
+        return True
+    rule = str(finding.get("ruleId") or finding.get("id") or "")
+    category = str(finding.get("category") or "")
+    if rule or category:
+        # Scanner findings: secrets are the "Secret Leakage" rules (SEC-*) and default creds.
+        is_secret = rule.startswith("SEC-") or rule == "AUTH-004" or category == "Secret Leakage"
+    else:
+        is_secret = bool(_SECRET_RE.search(str(finding.get("title") or "")))
+    if not is_secret:
+        return False
+    snippet = str(finding.get("snippet") or finding.get("match") or "")
+    if not snippet or _PLACEHOLDER_RE.search(snippet):
+        return False
+    # Low-entropy values (AKIA1122334455667788) are hand-typed fixtures.
+    for token in re.findall(r"[A-Za-z0-9+/_\-]{12,}", snippet):
+        body = re.sub(r"^(?:AKIA|ASIA|sk_live_|sk_test_|ghp_|gho_|xox[abp]-)", "", token)
+        if len(body) >= 12 and len(set(body)) <= 5:
+            return False
+    return True
+
+
+_PY_FROM_RE = re.compile(r"^\s*from\s+(\.*[\w.]*)\s+import\s+([^\n#]+)", re.M)
+_PY_IMPORT_RE = re.compile(r"^\s*import\s+([\w.]+(?:\s*,\s*[\w.]+)*)", re.M)
+_JS_SPEC_RE = re.compile(
+    r"""(?:^|\n)\s*(?:import|export)(?!\s+type\b)[^'"\n;]*?from\s*['"]([^'"]+)['"]"""
+    r"""|(?:^|\n)\s*import\s*['"]([^'"]+)['"]"""
+    r"""|require\(\s*['"]([^'"]+)['"]\s*\)"""
+    r"""|import\(\s*['"]([^'"]+)['"]\s*\)"""
+)
+_JS_EXTS = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts")
+
+
+def build_import_graph(files_dict: dict[str, str]) -> "nx.DiGraph":
+    """Accurate internal import graph for the roast.
+
+    Python: dotted and relative imports resolve to real module files (a single
+    name like `import graph` only matches a sibling or ancestor-level file,
+    never an unrelated `graph.py` elsewhere). JS/TS: only relative specifiers
+    (`./x`, `../x`) are internal; packages like `react` are external;
+    `import type` is skipped (no runtime cycle).
+    """
+    import posixpath
+
+    paths = {k.replace("\\", "/"): k for k in files_dict}
+    g = nx.DiGraph()
+    g.add_nodes_from(files_dict)
+
+    # Python module index: every suffix of a module path -> files.
+    py_index: dict[tuple[str, ...], list[str]] = {}
+    for norm in paths:
+        if not norm.endswith((".py", ".pyw")):
+            continue
+        parts = norm[: norm.rfind(".")].split("/")
+        if parts[-1] == "__init__":
+            parts = parts[:-1]
+        for i in range(len(parts)):
+            py_index.setdefault(tuple(parts[i:]), []).append(norm)
+
+    def nearest(cands: list[str], importer: str) -> str | None:
+        if not cands:
+            return None
+        imp_dir = importer.split("/")[:-1]
+
+        def shared(c: str) -> int:
+            n = 0
+            for a, b in zip(imp_dir, c.split("/")[:-1]):
+                if a != b:
+                    break
+                n += 1
+            return n
+
+        return max(cands, key=shared)
+
+    def resolve_py(importer: str, module: str, names: list[str]) -> list[str]:
+        out: list[str] = []
+        level = len(module) - len(module.lstrip("."))
+        mod = module.lstrip(".")
+        if level:
+            base = importer.split("/")[:-1]
+            if level > 1:
+                base = base[: len(base) - (level - 1)]
+            stem0 = base + (mod.split(".") if mod else [])
+            for stem in [stem0] + [stem0 + [n] for n in names]:
+                for cand in ("/".join(stem) + ".py", "/".join(stem) + "/__init__.py"):
+                    if cand in paths:
+                        out.append(cand)
+                        break
+            return out
+        parts = tuple(mod.split(".")) if mod else ()
+        imp_dir = importer.split("/")[:-1]
+        for key in [parts] + [parts + (n,) for n in names]:
+            if not key:
+                continue
+            cands = py_index.get(key, [])
+            if len(key) == 1:
+                # `import graph` resolves only next to the importer or above it.
+                cands = [c for c in cands if c.split("/")[:-1] == imp_dir[: len(c.split("/")) - 1]]
+            hit = nearest(cands, importer)
+            if hit:
+                out.append(hit)
+        return out
+
+    def resolve_js(importer: str, spec: str) -> str | None:
+        if not spec.startswith("."):
+            return None
+        target = posixpath.normpath(posixpath.join(posixpath.dirname(importer), spec))
+        stem, ext = posixpath.splitext(target)
+        tries = [target] if ext in _JS_EXTS else []
+        if ext in (".js", ".jsx", ".mjs", ".cjs"):
+            tries += [stem + e for e in _JS_EXTS]  # TS sources imported as ./x.js
+        tries += [target + e for e in _JS_EXTS] + [target + "/index" + e for e in _JS_EXTS]
+        return next((t for t in tries if t in paths), None)
+
+    for norm, original in paths.items():
+        content = files_dict[original]
+        targets: list[str] = []
+        if norm.endswith((".py", ".pyw")):
+            for m in _PY_FROM_RE.finditer(content):
+                names = [n.strip().split(" as ")[0].strip("() ") for n in m.group(2).split(",")]
+                targets += resolve_py(norm, m.group(1), [n for n in names if n and n != "*" and n.isidentifier()])
+            for m in _PY_IMPORT_RE.finditer(content):
+                for mod in m.group(1).split(","):
+                    targets += resolve_py(norm, mod.strip(), [])
+        elif norm.endswith(_JS_EXTS):
+            for m in _JS_SPEC_RE.finditer(content):
+                spec = next(x for x in m.groups() if x)
+                hit = resolve_js(norm, spec)
+                if hit:
+                    targets.append(hit)
+        for t in targets:
+            g.add_edge(original, paths[t])  # includes genuine self-imports
+    return g
+
+
 def _read_files_from_repo(repo_path: str) -> dict[str, str]:
     """Reads source files from a directory into a path -> content dict."""
     files_dict = {}
@@ -573,6 +752,16 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
     total_loc = 0
     test_file_count = 0
 
+    # Security scan sees everything except lockfiles/minified output; size,
+    # god-file and test metrics only see hand-written source.
+    security_files = {
+        k: v for k, v in files_dict.items()
+        if not is_lockfile(k) and not k.endswith((".min.js", ".map")) and not GENERATED_DIR_RE.search(k.replace("\\", "/").lower())
+    }
+    files_dict = {k: v for k, v in files_dict.items() if not is_non_source(k)}
+    if not files_dict:
+        return RoastMetrics()
+
     # 1. Per-file scale and AST inspection
     for file_path, content in files_dict.items():
         lines = content.splitlines()
@@ -603,6 +792,14 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
                 deeply_nested, suspicious_ids, empty_tests, all_functions
             )
 
+        # Test files are long by nature (fixtures, many cases) and .d.ts files
+        # are type declarations: they count for size, but never as god files.
+        if is_test_file(file_path) or file_path.endswith(".d.ts"):
+            continue
+        # Machine-generated files (compiled validators, protobufs...) aren't anyone's design.
+        if re.search(r"auto-?generated|do not edit|@generated|code generated by", content[:400], re.I):
+            continue
+
         # Utils Dumping Ground Check (utils.* / helpers.* >= 200 LOC)
         if is_utils_file(file_path):
             if loc >= 200:
@@ -619,11 +816,12 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
                     "reasons": [f"{loc} lines (exceeds 1000 LOC limit)"]
                 })
         else:
-            # God File Check (>1000 lines or >50 functions for non-utils files)
+            # God File Check: >1000 lines, or 50+ functions. JS/TS function
+            # counts include callbacks, so there the file must also be 600+ lines.
             god_reasons = []
             if loc > 1000:
                 god_reasons.append(f"{loc} lines (exceeds 1000 LOC limit)")
-            if func_count >= 50:
+            if func_count >= 50 and (ext in (".py", ".pyw") or loc >= 600):
                 god_reasons.append(f"{func_count} functions (exceeds 50 function limit)")
 
             if god_reasons:
@@ -648,54 +846,15 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
     high_fan_out: list[dict[str, Any]] = []
 
     try:
-        cb_graph = build_codebase_graph(files_dict)
-        nx_g = cb_graph._nx_graph
+        nx_g = build_import_graph(files_dict)
 
-        # Resolve imports to internal files if naive matching in graph_rag didn't catch them
-        # (e.g. from src.module_b import func -> src/module_b.py)
-        for node in list(nx_g.nodes()):
-            if str(node).startswith("external:"):
-                continue
-            meta = cb_graph.nodes[node].get("metadata", {})
-            for imp in meta.get("imports", []):
-                dotted_as_slash = imp.replace(".", "/")
-                base_name = imp.split(".")[-1].split("/")[-1]
-                clean_rel = re.sub(r"^[./]+", "", imp)
-
-                for target_file in files_dict:
-                    target_no_ext = os.path.splitext(target_file)[0]
-                    target_base = os.path.splitext(os.path.basename(target_file))[0]
-                    if node != target_file and (
-                        target_file == imp
-                        or target_no_ext in (dotted_as_slash, clean_rel)
-                        or target_no_ext.endswith(dotted_as_slash)
-                        or (base_name and target_base == base_name and len(base_name) > 2)
-                    ):
-                        nx_g.add_edge(node, target_file)
-
-        # Extract circular dependencies using NetworkX simple cycles
-        raw_cycles = list(nx.simple_cycles(nx_g))
-        for cycle in raw_cycles:
-            # Filter internal cycles only (exclude external imports)
-            internal_nodes = [node for node in cycle if not str(node).startswith("external:")]
-            if len(internal_nodes) >= 2:
-                # Format complete cycle chain: [A, B, A]
-                cycle_chain = internal_nodes + [internal_nodes[0]]
-                if cycle_chain not in circular_deps:
-                    circular_deps.append(cycle_chain)
-            elif len(internal_nodes) == 1:
-                self_chain = [internal_nodes[0], internal_nodes[0]]
-                if self_chain not in circular_deps:
-                    circular_deps.append(self_chain)
-
-        # Check self-loops from direct self-imports
-        for file_path, content in files_dict.items():
-            node_base = os.path.splitext(os.path.basename(file_path))[0]
-            if re.search(rf'\b(?:import|from)\s+{re.escape(node_base)}\b', content):
-                self_chain = [file_path, file_path]
-                if self_chain not in circular_deps:
-                    circular_deps.append(self_chain)
-
+        # Real import loops between modules (bounded so huge repos stay fast).
+        for cycle in nx.simple_cycles(nx_g, length_bound=6):
+            chain = cycle + [cycle[0]]
+            if chain not in circular_deps:
+                circular_deps.append(chain)
+            if len(circular_deps) >= 25:
+                break
 
         # High fan-in and fan-out
         for node in nx_g.nodes():
@@ -720,8 +879,8 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
     sanitized_findings: list[dict[str, Any]] = []
     scorecard: dict[str, Any] = {}
     try:
-        audit_output = run_security_audit(files_dict)
-        raw_findings = audit_output.get("findings", [])
+        audit_output = run_security_audit(security_files)
+        raw_findings = [f for f in audit_output.get("findings", []) if counts_as_security_issue(f)]
         sanitized_findings = redact_security_findings(raw_findings)
         scorecard = audit_output.get("scorecard", {})
     except Exception:
@@ -731,6 +890,8 @@ def extract_roast_metrics(repo_path: str, files_dict: dict[str, str] | None = No
     high_count = sum(1 for f in sanitized_findings if f.get("severity") == "HIGH")
     med_count = sum(1 for f in sanitized_findings if f.get("severity") == "MEDIUM")
     low_count = sum(1 for f in sanitized_findings if f.get("severity") == "LOW")
+    # Keep the scorecard consistent with the filtered findings.
+    scorecard = {**scorecard, "critical": crit_count, "high": high_count, "medium": med_count, "low": low_count}
 
     # Sort for deterministic top-N retention to prevent token blowups and preserve max metrics
     deeply_nested.sort(key=lambda x: x.get("depth", 0), reverse=True)
@@ -799,7 +960,7 @@ def calculate_deterministic_score(metrics: Any) -> tuple[int, str]:
     - Circular dependencies: up to -10 pts (min(10, 5 * len(cycles)))
     - Excessive complexity / nesting: -5 pts (depth >= 4), -10 pts (depth >= 6)
     - Monolith penalty: if single file > 2000 lines or >50 functions, additional -15 pts
-    Score clamped [0, 100].
+    Linear to 50 points of deductions, then compressed; never a flat 0 (min 1).
     """
     if hasattr(metrics, "to_dict"):
         m = metrics.to_dict()
@@ -820,9 +981,13 @@ def calculate_deterministic_score(metrics: Any) -> tuple[int, str]:
             continue
         lines = gf.get("lines") or 1000
         funcs = gf.get("functions_count") or 0
+        # Huge stylesheets/markup are a smell, but not a code monolith.
+        if str(gf.get("file", "")).lower().endswith((".css", ".scss", ".sass", ".less", ".html", ".htm")):
+            god_deduction += 8
+            continue
         mult = max(1, lines // 1000)
         god_deduction += 8 * mult
-        if lines >= 2000 or funcs >= 50:
+        if lines >= 2000 or funcs >= 120:
             has_huge_monolith = True
     god_deduction = min(25, god_deduction)
 
@@ -833,12 +998,14 @@ def calculate_deterministic_score(metrics: Any) -> tuple[int, str]:
     # 3. Security findings deduction
     security = m.get("security") or {}
     scorecard = security.get("scorecard") or {}
-    crit_count = scorecard.get("critical") or 0
-    high_count = scorecard.get("high") or 0
-    if crit_count == 0 and high_count == 0:
-        findings = security.get("findings") or []
-        crit_count = sum(1 for f in findings if isinstance(f, dict) and f.get("severity") == "CRITICAL")
-        high_count = sum(1 for f in findings if isinstance(f, dict) and f.get("severity") == "HIGH")
+    findings = [f for f in (security.get("findings") or []) if isinstance(f, dict)]
+    if findings:
+        scored = [f for f in findings if counts_as_security_issue(f)]
+        crit_count = sum(1 for f in scored if f.get("severity") == "CRITICAL")
+        high_count = sum(1 for f in scored if f.get("severity") == "HIGH")
+    else:
+        crit_count = scorecard.get("critical") or 0
+        high_count = scorecard.get("high") or 0
     security_deduction = min(25, 10 * (crit_count + high_count))
 
     # 4. Utils dumping grounds
@@ -874,7 +1041,14 @@ def calculate_deterministic_score(metrics: Any) -> tuple[int, str]:
         utils_deduction + circ_deduction + complexity_deduction + monolith_penalty
     )
 
-    final_score = max(0, min(100, base_score - total_deductions))
+    # Linear for the first 50 points (one god file = 75, no tests = 80), then
+    # compressed so a very messy repo lands in the low single digits instead
+    # of a flat, meaningless 0 (60 → 33, 80 → 15, 100 → 7, 125 → 2).
+    if total_deductions <= 50:
+        final_score = base_score - total_deductions
+    else:
+        final_score = round(50 * math.exp(-(total_deductions - 50) / 25))
+    final_score = max(1, min(base_score, final_score))
 
     # Grade mapping
     if final_score >= 90:

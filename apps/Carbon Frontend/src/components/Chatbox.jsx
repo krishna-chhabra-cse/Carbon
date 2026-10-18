@@ -8,6 +8,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../lib/api';
 import ReactMarkdown from 'react-markdown';
 import { 
   Send, 
@@ -70,8 +71,7 @@ export default function Chatbox({ repoUrl }) {
     setLoading(true);
 
     try {
-      const apiUrl = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim()) ? import.meta.env.VITE_API_URL.trim().replace(/\/+$/, '') : (import.meta.env.DEV ? 'http://localhost:3002' : 'https://carbon-backend-a1sg.onrender.com');
-      const response = await axios.post(`${apiUrl}/api/chat`, {
+      const response = await axios.post(`${API_URL}/api/chat`, {
         repoUrl: repoUrl,
         query: userQuery
       });
@@ -141,7 +141,7 @@ export default function Chatbox({ repoUrl }) {
         </div>
 
         <div className="chat-badge-tag">
-          <Sparkles size={13} /> Gemini 3.5 AI
+          <Sparkles size={13} /> AI
         </div>
       </div>
       
