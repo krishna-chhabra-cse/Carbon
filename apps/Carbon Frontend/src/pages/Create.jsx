@@ -174,6 +174,7 @@ export default function Create() {
   const [note, setNote] = useState('');
   const [look, setLook] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [slow, setSlow] = useState(false); // a waiting step has run past 8 s
   const [error, setError] = useState(null);
   const { me, state, reload } = useMe();
   const navigate = useNavigate();
@@ -213,6 +214,19 @@ export default function Create() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effective?.id]);
 
+  // Waiting steps normally finish in a few seconds; past 8 s, say so.
+  useEffect(() => {
+    setSlow(false);
+    if (step !== 'reading' && step !== 'thinking') return undefined;
+    const t = setTimeout(() => setSlow(true), 8000);
+    return () => clearTimeout(t);
+  }, [step]);
+  const slowNote = slow ? (
+    <p className="text-sm" role="status" style={{ color: 'var(--cx-dim)' }}>
+      Taking a little longer than usual. Hang on: if the AI is busy, Carbon carries on with its standard {step === 'thinking' ? 'pick' : 'questions'}.
+    </p>
+  ) : null;
+
   const fail = (err, back) => {
     setError(err);
     setBusy(false);
@@ -224,7 +238,7 @@ export default function Create() {
     setError(null);
     setStep('reading');
     try {
-      const b = await api('/api/briefs', { method: 'POST', body: { url } });
+      const b = await api('/api/briefs', { method: 'POST', body: { url }, timeout: 60000 });
       setBrief(b);
       setAnswers({});
       setLook(null);
@@ -328,6 +342,7 @@ export default function Create() {
           Try: <button type="button" className="underline cx-mono" onClick={() => setUrl('https://github.com/fastify/fastify')}>github.com/fastify/fastify</button>{' '}
           or <button type="button" className="underline cx-mono" onClick={() => setUrl('https://vite.dev')}>vite.dev</button>
         </div>
+        {slowNote}
       </form>
       {errorBox}
       </div>
@@ -373,6 +388,7 @@ export default function Create() {
           </button>
           <span className="text-sm" style={{ color: 'var(--cx-dim)' }}>{answered}/{brief.questions.length} answered{answered ? '' : ', or skip them all'}</span>
         </div>
+        {slowNote}
         {errorBox}
         <button type="button" className="text-sm underline" style={{ color: 'var(--cx-dim)' }} onClick={() => setStep('url')}>← Use a different link</button>
       </div>

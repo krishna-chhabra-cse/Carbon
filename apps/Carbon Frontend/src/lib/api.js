@@ -14,7 +14,9 @@ export class ApiError extends Error {
   }
 }
 
-export async function api(path, { method = 'GET', body, auth = true } = {}) {
+// `timeout` (ms) gives up on a request that never answers, so a page can't
+// sit on a spinner forever. Pass 0 for no limit.
+export async function api(path, { method = 'GET', body, auth = true, timeout = 30000 } = {}) {
   const headers = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (auth) {
@@ -22,11 +24,16 @@ export async function api(path, { method = 'GET', body, auth = true } = {}) {
     if (token) headers.Authorization = `Bearer ${token}`;
     Object.assign(headers, authHeaders());
   }
+  const controller = timeout ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeout) : null;
   let res;
   try {
-    res = await fetch(`${API_URL}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
-  } catch {
+    res = await fetch(`${API_URL}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: controller?.signal });
+  } catch (err) {
+    if (err?.name === 'AbortError') throw new ApiError('That took too long. Please try again.', 0, { code: 'TIMEOUT' });
     throw new ApiError('Could not reach Carbon. Check your connection and try again.', 0);
+  } finally {
+    clearTimeout(timer);
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(data.error || `Request failed (${res.status})`, res.status, data);
