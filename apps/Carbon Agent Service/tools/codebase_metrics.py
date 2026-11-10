@@ -604,14 +604,17 @@ def _analyze_python_ast(
                     })
 
         # 2. Variable assignments
-        elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-            if node.id.lower() in SUSPICIOUS_IDENTIFIER_NAMES:
-                suspicious_ids.append({
-                    "identifier": node.id,
-                    "file": file_path,
-                    "line": node.lineno,
-                    "type": "variable"
-                })
+        elif (
+            isinstance(node, ast.Name)
+            and isinstance(node.ctx, ast.Store)
+            and node.id.lower() in SUSPICIOUS_IDENTIFIER_NAMES
+        ):
+            suspicious_ids.append({
+                "identifier": node.id,
+                "file": file_path,
+                "line": node.lineno,
+                "type": "variable"
+            })
 
     return function_count
 
