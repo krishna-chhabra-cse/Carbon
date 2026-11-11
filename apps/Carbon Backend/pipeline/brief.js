@@ -35,6 +35,9 @@ const tidy = (text, n) => {
   return COMMAND.test(t) || /^[a-z0-9]+[./@-]/.test(t) ? t : t.replace(/^\w/, (c) => c.toUpperCase());
 };
 const MAX_PICKS = { audience: 1, feeling: 2, focus: 1, platform: 1 };
+// Someone is watching a spinner during these calls: quickest model, a short
+// limit per attempt and for the whole call, then the no-AI fallback.
+const WAITING = { fast: true, timeout: 8000, deadline: 15000, retries: [0, 1500] };
 
 const MOOD_TEXT = {
   calm: ['Calm & clear', 'Short, quiet lines and a soft look'],
@@ -151,7 +154,7 @@ function finalize(byKind) {
 
 async function buildQuestions(facts, { llm = generateJson } = {}) {
   const fallback = defaultQuestions(facts);
-  const res = await llm({ system: INTERVIEWER, user: `FACTS:\n${JSON.stringify(factsForPrompt(facts))}`, schema: QUESTION_SCHEMA, temperature: 0.7, tag: 'interviewer', retries: [0, 3000] }).catch(() => null);
+  const res = await llm({ system: INTERVIEWER, user: `FACTS:\n${JSON.stringify(factsForPrompt(facts))}`, schema: QUESTION_SCHEMA, temperature: 0.7, tag: 'interviewer', ...WAITING }).catch(() => null);
   const byKind = {};
   let fromLlm = 0;
   for (const kind of KINDS) {
@@ -194,7 +197,8 @@ async function recommendLook(facts, brief, { llm = generateJson } = {}) {
       schema: LOOK_SCHEMA,
       temperature: 0.4,
       tag: 'stylist',
-      retries: [0, 3000],
+      ...WAITING,
+      deadline: 10000,
     }).catch(() => null);
     const d = res?.data;
     // A style must exist and work for this input (Data Story needs a repo…).

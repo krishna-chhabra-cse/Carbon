@@ -236,7 +236,9 @@ function directorRequest(facts, brief, chosen) {
   ]
     .filter(Boolean)
     .join('\n\n');
-  return { system: systemPrompt(facts.type), user, schema: schemaFor(Boolean(s)), tag: 'storyboard' };
+  // Runs inside a queued job, so it gets longer than the brief calls, but it
+  // is still capped: past 90 s the storyboard is built straight from the facts.
+  return { system: systemPrompt(facts.type), user, schema: schemaFor(Boolean(s)), tag: 'storyboard', timeout: 40000, deadline: 90000, retries: [0, 4000] };
 }
 
 async function callGemini(facts, brief, chosen, { llm = generateJson } = {}) {

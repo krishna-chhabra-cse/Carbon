@@ -70,7 +70,7 @@ export default function RoastPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await api('/api/roast', { method: 'POST', auth: false, body: { repo_url: repoUrl } });
+      const res = await api('/api/roast', { method: 'POST', auth: false, body: { repo_url: repoUrl }, timeout: 180000 });
       navigate(`/roast/${res.id}`);
     } catch (err) {
       setError(err.message || 'The roast failed. Try again in a minute.');
